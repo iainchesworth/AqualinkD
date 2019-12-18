@@ -1,0 +1,290 @@
+{
+  "Aqualinkd Pool Air Temperature": {
+    "id": "AqualinkdPoolAirTemperatureSensor",
+    "name": "Pool Air Temp",
+    "manufacturer": "Feakes Inc",
+    "model": "AqualinkD Temperature Sensor",
+    "services": [
+      {
+        "name": "Pool Air Temp",
+        "service": "TemperatureSensor",
+        "topic": {
+          "statusTemperature": "aqualinkd/Temperature/Air"
+        },
+        "payload": {},
+        "config": {},
+        "props": {}
+      }
+    ]
+  },
+  "Aqualinkd Filter Pump": {
+    "id": "AqualinkdFilterPump",
+    "name": "Filter Pump",
+    "manufacturer": "Feakes Inc",
+    "model": "AqualinkD Switch",
+    "services": [
+      {
+        "name": "Filter Pump",
+        "service": "Switch",
+        "topic": {
+          "setOn": "aqualinkd/Filter_Pump/set",
+          "statusOn": "aqualinkd/Filter_Pump"
+        },
+        "payload": {
+          "onFalse": 0,
+          "onTrue": 1
+        },
+        "config": {},
+        "props": {}
+      }
+    ]
+  },
+  "Aqualinkd Spa Mode": {
+    "id": "AqualinkdSpaMode",
+    "name": "Spa Mode",
+    "manufacturer": "Feakes Inc",
+    "model": "AqualinkD Switch",
+    "services": [
+      {
+        "name": "Spa Mode",
+        "service": "Switch",
+        "topic": {
+          "setOn": "aqualinkd/Spa_Mode/set",
+          "statusOn": "aqualinkd/Spa_Mode"
+        },
+        "payload": {
+          "onFalse": 0,
+          "onTrue": 1
+        },
+        "config": {},
+        "props": {}
+      }
+    ]
+  },
+  "Aqualinkd Aux1": {
+    "id": "AqualinkdAux1Button",
+    "name": "Cleaner",
+    "manufacturer": "Feakes Inc",
+    "model": "AqualinkD Switch",
+    "services": [
+      {
+        "name": "Aux1",
+        "service": "Switch",
+        "topic": {
+          "setOn": "aqualinkd/Aux_1/set",
+          "statusOn": "aqualinkd/Aux_1"
+        },
+        "payload": {
+          "onTrue": 1,
+          "onFalse": 0
+        },
+        "config": {},
+        "props": {}
+      }
+    ]
+  },
+  "Aqualinkd Aux2": {
+    "id": "AqualinkdAux2Button",
+    "name": "Waterfall",
+    "manufacturer": "Feakes Inc",
+    "model": "AqualinkD Switch",
+    "services": [
+      {
+        "name": "Aux2",
+        "service": "Switch",
+        "topic": {
+          "setOn": "aqualinkd/Aux_2/set",
+          "statusOn": "aqualinkd/Aux_2"
+        },
+        "payload": {
+          "onTrue": 1,
+          "onFalse": 0
+        },
+        "config": {},
+        "props": {}
+      }
+    ]
+  },
+  "Aqualinkd Aux3": {
+    "id": "AqualinkdAux3Button",
+    "name": "Spa Blower",
+    "manufacturer": "Feakes Inc",
+    "model": "AqualinkD Switch",
+    "services": [
+      {
+        "name": "Aux3",
+        "service": "Switch",
+        "topic": {
+          "setOn": "aqualinkd/Aux_3/set",
+          "statusOn": "aqualinkd/Aux_3"
+        },
+        "payload": {
+          "onTrue": 1,
+          "onFalse": 0
+        },
+        "config": {},
+        "props": {}
+      }
+    ]
+  },
+  "Aqualinkd Aux4": {
+    "id": "AqualinkdAux4Button",
+    "name": "Pool Light",
+    "manufacturer": "Feakes Inc",
+    "model": "AqualinkD Switch",
+    "services": [
+      {
+        "name": "Aux4",
+        "service": "Switch",
+        "topic": {
+          "setOn": "aqualinkd/Aux_4/set",
+          "statusOn": "aqualinkd/Aux_4"
+        },
+        "payload": {
+          "onTrue": 1,
+          "onFalse": 0
+        },
+        "config": {},
+        "props": {}
+      }
+    ]
+  },
+  "Aqualinkd PoolHeater": {
+    "id": "AqualinkdPoolHeater",
+    "name": "Pool Heater",
+    "manufacturer": "Feakes Inc",
+    "model": "AqualinkD Thermostat",
+    "services": [
+      {
+        "name": "Pool Heater",
+        "service": "Thermostat",
+        "topic": {
+          "setTargetTemperature": "aqualinkd/Pool_Heater/setpoint/set",
+          "statusTargetTemperature": "aqualinkd/Pool_Heater/setpoint",
+          "statusCurrentTemperature": "aqualinkd/Temperature/Pool",
+          "setTargetHeatingCoolingState": "aqualinkd/Pool_Heater/set",
+          "statusTargetHeatingCoolingState": "aqualinkd/Pool_Heater/enabled",
+          "statusCurrentHeatingCoolingState": "aqualinkd/Pool_Heater"
+        },
+        "payload": {},
+        "config": {},
+        "props": {
+          "TargetTemperature": {
+            "maxValue": 40,
+            "minValue": 4
+          },
+          "CurrentTemperature": {
+            "maxValue": 44,
+            "minValue": -17.8 
+          },
+          "TargetHeatingCoolingState": {
+            "validValues": [
+              0,
+              1
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "Aqualinkd SpaHeater": {
+    "id": "AqualinkdSpaHeater",
+    "name": "Spa Heater",
+    "manufacturer": "Feakes Inc",
+    "model": "AqualinkD Thermostat",
+    "services": [
+      {
+        "name": "Spa Heater",
+        "service": "Thermostat",
+        "topic": {
+          "setTargetTemperature": "aqualinkd/Spa_Heater/setpoint/set",
+          "statusTargetTemperature": "aqualinkd/Spa_Heater/setpoint",
+          "statusCurrentTemperature": "aqualinkd/Temperature/Spa",
+          "setTargetHeatingCoolingState": "aqualinkd/Spa_Heater/set",
+          "statusTargetHeatingCoolingState": "aqualinkd/Spa_Heater/enabled",
+          "statusCurrentHeatingCoolingState": "aqualinkd/Spa_Heater"
+        },
+        "payload": {},
+        "config": {},
+        "props": {
+          "TargetTemperature": {
+            "maxValue": 40,
+            "minValue": 4
+          },
+          "CurrentTemperature": {
+            "maxValue": 44,
+            "minValue": -17.8
+          },
+          "TargetHeatingCoolingState": {
+            "validValues": [
+              0,
+              1
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "Aqualinkd Chlorine Generator": {
+    "id": "AqualinkdChlorine",
+    "name": "Chlorine Generaor",
+    "manufacturer": "Feakes Inc",
+    "model": "AqualinkD SWG (Thermostat)",
+    "services": [
+      {
+        "name": "Chlorine Generaor",
+        "service": "Thermostat",
+        "topic": {
+          "setTargetTemperature": "aqualinkd/SWG/Percent_f/set",
+          "statusTargetTemperature": "aqualinkd/SWG/Percent_f",
+          "statusCurrentTemperature": "aqualinkd/SWG/Percent_f",
+          "statusTargetHeatingCoolingState": "aqualinkd/SWG/enabled",
+          "statusCurrentHeatingCoolingState": "aqualinkd/SWG"
+        },
+        "payload": {},
+        "config": {
+          "TemperatureDisplayUnits": 1
+        },
+        "props": {
+          "TargetTemperature": {
+            "maxValue": 38.5,
+            "minValue": -18,
+            "---minStep": 1 
+          },
+          "CurrentTemperature": {
+            "maxValue": 38.4,
+            "minValue": -17.8
+          },
+          "TargetHeatingCoolingState": {
+            "validValues": [ 0 ]
+          }
+        }
+      }
+    ]
+  },
+  "Aqualinkd Salt Parts Per Million": {
+    "id": "AqualinkdSaltPPMSensor",
+    "name": "Salt PPM",
+    "manufacturer": "Feakes Inc",
+    "model": "AqualinkD Salt PPM Sensor",
+    "services": [
+      {
+        "name": "Salt PPM",
+        "service": "TemperatureSensor",
+        "topic": {
+          "statusTemperature": "aqualinkd/SWG/PPM"
+        },
+        "payload": {
+          "fahrenheit": "true"
+        },
+        "config": {},
+        "props": {
+          "CurrentTemperature": {
+            "maxValue": 4000,
+            "minValue": 0
+          }
+        }
+      }
+    ]
+  }
+}
