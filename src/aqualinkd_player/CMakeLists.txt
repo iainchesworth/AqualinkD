@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.14)
+﻿cmake_minimum_required(VERSION 3.12)
 project(aqualinkd_player C)
 
 set(SOURCE_FILES 
@@ -19,7 +19,7 @@ target_link_directories(aqualinkd_player
 
 target_link_libraries(aqualinkd_player 
   LINK_PRIVATE 
-    libaqualinkd
+    libaqualink
   
   LINK_PUBLIC 
 	${LIBM_LIBRARIES}

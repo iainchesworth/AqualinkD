@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.14)
+﻿cmake_minimum_required(VERSION 3.12)
 project(log_reader C)
 
 set(SOURCE_FILES 
@@ -19,7 +19,7 @@ target_link_directories(log_reader
 
 target_link_libraries(log_reader 
   LINK_PRIVATE 
-    libaqualinkd
+    aqualink
   
   LINK_PUBLIC 
 	${LIBM_LIBRARIES}

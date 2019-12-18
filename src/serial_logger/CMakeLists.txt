@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.14)
+﻿cmake_minimum_required(VERSION 3.12)
 project(serial_logger C)
 
 set(SOURCE_FILES 
@@ -19,7 +19,7 @@ target_link_directories(serial_logger
 
 target_link_libraries(serial_logger 
   LINK_PRIVATE 
-    libaqualinkd
+    aqualink
   
   LINK_PUBLIC 
 	${LIBM_LIBRARIES}
