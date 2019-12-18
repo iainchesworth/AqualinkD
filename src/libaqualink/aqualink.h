@@ -24,6 +24,10 @@
 
 #define MAX_PUMPS 4
 
+// Message payload length definitions
+// TODO Should these be in AQ_SERIAL.H?
+#define BOOST_MSGLEN 10
+
 enum {
  FAHRENHEIT,
  CELSIUS,
@@ -118,7 +122,7 @@ struct aqualinkdata
   pump_detail pumps[MAX_PUMPS];
   int open_websockets;
   bool boost;
-  char boost_msg[10];
+  char boost_msg[BOOST_MSGLEN];
   //bool last_msg_was_status;
   //bool ar_swg_connected;
   #ifdef AQ_DEBUG
