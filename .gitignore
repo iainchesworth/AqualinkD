@@ -21,7 +21,7 @@ x86/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
-[Bb]in/
+[B]in/ # Note that the original "[Bb]in" matched the "bin" so it's been changed!
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
@@ -353,7 +353,6 @@ CMakeCache.txt
 CMakeFiles
 CMakeScripts
 Testing
-Makefile
 cmake_install.cmake
 install_manifest.txt
 compile_commands.json
