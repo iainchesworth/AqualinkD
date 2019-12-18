@@ -30,7 +30,7 @@ https://github.com/sfeakes/AqualinkD/wiki/Jandy-Aqualink-RS485-protocol
 
 <table width="100%" border="0" cellpadding="20px">
  <tr><th width="50%">Default web interface</th><th wifth="50%">Simple web interface</img></th><tr>
- <tr><td><img src="extras/IMG_0251.PNG?raw=true" width="350"></img></td><td><img src="extras/simple.png?raw=true" width="350"</img></td></td></td>
+ <tr><td><img src="doc/extras/IMG_0251.PNG?raw=true" width="350"></img></td><td><img src="doc/extras/simple.png?raw=true" width="350"</img></td></td></td>
   <tr><td colspan="2">
      Both Interfaces
      <ul>
@@ -51,15 +51,15 @@ https://github.com/sfeakes/AqualinkD/wiki/Jandy-Aqualink-RS485-protocol
 
 ### Simulator
 Designed to mimic AqualinkRS6 All Button keypad and (like the keypad) is used to fully configure the master control panel<br>
-<img src="extras/simulator.png?raw=true" width="550">
+<img src="doc/extras/simulator.png?raw=true" width="550">
 
 ### In Apple Home app.
-<img src="extras/HomeKit2.png?raw=true" width="800"></img>
+<img src="doc/extras/HomeKit2.png?raw=true" width="800"></img>
 * (NOTE: Salt Water Generator is configured as a Thermostat.  It is the closest homekit accessory type; so &deg;=% and Cooling=Generating).
 * Full support for homekit scenes: ie: Create a "Spa scene" to: "turn spa on, set spa heater to X temperature and turn spa blower on", etc etc).
 
 ### In Home Assistant 
-<img src="extras/HomeAssistant2.png?raw=true" width="800"></img>
+<img src="doc/extras/HomeAssistant2.png?raw=true" width="800"></img>
 
 ## All Web interfaces.
 * http://aqualink.ip/     <- (Standard WEB UI
@@ -93,7 +93,7 @@ Designed to mimic AqualinkRS6 All Button keypad and (like the keypad) is used to
 # Update in Release 1.3.6
 * Can now debug inline from a web ui. (http://aqualinkd.ip.address/debug.html)
 * Fix SWG in homekit sometimes displaying wrong value. Note to Homekit users, Upgrading to 1.3.5c (and above) will add an aditional SWG PPM tile, (look in default room). You'll need to update homebridge-aqualinkd to 0.0.8 (or later) to remove the old PPM tile (or delete you homebridge cache). This is due to a bug in homebridge-aqualinkd < 0.0.7 that didn't delete unused tiles.
-* Logic for SWG RS486 checksum_errors.
+* Logic for SWG RS485 checksum_errors.
 * Fixed pentair packet logging, missing last byte.
 * Support for two programmable lights. (Note must update your aqualinkd.conf).
 * Can now display warnings and errors in the web UI (as well as log).
@@ -258,7 +258,7 @@ Manual install for init-d systems
 * copy ./release/aqualinkd to /usr/local/bin
 * copy ./release/aqualinkd.conf to /etc
 * copy ./release/aqualinkd.service.avahi to /etc/avahi/services/aqualinkd.service
-* copy ./extras/aqualinkd.init.d to /etc/init-d/aqualink
+* copy ./doc/extras/aqualinkd.init.d to /etc/init-d/aqualink
 * copy recuesivley ./web/* to /var/www/aqualinkd/
 * sudo update-rc.d aqualinkd defaults
 
@@ -306,7 +306,7 @@ I have my own scripts to do this for me, and probably won't ever document or pub
 
 ## Aqualinkd Configuration
 Please see the [aqualinkd.conf]
-(https://github.com/sfeakes/aqualinkd/blob/master/extras/aqualinkd.conf) 
+(https://github.com/sfeakes/aqualinkd/blob/master/doc/extras/aqualinkd.conf) 
 example in the release directory.  Many things are turned off by default, and you may need to enable or configure them for your setup.
 Main item to configure is the Aqualink RS485 address so it doesn't conflict with any existing control panels or equiptment. By default it's set to 0x0a which is the second usable address of an allbutton control panel. Included is a serial loging tool that can let you know all information on the RS485 buss, you can use this to find a good address.
 ```
@@ -460,13 +460,13 @@ For the moment, native Homekit support has been removed, it will be added back i
 Recomended option for HomeKit support is to make use of the MQTT interface and use [HomeKit2MQTT](https://www.npmjs.com/package/homekit2mqtt) to bridge between Aqualinkd and you Apple (phone/tablet/tv & hub).
 * If you don't already have an MQTT broker Installed, install one. Mosquitto is recomended, this can usually be installed with apt-get
 * Install [HomeKit2MQTT](https://www.npmjs.com/package/homekit2mqtt). (see webpage for install)
-* Then copy the [`homekit2mqtt.json`](https://github.com/sfeakes/aqualinkd/blob/master/extras/homekit2mqtt.json) configuration file found in the extras directory to your homekit2mqtt storage directory.
+* Then copy the [`homekit2mqtt.json`](https://github.com/sfeakes/aqualinkd/blob/master/doc/extras/homekit2mqtt.json) configuration file found in the extras directory to your homekit2mqtt storage directory.
 
 * If you want to run homekit2mqtt as a daemon service, there are files in the extras directory to help you do this.
   * copy [`homekit2mqtt.service`] to `/etc/systemd/system/homekit2mqtt.service`
   * copy [`homekit2mqtt.defaults`] to `/etc/defaults/homekit2mqtt`
   * create directory `/var/lib/homekitmqtt`
-  * copy [`homekit2mqtt.json`](https://github.com/sfeakes/aqualinkd/blob/master/extras/homekit2mqtt.json) to `/var/lib/homekitmqtt`
+  * copy [`homekit2mqtt.json`](https://github.com/sfeakes/aqualinkd/blob/master/doc/extras/homekit2mqtt.json) to `/var/lib/homekitmqtt`
   * edit `/etc/defaults/homekit2mqtt` to change and homekit2mqtt config parameters.
   * install and start service
     * `sudo systemctl enable homekit2mqtt`
@@ -489,7 +489,7 @@ Without MQTT
 #
 # Home Assistant (HASS.IO)
 Copy the sections from 
-[`HASSIO Implimentation.txt`](https://github.com/sfeakes/aqualinkd/blob/master/extras/HASSIO.implimentation.txt)
+[`HASSIO Implimentation.txt`](https://github.com/sfeakes/aqualinkd/blob/master/doc/extras/HASSIO.implimentation.txt)
  into your config.yaml
 
 #
@@ -500,7 +500,7 @@ http://aqualinkd.ip.address:port?command=mhstatus
 ```
 t0 will be air temp and t1 water temp.
 
-To use.  copy the [meteohub-aq-plugin.sh script](https://github.com/sfeakes/aqualinkd/blob/master/extras/meteohub-aq-plugin.sh) from the extras directory to your meteohub box, edit the script and use your IP address in the line that makes the URL call, below.
+To use.  copy the [meteohub-aq-plugin.sh script](https://github.com/sfeakes/aqualinkd/blob/master/doc/extras/meteohub-aq-plugin.sh) from the extras directory to your meteohub box, edit the script and use your IP address in the line that makes the URL call, below.
 ```
 wget -O /dev/stdout 'http://your.ip.address.here/?command=mhstatus' 2>/dev/null
 ```
