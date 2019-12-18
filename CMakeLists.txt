@@ -2,12 +2,7 @@
 
 if(WIN32)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-    set(Boost_USE_STATIC_LIBS OFF)
-    set(Boost_USE_MULTITHREADED ON)
-    set(Boost_USE_STATIC_RUNTIME OFF)
-    add_definitions(-DBOOST_ALL_NO_LIB)
     add_definitions(-DWIN32_LEAN_AND_MEAN)
-    add_definitions(-DBOOST_USE_WINDOWS_H)
     add_definitions(-DNOMINMAX)
 	add_definitions(-D_WIN32_WINNT=0x0A00)
 endif()
@@ -17,10 +12,12 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 project(aqualinkd)
 
 set(CMAKE_C_STANARD 11)
+set(CMAKE_C_CLANG_TIDY clang-tidy -checks=-*,readability-*,warnings-as-errors=*)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_CLANG_TIDY clang-tidy -checks=-*,readability-*,warnings-as-errors=*;)
 
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 
