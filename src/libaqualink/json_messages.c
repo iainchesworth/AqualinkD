@@ -50,7 +50,9 @@ const char* getStatus(struct aqualinkdata *aqdata)
   //if (aqdata->last_message != NULL && stristr(aqdata->last_message, "SERVICE") != NULL ) {
   if (aqdata->service_mode_state == ON) {
     return JSON_SERVICE;
-  } else if (aqdata->service_mode_state == FLASH) {
+  } 
+  
+  if (aqdata->service_mode_state == FLASH) {
     return JSON_TIMEOUT;
   }
 
@@ -593,10 +595,10 @@ bool parseJSONwebrequest(char *buffer, struct JSONwebrequest *request)
       }
       break;
     }
-//printf ("\n");
-//    if (found >= 4)
-    if (found >= 6)
-    break;
+
+    if (found >= 6) {
+        break;
+    }
     
     i++;
   }

@@ -42,8 +42,9 @@
       "rsyncCommandArgs": "-t --delete --delete-excluded",
       "remoteCopyBuildOutput": false,
       "remoteCopySourcesMethod": "rsync",
-      "addressSanitizerRuntimeFlags": "detect_leaks=0",
-      "variables": []
+      "addressSanitizerRuntimeFlags": "detect_leaks=1;symbolize=1",
+      "variables": [],
+      "addressSanitizerEnabled": true
     },
     {
       "name": "Linux-Clang-Release",
@@ -63,8 +64,9 @@
       "rsyncCommandArgs": "-t --delete --delete-excluded",
       "remoteCopyBuildOutput": false,
       "remoteCopySourcesMethod": "rsync",
-      "addressSanitizerRuntimeFlags": "detect_leaks=0",
-      "variables": []
+      "addressSanitizerRuntimeFlags": "detect_leaks=1;symbolize=1",
+      "variables": [],
+      "addressSanitizerEnabled": true
     }
   ]
 }

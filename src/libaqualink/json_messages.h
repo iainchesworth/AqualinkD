@@ -37,7 +37,7 @@ struct JSONwebrequest {
 int build_aqualink_status_JSON(struct aqualinkdata *aqdata, char* buffer, int size);
 int build_aux_labels_JSON(struct aqualinkdata *aqdata, char* buffer, int size);
 bool parseJSONwebrequest(char *buffer, struct JSONwebrequest *request);
-int build_mqtt_status_JSON(char* buffer, int size, int idx, int nvalue, float setpoint/*char *svalue*/);
+int build_mqtt_status_JSON(char* buffer, int size, int idx, int nvalue, float tvalue/*char *svalue*/);
 bool parseJSONmqttrequest(const char *str, size_t len, int *idx, int *nvalue, char *svalue);
 int build_aqualink_error_status_JSON(char* buffer, int size, char *msg);
 int build_mqtt_status_message_JSON(char* buffer, int size, int idx, int nvalue, char *svalue);

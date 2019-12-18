@@ -54,9 +54,11 @@ void main_loop();
 
 void intHandler(int dummy)
 {
+	UNREFERENCED_PARAMETER(dummy);
+
 	_keepRunning = false;
 	logMessage(LOG_NOTICE, "Stopping!");
-	if (dummy) {}// stop compile warnings
+
 }
 
 void processLEDstate()
@@ -432,7 +434,7 @@ void processMessage(char* message)
 		{
 			// Aux1: on panel = Button 3 in aqualinkd  (button 2 in array)
 			logMessage(LOG_NOTICE, "AUX LABEL %d '%s'\n", labelid + 1, msg);
-			_aqualink_data.aqbuttons[labelid + 1].label = prittyString(cleanalloc(msg + 5));
+			_aqualink_data.aqbuttons[labelid + 1].label = prettyString(cleanalloc(msg + 5));
 		}
 	}
 	// BOOST POOL 23:59 REMAINING
@@ -702,7 +704,6 @@ int main(int argc, char* argv[])
 	bool cmdln_debugRS485 = false;
 	bool cmdln_lograwRS485 = false;
 
-	// struct lws_context_creation_info info;
 	// Log only NOTICE messages and above. Debug and info messages
 	// will not be logged to syslog.
 	setlogmask(LOG_UPTO(LOG_NOTICE));
@@ -882,26 +883,34 @@ void caculate_ack_packet(int rs_fd, unsigned char* packet_buffer)
 		// pause ack strarts with around 12 ACK_SCREEN_BUSY_DISPLAY acks, then 50  ACK_SCREEN_BUSY acks
 		// if we send a command (ie keypress), the whole count needs to end and go back to sending normal ack.
 		// In code below, it jumps to sending ACK_SCREEN_BUSY, which still seems to work ok.
-		if (strncasecmp(_aqualink_data.last_display_message, "SELECT", 6) != 0) { // Nothing to wait for, send normal ack.
+		if (strncasecmp(_aqualink_data.last_display_message, "SELECT", 6) != 0) 
+		{ 
+			// Nothing to wait for, send normal ack.
 			send_ack(rs_fd, pop_aq_cmd(&_aqualink_data));
 			delayAckCnt = 0;
 		}
-		else if (get_aq_cmd_length() > 0) {
+		else if (get_aq_cmd_length() > 0) 
+		{
 			// Send command and jump directly "busy but can receive message"
 			send_ack(rs_fd, pop_aq_cmd(&_aqualink_data));
 			delayAckCnt = MAX_BUSY_ACK; // need to test jumping to MAX_BUSY_ACK here
 		}
-		else {
+		else 
+		{
 			logMessage(LOG_NOTICE, "Sending display busy due to Simulator mode \n");
-			if (delayAckCnt < MAX_BLOCK_ACK) {
+
+			if (delayAckCnt < MAX_BLOCK_ACK) 
+			{
 				// block all incomming messages
 				send_extended_ack(rs_fd, ACK_SCREEN_BUSY_BLOCK, pop_aq_cmd(&_aqualink_data));
 			}
-			else if (delayAckCnt < MAX_BUSY_ACK) {
+			else if (delayAckCnt < MAX_BUSY_ACK) 
+			{
 				// say we are pausing
 				send_extended_ack(rs_fd, ACK_SCREEN_BUSY, pop_aq_cmd(&_aqualink_data));
 			}
-			else {
+			else 
+			{
 				// We timed out pause, send normal ack (This should also reset the display message on next message received)
 				send_ack(rs_fd, pop_aq_cmd(&_aqualink_data));
 			}
@@ -1071,7 +1080,6 @@ void main_loop()
 				if (getLogLevel() >= LOG_DEBUG) {
 					logMessage(LOG_DEBUG, "RS received packet of type %s length %d\n", get_packet_type(packet_buffer, packet_length), packet_length);
 				}
-
 
 				// Process the packet. This includes deriving general status, and identifying
 				// warnings and errors.  If something changed, notify any listeners

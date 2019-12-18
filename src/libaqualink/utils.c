@@ -578,7 +578,7 @@ int ascii(char *destination, char *source) {
   return i;
 }
 
-char *prittyString(char *str)
+char *prettyString(char *str)
 {
   char *ptr = str;
   char *end;

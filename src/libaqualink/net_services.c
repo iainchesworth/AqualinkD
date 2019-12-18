@@ -126,7 +126,7 @@ void broadcast_aqualinkstate(struct mg_connection *nc)
       mqtt_broadcast_aqualinkstate(c);
 #endif
   }
-  return;
+
 }
 
 

@@ -18,8 +18,10 @@
 
 #define MAXLEN 256
 
-#define round(a) (int) (a+0.5) // 0 decimal places
+#define round(a) (int) (a+0.5)          // 0 decimal places
 #define roundf(a) (float) ((a*100)/100) // 2 decimal places
+
+#define UNREFERENCED_PARAMETER(P) (P)   // Prevent unused parameter warnings
 
 /*
 typedef enum
@@ -52,7 +54,7 @@ float degFtoC(float degF);
 float degCtoF(float degC);
 char* stristr(const char* haystack, const char* needle);
 int ascii(char *destination, char *source);
-char *prittyString(char *str);
+char *prettyString(char *str);
 //void writePacketLog(char *buff);
 //void closePacketLog();
 void startInlineDebug();
