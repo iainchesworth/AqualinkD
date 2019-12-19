@@ -164,14 +164,14 @@
 /*
 // All Messages listed in the manual, This is obviously not complete, but it's everything Jandy has published
 BATTERY IS LOW, BATTERY LOCATED AT THE POWER CENTER
-CLEANER CANNOT BE TURNED ON WHILE SPA IS ON 
+CLEANER CANNOT BE TURNED ON WHILE SPA IS ON
 CLEANER CANNOT BE TURNED ON WHILE SPILLOVER IS ON
 FREEZE PROTECTION ACTIVATED
 SENSOR OPENED
 POOL HEATER ENABLED
 PUMP WILL REMAIN ON WHILE SPILLOVER IS ON
 PUMP WILL TURN OFF AFTER COOL DOWN CYCLE
-PUMP WILL TURN ON AFTER DELAY 
+PUMP WILL TURN ON AFTER DELAY
 SERVICE MODE IS ACTIVE
 SENSOR SHORTED
 SPA WILL TURN OFF AFTER COOL DOWN CYCLE
@@ -228,17 +228,17 @@ SPILLOVER IS DISABLED WHILE SPA IS ON
 
 
 typedef enum {
-  ON,
-  OFF,
-  FLASH,
-  ENABLE,
-  LED_S_UNKNOWN
+	ON,
+	OFF,
+	FLASH,
+	ENABLE,
+	LED_S_UNKNOWN
 } aqledstate;
 
 typedef struct aqualinkled
 {
-  //int number;
-  aqledstate state;
+	//int number;
+	aqledstate state;
 } aqled;
 
 // Battery Status Identifiers
@@ -248,9 +248,9 @@ enum {
 };
 
 typedef enum {
-  JANDY,
-  PENTAIR,
-  P_UNKNOWN
+	JANDY,
+	PENTAIR,
+	P_UNKNOWN
 } protocolType;
 
 
@@ -264,23 +264,15 @@ bool check_jandy_checksum(unsigned char* packet, int length);
 bool check_pentair_checksum(unsigned char* packet, int length);
 void send_ack(int file_descriptor, unsigned char command);
 void send_extended_ack(int fd, unsigned char ack_type, unsigned char command);
-//void send_cmd(int file_descriptor, unsigned char cmd, unsigned char args);
 int get_packet(int file_descriptor, unsigned char* packet);
 int get_packet_lograw(int fd, unsigned char* packet);
 
-//int get_packet_new(int fd, unsigned char* packet);
-//int get_packet_new_lograw(int fd, unsigned char* packet);
-//void close_serial_port(int file_descriptor, struct termios* oldtio);
-//void process_status(void const * const ptr);
 void process_status(unsigned char* ptr);
-const char* get_packet_type(unsigned char* packet , int length);
+const char* get_packet_type(unsigned char* packet, int length);
 
 
-void send_jandy_command(int fd, unsigned char *packet_buffer, int size);
-void send_pentair_command(int fd, unsigned char *packet_buffer, int size);
-void send_command(int fd, unsigned char *packet_buffer, int size);
+void send_jandy_command(int fd, unsigned char* packet_buffer, int size);
+void send_pentair_command(int fd, unsigned char* packet_buffer, int size);
+void send_command(int fd, unsigned char* packet_buffer, int size);
 
-//void send_test_cmd(int fd, unsigned char destination, unsigned char b1, unsigned char b2, unsigned char b3);
-//void send_command(int fd, unsigned char destination, unsigned char b1, unsigned char b2, unsigned char b3);
-//void send_messaged(int fd, unsigned char destination, char *message);
 #endif // AQ_SERIAL_H_

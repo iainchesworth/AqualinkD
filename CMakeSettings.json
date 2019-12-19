@@ -15,7 +15,7 @@
     {
       "name": "x64-Clang-Release",
       "generator": "Ninja",
-      "configurationType": "RelWithDebInfo",
+      "configurationType": "MinSizeRel",
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
       "cmakeCommandArgs": "",
@@ -34,7 +34,7 @@
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
       "inheritEnvironments": [ "linux_clang_x64" ],
-      "remoteMachineName": "${defaultRemoteMachineName}",
+      "remoteMachineName": "877929682;172.31.40.148 (username=iain, port=22, authentication=Password)",
       "remoteCMakeListsRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/src",
       "remoteBuildRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/build/${name}",
       "remoteInstallRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/install/${name}",
@@ -42,14 +42,14 @@
       "rsyncCommandArgs": "-t --delete --delete-excluded",
       "remoteCopyBuildOutput": false,
       "remoteCopySourcesMethod": "rsync",
-      "addressSanitizerRuntimeFlags": "detect_leaks=1;symbolize=1",
+      "addressSanitizerRuntimeFlags": "detect_leaks=1:symbolize=1:protect_shadow_gap=0:strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1",
       "variables": [],
       "addressSanitizerEnabled": true
     },
     {
       "name": "Linux-Clang-Release",
       "generator": "Unix Makefiles",
-      "configurationType": "RelWithDebInfo",
+      "configurationType": "MinSizeRel",
       "cmakeExecutable": "/usr/bin/cmake",
       "remoteCopySourcesExclusionList": [ ".vs", ".git", "out" ],
       "cmakeCommandArgs": "",
@@ -64,9 +64,9 @@
       "rsyncCommandArgs": "-t --delete --delete-excluded",
       "remoteCopyBuildOutput": false,
       "remoteCopySourcesMethod": "rsync",
-      "addressSanitizerRuntimeFlags": "detect_leaks=1;symbolize=1",
+      "addressSanitizerRuntimeFlags": "detect_leaks=0",
       "variables": [],
-      "addressSanitizerEnabled": true
+      "addressSanitizerEnabled": false
     }
   ]
 }

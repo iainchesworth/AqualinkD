@@ -4,6 +4,7 @@ project(aqualink C)
 set(SOURCE_FILES
   aq_programmer.c 
   aq_serial.c 
+  aq_serial_statemachine.c
   aquapure.c 
   config.c 
   init_buttons.c 
