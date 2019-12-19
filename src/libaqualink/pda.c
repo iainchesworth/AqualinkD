@@ -687,7 +687,7 @@ bool process_pda_packet(unsigned char *packet, int length)
         _initWithRS = true;
         logMessage(LOG_DEBUG, "**** PDA INIT ****");
         aq_programmer(AQ_PDA_INIT, NULL, _aqualink_data);
-        delay(50);  // Make sure this one runs first.
+        delayMicroseconds(50);  // Make sure this one runs first.
 #ifdef BETA_PDA_AUTOLABEL
         if (_aqualink_config->use_panel_aux_labels)
            aq_programmer(AQ_GET_AUX_LABELS, NULL, _aqualink_data);

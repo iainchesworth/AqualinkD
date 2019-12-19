@@ -535,14 +535,33 @@ float degCtoF(float degC)
 
 #include <time.h>
 
-void delay (unsigned int howLong) // Microseconds (1000000 = 1 second)
+static const unsigned int MICROSECONDS_PER_SECOND = 1000000;
+static const unsigned int MICROSECONDS_PER_MILLISECOND = 1000;
+
+void delay(struct timespec* const sleeper)
 {
-  struct timespec sleeper, dummy ;
+    struct timespec dummy;
+    nanosleep(sleeper, &dummy);
+}
 
-  sleeper.tv_sec  = (time_t)(howLong / 1000) ;
-  sleeper.tv_nsec = (long)(howLong % 1000) * 1000000 ;
+void delayMicroseconds(unsigned int howLong) // Microseconds (1000000 = 1 second)
+{
+    struct timespec sleepFor, dummy;
 
-  nanosleep (&sleeper, &dummy) ;
+    sleepFor.tv_sec = (time_t)(howLong / 1000);
+    sleepFor.tv_nsec = (long)(howLong % 1000) * 1000000;
+
+    delay(&sleepFor);
+}
+
+void delayMilliseconds(unsigned int howLong)
+{
+    delayMicroseconds(howLong * MICROSECONDS_PER_MILLISECOND);
+}
+
+void delaySeconds(unsigned int howLong)
+{
+	delayMicroseconds(howLong * MICROSECONDS_PER_SECOND);
 }
 
 char* stristr(const char* haystack, const char* needle) {

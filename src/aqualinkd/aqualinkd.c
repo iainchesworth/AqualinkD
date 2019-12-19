@@ -1152,7 +1152,7 @@ void main_loop()
 		// NOTHING HERE
 #else
 		tcdrain(rs_fd); // Make sure buffer has been sent.
-		delay(10);
+		delayMicroseconds(10);
 #endif
 
 	}

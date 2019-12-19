@@ -541,7 +541,7 @@ void cleanAndTerminateThread(struct programmingThreadCtrl *threadCtrl)
   #endif
 
   // Quick delay to allow for last message to be sent.
-  delay(500);
+  delayMicroseconds(500);
   threadCtrl->aq_data->active_thread.thread_id = 0;
   threadCtrl->aq_data->active_thread.ptype = AQP_NULL;
   threadCtrl->thread_id = 0;
@@ -725,7 +725,7 @@ STOP BOOST POOL
         break;
       } else {
         logMessage(LOG_DEBUG, "Find item in Menu: loop %d of %d looking for 'STOP BOOST POOL' received message '%s'\n",i,wait_messages,aq_data->last_message);
-        delay(200);
+        delayMicroseconds(200);
         if (stristr(aq_data->last_message, "STOP BOOST POOL") != NULL) {
           _pgm_command = KEY_ENTER;
           logMessage(LOG_DEBUG, "**** FOUND STOP BOOST POOL ****\n");
@@ -928,13 +928,13 @@ void *set_aqualink_light_colormode( void *ptr )
   if ( button->led->state != ON ) {
     logMessage(LOG_INFO, "Light Programming Initial state off, turning on for %d seconds\n",iOn);
     send_cmd(code);
-    delay(iOn * seconds);
+    delayMicroseconds(iOn * seconds);
   }
 
   logMessage(LOG_INFO, "Light Programming turn off for %d seconds\n",iOff);
   // Now need to turn off for between 11 and 14 seconds to reset light.
   send_cmd(code);
-  delay(iOff * seconds);
+  delayMicroseconds(iOff * seconds);
 
   // Now light is reset, pulse the appropiate number of times to advance program.
   logMessage(LOG_INFO, "Light Programming button pulsing on/off %d times\n", val);
@@ -944,7 +944,7 @@ void *set_aqualink_light_colormode( void *ptr )
     for (i = 1; i < (val * 2); i++) {
       logMessage(LOG_INFO, "Light Programming button press number %d - %s of %d\n", i, i % 2 == 0 ? "Off" : "On", val);
       send_cmd(code);
-      delay(pmode * seconds); // 0.3 works, but using 0.4 to be safe
+      delayMicroseconds(pmode * seconds); // 0.3 works, but using 0.4 to be safe
     }
   } else {
     for (i = 1; i < val; i++) {
@@ -1025,7 +1025,7 @@ void *set_aqualink_pool_heater_temps( void *ptr )
     waitForMessage(threadCtrl->aq_data, "MUST BE SET", 5);
     send_cmd(KEY_LEFT);
     while (stristr(aq_data->last_message, "MUST BE SET") != NULL) { 
-      delay(500);
+      delayMicroseconds(500);
     }
   } 
 
@@ -1099,7 +1099,7 @@ void *set_aqualink_spa_heater_temps( void *ptr )
     waitForMessage(threadCtrl->aq_data, "MUST BE SET", 5);
     send_cmd(KEY_LEFT);
     while (stristr(aq_data->last_message, "MUST BE SET") != NULL) { 
-      delay(500);
+      delayMicroseconds(500);
     }
   } 
   
@@ -1410,14 +1410,14 @@ void waitfor_queue2empty()
   while ( (_pgm_command != NUL) && ( i++ < 20) ) {
     //sleep(1); // NSF Change to smaller time.
     //logMessage(LOG_DEBUG, "********  QUEUE IS FULL ********  delay\n");
-    delay(50);
+    delayMicroseconds(50);
   }
 
   if (_pgm_command != NUL) {
     if (pda_mode()) {
       // Wait for longer in PDA mode since it's slower.
       while ( (_pgm_command != NUL) && ( i++ < 100) ) {
-        delay(100);
+        delayMicroseconds(100);
       }
     }
     logMessage(LOG_WARNING, "Send command Queue did not empty, timeout\n");
