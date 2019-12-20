@@ -53,10 +53,12 @@ bool processPentairPacket(unsigned char *packet, int packet_length, struct aqual
         break;
       }
       if (changedAnything != true)
-        logMessage(LOG_NOTICE, "Pentair Pump found at ID 0x%02hhx with RPM %d | WATTS %d, but not configured, information ignored!\n",
-                               packet[PEN_PKT_FROM],
-                               (packet[PEN_HI_B_RPM] * 256) + packet[PEN_LO_B_RPM],
-                               (packet[PEN_HI_B_WAT] * 256) + packet[PEN_LO_B_WAT]);
+      {
+          logMessage(LOG_NOTICE, "Pentair Pump found at ID 0x%02hhx with RPM %d | WATTS %d, but not configured, information ignored!\n",
+              packet[PEN_PKT_FROM],
+              (packet[PEN_HI_B_RPM] * 256) + packet[PEN_LO_B_RPM],
+              (packet[PEN_HI_B_WAT] * 256) + packet[PEN_LO_B_WAT]);
+      }
     }
     // 
   }

@@ -554,19 +554,59 @@ static const char* YES_STRING = "YES";
 static const char* NO_STRING = "NO";
 static const char* ON_STRING = "ON";
 
-bool text2bool(char* str)
+bool text2bool(const char* str)
 {
-	str = cleanwhitespace(str);
-	return ((0 == strcasecmp(str, YES_STRING)) || (0 == strcasecmp(str, ON_STRING))) ? TRUE : FALSE;
+	assert(NULL != str);
+
+	const int strLength = strlen(str);
+	int firstCharPos = -1, i;
+
+	// Find the first non-whitespace char and "next" whitespace char after that.
+	for (i = 0; i < strLength; ++i)
+	{
+		if ((-1 == firstCharPos) && (0 == isspace(str[i])))
+		{
+			// First non-whitespace char
+			firstCharPos = i;
+
+			// Done...exit the for loop.
+			break;
+		}
+	}
+
+	// Create a temporary string that starts where the non-whitespace characters start...
+	const char* tmpStr = &str[firstCharPos];
+
+	return ((0 == strncasecmp(tmpStr, YES_STRING, 3)) || (0 == strncasecmp(tmpStr, ON_STRING, 2))) ? TRUE : FALSE;
 }
 
-bool request2bool(char* str)
+bool request2bool(const char* str)
 {
-	str = cleanwhitespace(str);
-	return ((0 == strcasecmp(str, YES_STRING)) || (0 == strcasecmp(str, ON_STRING)) || (1 == atoi(str))) ? TRUE : FALSE;
+	assert(NULL != str);
+
+	const int strLength = strlen(str);
+	int firstCharPos = -1, i;
+
+	// Find the first non-whitespace char and "next" whitespace char after that.
+	for (i = 0; i < strLength; ++i)
+	{
+		if ((-1 == firstCharPos) && (0 == isspace(str[i])))
+		{
+			// First non-whitespace char
+			firstCharPos = i;
+
+			// Done...exit the for loop.
+			break;
+		}
+	}
+
+	// Create a temporary string that starts where the non-whitespace characters start...
+	const char* tmpStr = &str[firstCharPos];
+
+	return ((0 == strncasecmp(tmpStr, YES_STRING, 3)) || (0 == strncasecmp(tmpStr, ON_STRING, 2)) || (1 == atoi(str))) ? TRUE : FALSE;
 }
 
-char* bool2text(bool val)
+const char* bool2text(bool val)
 {
 	return (TRUE == val) ? YES_STRING : NO_STRING;
 }
@@ -613,19 +653,16 @@ char* stristr(const char* haystack, const char* needle)
 	return 0;
 }
 
-int ascii(char* destination, char* source) 
+int ascii(char* destination, const char* source) 
 {
+	assert(NULL != destination);
+	assert(NULL != source);
+
 	unsigned int i;
+	
 	for (i = 0; i < strlen(source); i++) 
 	{
-		if (source[i] >= 0 && source[i] < 128)
-		{
-			destination[i] = source[i];
-		}
-		else
-		{
-			destination[i] = ' ';
-		}
+		destination[i] = isascii(source[i]) ? source[i] : ' ';
 
 		if (source[i] == 126) 
 		{
