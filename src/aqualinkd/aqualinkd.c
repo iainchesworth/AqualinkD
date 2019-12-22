@@ -26,7 +26,6 @@
 #include <libgen.h>
 #include <termios.h>
 #include <signal.h>
-#include <getopt.h>
 
 #include <time.h> // Need GNU_SOURCE & XOPEN defined for strptime
 
@@ -45,6 +44,7 @@
 #include "packetLogger.h"
 #include "aquapure.h"
 #include "version.h"
+#include "options.h"
 
 static volatile bool _keepRunning = true;
 static struct aqconfig _config_parameters;
@@ -668,111 +668,29 @@ void action_delayed_request()
 	_aqualink_data.unactioned.requested = 0;
 }
 
-void printHelp()
-{
-	printf("%s %s\n", AQUALINKD_NAME, AQUALINKD_VERSION);
-	printf("\t-h         (this message)\n");
-	printf("\t-d         (do not deamonize)\n");
-	printf("\t-c <file>  (Configuration file)\n");
-	printf("\t-v         (Debug logging)\n");
-	printf("\t-vv        (Serial Debug logging)\n");
-	printf("\t-rsd       (RS485 debug)\n");
-	printf("\t-rsrd      (RS485 raw debug)\n");
-}
-
-static struct option aqualink_long_options[] =
-{
-	{ "help",         no_argument,       NULL, 'h'},
-	{ "no-daemonize", no_argument,       NULL, 'd'},
-	{ "config-file",  required_argument, NULL, 'c'},
-	{ "debug",        no_argument,       NULL, 'v'},
-	{ "vv",           no_argument,       NULL, '0'},
-	{ "rsd",          no_argument,       NULL, '1'},
-	{ "rsrd",         no_argument,       NULL, '2'},
-	{0, 0, 0, 0}
-};
-
-static char* aqualink_short_options = "hdc:v0123";
-
 int main(int argc, char* argv[])
 {
-	int i, j;
-	char defaultCfg[] = "./aqualinkd.conf";
-	char* cfgFile;
-
-	int cmdln_loglevel = -1;
-	bool cmdln_debugRS485 = false;
-	bool cmdln_lograwRS485 = false;
+  	int i, j;
 
 	// Log only NOTICE messages and above. Debug and info messages
 	// will not be logged to syslog.
 	setlogmask(LOG_UPTO(LOG_NOTICE));
 
 	// Initialize the daemon's parameters.
-	init_parameters(&_config_parameters);
-	cfgFile = defaultCfg;
+	initParameters(&_config_parameters);
+	initButtons(&_aqualink_data);
 
-	int ch = 0;
+	// Process any options on the command line.
+	handleOptions();
 
-	while ((ch = getopt_long(argc, argv, aqualink_short_options, aqualink_long_options, NULL)) != -1)
-	{
-		// check to see if a single character or long option came through
-		switch (ch)
-		{
-		case 'd': // short option 'd' / long option "no-daemonize"
-			_config_parameters.deamonize = false;
-			break;
-
-		case 'c': // short option 'c' / long option "config-file"
-			cfgFile = optarg;
-			break;
-
-		case 'v': // short option 'v' / long option "debug"
-			cmdln_loglevel = LOG_DEBUG;
-			break;
-
-		case '0': // short option '0' / long option "vv"
-			cmdln_loglevel = LOG_DEBUG_SERIAL;
-			break;
-
-		case '1': // short option '1' / long option "rsd"
-			cmdln_debugRS485 = true;
-			break;
-
-		case '2': // short option '2' / long option "rsrd"
-			cmdln_lograwRS485 = true;
-			break;
-
-		case 'h': // short option 'h' / long option "help"
-		default:  // any unknown options
-			printHelp();
-			return EXIT_SUCCESS;;
-		}
-	}
+	// Finally, process any settings from the configuration file.
+	handleConfigurationFileOptions();
 
 	if (getuid() != 0)
 	{
+		//logMessage(LOG_ERR, "%s Can only be run as root\n", argv[0]);
 		fprintf(stderr, "ERROR %s Can only be run as root\n", argv[0]);
 		return EXIT_FAILURE;
-	}
-
-	initButtons(&_aqualink_data);
-
-	readCfg(&_config_parameters, &_aqualink_data, cfgFile);
-
-	if (cmdln_loglevel != -1)
-	{
-		_config_parameters.log_level = cmdln_loglevel;
-	}
-
-	if (cmdln_debugRS485)
-	{
-		_config_parameters.debug_RSProtocol_packets = true;
-	}
-
-	if (cmdln_lograwRS485)
-	{
-		_config_parameters.log_raw_RS_bytes = true;
 	}
 
 	if (_config_parameters.display_warnings_web == true)
@@ -952,6 +870,19 @@ unsigned char find_unused_address(const unsigned char* packet)
 
 void main_loop()
 {
+	assert(0 != _config_parameters);
+
+	const char* serial_port = cfg_getstr(_config_parameters, CONFIG_STR_SERIAL_PORT);
+	const char* socket_port = cfg_getstr(_config_parameters, CONFIG_STR_SOCKET_PORT);
+	const int device_id = cfg_getint(_config_parameters, CONFIG_INT_DEVICE_ID);
+	const bool pda_mode = cfg_getbool(_config_parameters, CONFIG_BOOL_PDA_MODE);
+	const bool read_all_devices = cfg_getbool(_config_parameters, CONFIG_BOOL_READ_ALL_DEVICES);
+	const bool force_swg = cfg_getbool(_config_parameters, CONFIG_BOOL_FORCE_SWG);
+	const int swg_zero_ignore = cfg_getint(_config_parameters, CONFIG_INT_SWG_ZERO_IGNORE);
+	const bool read_pentair_packets = cfg_getbool(_config_parameters, CONFIG_BOOL_READ_PENTAIR_PACKETS);
+	const bool debug_RSProtocol_packets = cfg_getbool(_config_parameters, CONFIG_BOOL_DEBUG_RSPROTOCOL_PACKETS);
+	const bool log_raw_RS_bytes = cfg_getbool(_config_parameters, CONFIG_BOOL_LOG_RAW_RS_BYTES);
+
 	struct mg_mgr mgr;
 	int rs_fd;
 	int packet_length;
@@ -991,27 +922,27 @@ void main_loop()
 		_aqualink_data.pumps[i].watts = TEMP_UNKNOWN;
 	}
 
-	if (_config_parameters.force_swg == true) {
+	if (force_swg == true) {
 		_aqualink_data.swg_percent = 0;
 		_aqualink_data.swg_ppm = 0;
 	}
 
-	if (!start_net_services(&mgr, &_aqualink_data, &_config_parameters))
+	if (!start_net_services(&mgr, &_aqualink_data))
 	{
-		logMessage(LOG_ERR, "Can not start webserver on port %s.\n", _config_parameters.socket_port);
+		logMessage(LOG_ERR, "Can not start webserver on port %s.\n", socket_port);
 		exit(EXIT_FAILURE);
 	}
 
-	startPacketLogger(_config_parameters.debug_RSProtocol_packets, _config_parameters.read_pentair_packets);
+	startPacketLogger(debug_RSProtocol_packets, read_pentair_packets);
 
 	signal(SIGINT, intHandler);
 	signal(SIGTERM, intHandler);
 
 	int blank_read = 0;
-	rs_fd = init_serial_port(_config_parameters.serial_port);
-	logMessage(LOG_NOTICE, "Listening to Aqualink RS8 on serial port: %s\n", _config_parameters.serial_port);
+	rs_fd = init_serial_port(serial_port);
+	logMessage(LOG_NOTICE, "Listening to Aqualink RS8 on serial port: %s\n", serial_port);
 
-	if (_config_parameters.pda_mode == true)
+	if (pda_mode == true)
 	{
 
 #ifdef BETA_PDA_AUTOLABEL
@@ -1022,7 +953,7 @@ void main_loop()
 
 	}
 
-	if (_config_parameters.device_id == 0x00) {
+	if (device_id == 0x00) {
 		logMessage(LOG_NOTICE, "Searching for valid ID, please configure one for faster startup\n");
 	}
 
@@ -1043,11 +974,11 @@ void main_loop()
 				logMessage(LOG_ERR, "Aqualink daemon looks like serial error, resetting.\n");
 				close_serial_port(rs_fd);
 			}
-			rs_fd = init_serial_port(_config_parameters.serial_port);
+			rs_fd = init_serial_port(serial_port);
 			blank_read = 0;
 		}
 
-		if (_config_parameters.log_raw_RS_bytes) {
+		if (log_raw_RS_bytes) {
 			packet_length = get_packet_lograw(rs_fd, packet_buffer);
 		}
 		else {
@@ -1064,9 +995,9 @@ void main_loop()
 		{
 			blank_read++;
 		}
-		else if (_config_parameters.device_id == 0x00) {
+		else if (device_id == 0x00) {
 			blank_read = 0;
-			_config_parameters.device_id = find_unused_address(packet_buffer);
+			device_id = find_unused_address(packet_buffer);
 			continue;
 		}
 		else if (packet_length > 0)
@@ -1074,10 +1005,11 @@ void main_loop()
 			blank_read = 0;
 			changed = false;
 
-			if (packet_length > 0 && packet_buffer[PKT_DEST] == _config_parameters.device_id)
+			if (packet_length > 0 && packet_buffer[PKT_DEST] == device_id)
 			{
 
-				if (getLogLevel() >= LOG_DEBUG) {
+				if (getLogLevel() >= LOG_DEBUG) 
+				{
 					logMessage(LOG_DEBUG, "RS received packet of type %s length %d\n", get_packet_type(packet_buffer, packet_length), packet_length);
 				}
 
@@ -1090,14 +1022,15 @@ void main_loop()
 				}
 
 				// If we are not in PDA or Simulator mode, just sent ACK & any CMD, else caculate the ACK.
-				if (!_aqualink_data.simulate_panel && !_config_parameters.pda_mode) {
+				if (!_aqualink_data.simulate_panel && !pda_mode) 
+				{
 					send_ack(rs_fd, pop_aq_cmd(&_aqualink_data));
 				}
 				else {
 					caculate_ack_packet(rs_fd, packet_buffer);
 				}
 			}
-			else if (packet_length > 0 && _config_parameters.read_all_devices == true)
+			else if (packet_length > 0 && read_all_devices == true)
 			{
 				if (packet_buffer[PKT_DEST] == DEV_MASTER && interestedInNextAck == true)
 				{
@@ -1116,14 +1049,14 @@ void main_loop()
 				else if (packet_buffer[PKT_DEST] == SWG_DEV_ID)
 				{
 					interestedInNextAck = true;
-					changed = processPacketToSWG(packet_buffer, packet_length, &_aqualink_data, _config_parameters.swg_zero_ignore);
+					changed = processPacketToSWG(packet_buffer, packet_length, &_aqualink_data, swg_zero_ignore);
 				}
 				else
 				{
 					interestedInNextAck = false;
 				}
 
-				if (_config_parameters.read_pentair_packets && getProtocolType(packet_buffer) == PENTAIR) {
+				if (read_pentair_packets && getProtocolType(packet_buffer) == PENTAIR) {
 					if (processPentairPacket(packet_buffer, packet_length, &_aqualink_data)) {
 						changed = true;
 					}

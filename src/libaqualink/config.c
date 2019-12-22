@@ -32,19 +32,97 @@
 //#include <sys/types.h>
 #include <unistd.h>
 #include <net/if.h>
+#include <confuse.h>
 
 #include "config.h"
 #include "utils.h"
-#include "aq_serial.h"
+#include "aq_serial.h" 
+#include "aqualink.h"  // Included for TEMP_UNKNOWN
+
+static cfg_opt_t _config_parameters_defaults[] =
+{
+    CFG_STR(CONFIG_STR_CONFIG_FILE, DEFAULT_CONFIG_FILE, CFGF_NONE),
+    CFG_STR(CONFIG_STR_SERIAL_PORT, DEFAULT_SERIALPORT, CFGF_NONE),
+    CFG_INT(CONFIG_INT_LOG_LEVEL, DEFAULT_LOG_LEVEL, CFGF_NONE),
+    CFG_STR(CONFIG_STR_SOCKET_PORT, DEFAULT_WEBPORT, CFGF_NONE),
+    CFG_STR(CONFIG_STR_WEB_DIRECTORY, DEFAULT_WEBROOT, CFGF_NONE),
+    CFG_INT(CONFIG_INT_DEVICE_ID, 0x0A, CFGF_NONE), // strtoul(DEFAULT_DEVICE_ID, NULL, 16)
+    CFG_BOOL("override_freeze_protect", FALSE, CFGF_NONE),
+
+    CFG_STR(CONFIG_STR_MQTT_DZ_SUB_TOPIC, DEFAULT_MQTT_DZ_OUT, CFGF_NONE),
+    CFG_STR(CONFIG_STR_MQTT_DZ_PUB_TOPIC, DEFAULT_MQTT_DZ_IN, CFGF_NONE),
+    CFG_STR(CONFIG_STR_MQTT_AQ_TOPIC, DEFAULT_MQTT_AQ_TP, CFGF_NONE),
+    CFG_STR(CONFIG_STR_MQTT_SERVER, DEFAULT_MQTT_SERVER, CFGF_NONE),
+    CFG_STR(CONFIG_STR_MQTT_USER, DEFAULT_MQTT_USER, CFGF_NONE),
+    CFG_STR(CONFIG_STR_MQTT_PASSWD, DEFAULT_MQTT_PASSWD, CFGF_NONE),
+    CFG_STR(CONFIG_STR_MQTT_ID, "", CFGF_NONE),
+
+    CFG_INT(CONFIG_INT_DZIDX_AIR_TEMP, TEMP_UNKNOWN, CFGF_NONE),
+    CFG_INT(CONFIG_INT_DZIDX_POOL_WATER_TEMP, TEMP_UNKNOWN, CFGF_NONE),
+    CFG_INT(CONFIG_INT_DZIDX_SPA_WATER_TEMP, TEMP_UNKNOWN, CFGF_NONE),
+    CFG_INT(CONFIG_INT_DZIDX_SWG_PERCENT, 0, CFGF_NONE),
+    CFG_INT(CONFIG_INT_DZIDX_SWG_PPM, 0, CFGF_NONE),
+    CFG_INT(CONFIG_INT_DZIDX_SWG_STATUS, 0, CFGF_NONE),
+
+    CFG_FLOAT(CONFIG_FLOAT_LIGHT_PROGRAMMING_MODE, 0.0f, CFGF_NONE),
+    CFG_INT(CONFIG_INT_LIGHT_PROGRAMMING_INITIAL_ON, 15, CFGF_NONE),
+    CFG_INT(CONFIG_INT_LIGHT_PROGRAMMING_INITIAL_OFF, 12, CFGF_NONE),
+    CFG_INT(CONFIG_INT_LIGHT_PROGRAMMING_BUTTON_POOL, TEMP_UNKNOWN, CFGF_NONE),
+    CFG_INT(CONFIG_INT_LIGHT_PROGRAMMING_BUTTON_SPA, TEMP_UNKNOWN, CFGF_NONE),
+	CFG_BOOL(CONFIG_BOOL_DAEMONIZE, true, CFGF_NONE),
+	CFG_STR("log_file", "\0", CFGF_NONE),
+    CFG_BOOL("pda_mode", false, CFGF_NONE),
+    CFG_BOOL("pda_sleep_mode", false, CFGF_NONE),
+    CFG_BOOL(CONFIG_BOOL_CONVERT_MQTT_TEMP, true, CFGF_NONE),
+    CFG_BOOL(CONFIG_BOOL_CONVERT_DZ_TEMP, true, CFGF_NONE),
+    CFG_BOOL(CONFIG_BOOL_REPORT_ZERO_POOL_TEMP, false, CFGF_NONE),
+    CFG_BOOL(CONFIG_BOOL_REPORT_ZERO_SPA_TEMP, false, CFGF_NONE),
+    CFG_BOOL(CONFIG_BOOL_READ_ALL_DEVICES, true, CFGF_NONE),
+    CFG_BOOL("use_panel_aux_labels", false, CFGF_NONE),
+    CFG_BOOL("debug_RSProtocol_packets", false, CFGF_NONE),
+    CFG_BOOL(CONFIG_BOOL_FORCE_SWG, false, CFGF_NONE),
+    CFG_INT(CONFIG_INT_SWG_ZERO_IGNORE, DEFAILT_SWG_ZERO_IGNORE_COUNT, CFGF_NONE),
+    CFG_BOOL(CONFIG_BOOL_READ_PENTAIR_PACKETS, false, CFGF_NONE),
+    CFG_BOOL("display_warnings_web", false, CFGF_NONE),
+    CFG_BOOL(CONFIG_BOOL_DEBUG_RSPROTOCOL_PACKETS, false, CFGF_NONE),
+    CFG_BOOL(CONFIG_BOOL_LOG_RAW_RS_BYTES, false, CFGF_NONE),
+
+    CFG_END()
+};
+
+void initParameters()
+{
+    _config_parameters = cfg_init(_config_parameters_defaults, CFGF_NONE);
+}
+
+void handleConfigurationFileOptions()
+{
+    const char* configuration_file = cfg_getstr(_config_parameters, CONFIG_STR_CONFIG_FILE);
+
+    if (0 == configuration_file)
+    {
+        logMessage(LOG_DEBUG, "No configuration file specified...using defaults\n");
+    }
+    else if (!cfg_parse(_config_parameters, configuration_file))
+    {
+        logMessage(LOG_DEBUG, "Failed to load specified configuration file...using defaults\n");
+    }
+    else
+    {
+        logMessage(LOG_DEBUG, "Loaded configuration from %s\n", configuration_file);
+    }
+}
 
 #define MAXCFGLINE 256
 
 char *generate_mqtt_id(char *buf, int len);
 
+#ifdef _OLD_CFG_REMOVE_ME
+
 /*
 * initialize data to default values
 */
-void init_parameters (struct aqconfig * parms)
+void initParameters (struct aqconfig * parms)
 {
   //char *p;
   parms->serial_port = DEFAULT_SERIALPORT;
@@ -94,6 +172,8 @@ void init_parameters (struct aqconfig * parms)
   generate_mqtt_id(parms->mqtt_ID, MQTT_ID_LEN);
 }
 
+#endif // _OLD_CFG_REMOVE_ME
+
 char *cleanalloc(char*str)
 {
   char *result;
@@ -104,42 +184,7 @@ char *cleanalloc(char*str)
   //printf("Result=%s\n",result);
   return result;
 }
-/*
-char *cleanallocindex(char*str, int index)
-{
-  char *result;
-  int i;
-  int found = 1;
-  int loc1=0;
-  int loc2=strlen(str);
-  
-  for(i=0;i<loc2;i++) {
-    if ( str[i] == ';' ) {
-      found++;
-      if (found == index)
-        loc1 = i;
-      else if (found == (index+1))
-        loc2 = i;
-    }
-  }
-  
-  if (found < index)
-    return NULL;
 
-  // Trim leading & trailing spaces
-  loc1++;
-  while(isspace(str[loc1])) loc1++;
-  loc2--;
-  while(isspace(str[loc2])) loc2--;
-  
-  // Allocate and copy
-  result = (char*)malloc(loc2-loc1+2*sizeof(char));
-  strncpy ( result, &str[loc1], loc2-loc1+1 );
-  result[loc2-loc1+1] = '\0';
-
-  return result;
-}
-*/
 // Find the first network interface with valid MAC and put mac address into buffer upto length
 bool mac(char *buf, int len)
 {
@@ -194,121 +239,8 @@ char *generate_mqtt_id(char *buf, int len) {
 
   return buf;
 }
-/*
-void readCfg_OLD (struct aqconfig *config_parameters, struct aqualinkdata *aqdata, char *cfgFile)
-{
-  FILE * fp ;
-  char bufr[MAXCFGLINE];
-  //const char delim[2] = ";";
-  //char *buf;
-  //int line = 0;
-  //int tokenindex = 0;
-  char *b_ptr;
 
-  if( (fp = fopen(cfgFile, "r")) != NULL){
-    while(! feof(fp)){
-      if (fgets(bufr, MAXCFGLINE, fp) != NULL)
-      {
-        b_ptr = &bufr[0];
-        char *indx;
-        // Eat leading whitespace
-        while(isspace(*b_ptr)) b_ptr++;
-        if ( b_ptr[0] != '\0' && b_ptr[0] != '#')
-        {
-          indx = strchr(b_ptr, '=');  
-          if ( indx != NULL) 
-          {
-            if (strncasecmp (b_ptr, "socket_port", 11) == 0) {
-              //config_parameters->socket_port = cleanint(indx+1);
-              config_parameters->socket_port = cleanalloc(indx+1);
-            } else if (strncasecmp (b_ptr, "serial_port", 11) == 0) {
-              config_parameters->serial_port = cleanalloc(indx+1);
-            } else if (strncasecmp (b_ptr, "log_level", 9) == 0) {
-              config_parameters->log_level = text2elevel(cleanalloc(indx+1));
-              // should fee mem here
-            } else if (strncasecmp (b_ptr, "device_id", 9) == 0) {
-              config_parameters->device_id = strtoul(cleanalloc(indx+1), NULL, 16);
-              // should fee mem here
-            } else if (strncasecmp (b_ptr, "web_directory", 13) == 0) {
-              config_parameters->web_directory = cleanalloc(indx+1);
-            } else if (strncasecmp (b_ptr, "log_file", 8) == 0) {
-              config_parameters->log_file = cleanalloc(indx+1);
-            } else if (strncasecmp (b_ptr, "mqtt_address", 12) == 0) {
-              config_parameters->mqtt_server = cleanalloc(indx+1);
-            } else if (strncasecmp (b_ptr, "mqtt_dz_sub_topic", 17) == 0) {
-              config_parameters->mqtt_dz_sub_topic = cleanalloc(indx+1);
-            } else if (strncasecmp (b_ptr, "mqtt_dz_pub_topic", 17) == 0) {
-              config_parameters->mqtt_dz_pub_topic = cleanalloc(indx+1);
-            } else if (strncasecmp (b_ptr, "mqtt_aq_topic", 13) == 0) {
-              config_parameters->mqtt_aq_topic = cleanalloc(indx+1);
-            } else if (strncasecmp (b_ptr, "mqtt_user", 9) == 0) {
-              config_parameters->mqtt_user = cleanalloc(indx+1);
-            } else if (strncasecmp (b_ptr, "mqtt_passwd", 11) == 0) {
-              config_parameters->mqtt_passwd = cleanalloc(indx+1);
-            } else if (strncasecmp (b_ptr, "air_temp_dzidx", 14) == 0) {
-              config_parameters->dzidx_air_temp = strtoul(indx+1, NULL, 10);
-            } else if (strncasecmp (b_ptr, "pool_water_temp_dzidx", 21) == 0) {
-              config_parameters->dzidx_pool_water_temp = strtoul(indx+1, NULL, 10);
-            } else if (strncasecmp (b_ptr, "spa_water_temp_dzidx", 20) == 0) {
-              config_parameters->dzidx_spa_water_temp = strtoul(indx+1, NULL, 10);
-            } else if (strncasecmp (b_ptr, "light_programming_mode", 21) == 0) {
-              config_parameters->light_programming_mode = atof(cleanalloc(indx+1)); // should free this
-            } else if (strncasecmp (b_ptr, "light_programming_initial_on", 28) == 0) {
-              config_parameters->light_programming_initial_on = strtoul(indx+1, NULL, 10);
-            } else if (strncasecmp (b_ptr, "light_programming_initial_off", 29) == 0) {
-              config_parameters->light_programming_initial_off = strtoul(indx+1, NULL, 10);
-            } else if (strncasecmp (b_ptr, "light_programming_button", 21) == 0) {
-              config_parameters->light_programming_button = strtoul(indx+1, NULL, 10) - 1;
-            } else if (strncasecmp (b_ptr, "SWG_percent_dzidx", 17) == 0) {
-              config_parameters->dzidx_swg_percent = strtoul(indx+1, NULL, 10);
-            } else if (strncasecmp (b_ptr, "SWG_PPM_dzidx", 13) == 0) {
-              config_parameters->dzidx_swg_ppm = strtoul(indx+1, NULL, 10);
-            } else if (strncasecmp (b_ptr, "SWG_Status_dzidx", 14) == 0) {
-              config_parameters->dzidx_swg_status = strtoul(indx+1, NULL, 10);
-            } else if (strncasecmp (b_ptr, "override_freeze_protect", 23) == 0) {
-              config_parameters->override_freeze_protect = text2bool(indx+1);
-            } else if (strncasecmp (b_ptr, "pda_mode", 8) == 0) {
-              config_parameters->pda_mode = text2bool(indx+1);
-              set_pda_mode(config_parameters->pda_mode);
-            } else if (strncasecmp (b_ptr, "convert_mqtt_temp_to_c", 22) == 0) {
-              config_parameters->convert_mqtt_temp = text2bool(indx+1);
-            } else if (strncasecmp (b_ptr, "convert_dz_temp_to_c", 21) == 0) {
-              config_parameters->convert_dz_temp = text2bool(indx+1);
-            } else if (strncasecmp (b_ptr, "flash_mqtt_buttons", 18) == 0) {
-              config_parameters->flash_mqtt_buttons = text2bool(indx+1);
-            } else if (strncasecmp (b_ptr, "report_zero_pool_temp", 21) == 0) {
-              config_parameters->report_zero_pool_temp = text2bool(indx+1);
-            } else if (strncasecmp (b_ptr, "report_zero_spa_temp", 20) == 0) {
-              config_parameters->report_zero_spa_temp = text2bool(indx+1);
-            } else if (strncasecmp (b_ptr, "report_zero_pool_temp", 21) == 0) {
-              config_parameters->report_zero_pool_temp = text2bool(indx+1);
-            } else if (strncasecmp (b_ptr, "button_", 7) == 0) {
-              int num = strtoul(b_ptr+7, NULL, 10) - 1;
-              //logMessage (LOG_DEBUG, "Button %d\n", strtoul(b_ptr+7, NULL, 10));
-              if (strncasecmp (b_ptr+9, "_label", 6) == 0) {
-                //logMessage (LOG_DEBUG, "     Label %s\n", cleanalloc(indx+1));
-                aqdata->aqbuttons[num].label = cleanalloc(indx+1);
-              } else if (strncasecmp (b_ptr+9, "_dzidx", 6) == 0) {
-                //logMessage (LOG_DEBUG, "     dzidx %d\n", strtoul(indx+1, NULL, 10));
-                aqdata->aqbuttons[num].dz_idx = strtoul(indx+1, NULL, 10);
-              } else if (strncasecmp (b_ptr+9, "_PDA_label", 10) == 0) {
-                //logMessage (LOG_DEBUG, "     dzidx %d\n", strtoul(indx+1, NULL, 10));
-                aqdata->aqbuttons[num].pda_label = cleanalloc(indx+1);
-              }
-            }
-          } 
-          //line++;
-        }
-      }
-    }
-    fclose(fp);
-  } else {
-    
-    displayLastSystemError(cfgFile);
-    exit (EXIT_FAILURE);
-  }
-}
-*/
+#ifdef _OLD_CFG_REMOVE_ME
 
 bool setConfigValue(struct aqconfig *config_parameters, struct aqualinkdata *aqdata, char *param, char *value) {
   bool rtn = false;
@@ -490,10 +422,6 @@ void readCfg (struct aqconfig *config_parameters, struct aqualinkdata *aqdata, c
 {
   FILE * fp ;
   char bufr[MAXCFGLINE];
-  //const char delim[2] = ";";
-  //char *buf;
-  //int line = 0;
-  //int tokenindex = 0;
   char *b_ptr;
 
   config_parameters->config_file = cleanalloc(cfgFile);
@@ -527,7 +455,7 @@ void readCfg (struct aqconfig *config_parameters, struct aqualinkdata *aqdata, c
 }
 
 
-
+#endif // _OLD_CFG_REMOVE_ME
 
 
 
@@ -559,42 +487,36 @@ char *errorlevel2text(int level)
   return "";
 }
 
-bool remount_root_ro(bool readonly) {
-  // NSF Check if config is RO_ROOT set
-  if (readonly) {} // Dummy to stop compile warnings.
-/*
-  if (readonly) {
-    logMessage(LOG_INFO, "reMounting root RO\n");
-    mount (NULL, "/", NULL, MS_REMOUNT | MS_RDONLY, NULL);
-    return true;
-  } else {
-    struct statvfs fsinfo;
-    statvfs("/", &fsinfo);
-    if ((fsinfo.f_flag & ST_RDONLY) == 0) // We are readwrite, ignore
-      return false;
-
-    logMessage(LOG_INFO, "reMounting root RW\n");
-    mount (NULL, "/", NULL, MS_REMOUNT, NULL);
-    return true;
-  }
-*/  
- return true;
+bool remount_root_ro(bool readonly) 
+{
+    UNREFERENCED_PARAMETER(readonly);
+	return true;
 }
 
 void writeCharValue (FILE *fp, char *msg, char *value)
 {
-  if (value == NULL)
-    fprintf(fp, "#%s = \n",msg);
-  else
-    fprintf(fp, "%s = %s\n", msg, value);
+    if (value == NULL) 
+    {
+        fprintf(fp, "#%s = \n", msg);
+    }
+    else
+    {
+        fprintf(fp, "%s = %s\n", msg, value);
+    }
 }
 void writeIntValue (FILE *fp, char *msg, int value)
 {
-  if (value <= 0)
-    fprintf(fp, "#%s = \n",msg);
-  else
-    fprintf(fp, "%s = %d\n", msg, value);
+    if (value <= 0) 
+    {
+        fprintf(fp, "#%s = \n", msg);
+    }
+    else
+    {
+        fprintf(fp, "%s = %d\n", msg, value);
+    }
 }
+
+#ifdef _OLD_CFG_REMOVE_ME
 
 bool writeCfg (struct aqconfig *config_parameters, struct aqualinkdata *aqdata)
 {
@@ -672,3 +594,5 @@ bool writeCfg (struct aqconfig *config_parameters, struct aqualinkdata *aqdata)
 
   return true;
 }
+
+#endif // _OLD_CFG_REMOVE_ME

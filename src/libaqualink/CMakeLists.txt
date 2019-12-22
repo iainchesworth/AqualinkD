@@ -48,7 +48,7 @@ target_include_directories(aqualink
     ${AQUALINKD_HEADERS_DIR}
 
   PUBLIC
-    # NOTHING HERE
+    ${LIBCONFUSE_INCLUDE_DIR}
 )
 
 install(TARGETS aqualink DESTINATION ${AQUALINKD_INSTALL_LIB_DIR})

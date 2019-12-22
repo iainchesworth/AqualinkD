@@ -3,13 +3,14 @@ project(aqualinkd C)
 
 set(SOURCE_FILES 
   aqualinkd.c
+  options.c
 )
 
 add_executable(aqualinkd ${SOURCE_FILES})
 
 target_include_directories(aqualinkd 
   PUBLIC
-    # NOTHING HERE
+    # Nothing here
 )
 
 target_link_directories(aqualinkd 
@@ -22,6 +23,7 @@ target_link_libraries(aqualinkd
     aqualink
   
   LINK_PUBLIC 
+    ${LIBCONFUSE_LIBRARY}
     ${LIBM_LIBRARIES}
 	Threads::Threads
 )
