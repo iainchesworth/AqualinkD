@@ -26,7 +26,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include "aq_serial.h"
+#include "serial/aq_serial.h"
 #include "utils.h"
 
 

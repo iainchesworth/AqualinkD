@@ -121,7 +121,7 @@ int build_aqualink_error_status_JSON(char* buffer, int size, char *msg)
 
 }
 
-char *LED2text(aqledstate state)
+char *LED2text(AQ_LED_States state)
 {
   switch (state) {
     case ON:
@@ -143,26 +143,9 @@ char *LED2text(aqledstate state)
   }
 }
 
-int LED2int(aqledstate state)
+int LED2int(AQ_LED_States state)
 {
-  switch (state) {
-    case ON:
-      return 1;
-    break;
-    case OFF:
-      return 0;
-    break;
-    case FLASH:
-      return 2;
-    break;
-    case ENABLE:
-      return 3;
-    break;
-    case LED_S_UNKNOWN:
-    default:
-      return 4;
-    break;
-  }
+    return (int)state;
 }
 
 #define AUX_BUFFER_SIZE 100

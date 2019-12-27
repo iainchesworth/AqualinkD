@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "aquapure.h"
-#include "aq_serial.h"
+#include "serial/aq_serial.h"
 #include "aqualink.h"
 #include "utils.h"
 #include "aq_mqtt.h"
@@ -67,7 +67,7 @@ bool processPacketFromSWG(const unsigned char* packet, int packet_length, struct
 }
 
 
-aqledstate get_swg_led_state(struct aqualinkdata* aqdata)
+AQ_LED_States get_swg_led_state(struct aqualinkdata* aqdata)
 {
 	switch (aqdata->ar_swg_status) {
 		// Level = (0=gray, 1=green, 2=yellow, 3=orange, 4=red)

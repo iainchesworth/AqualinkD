@@ -2,6 +2,7 @@
 #ifndef AQ_PROGRAMMER_H_
 #define AQ_PROGRAMMER_H_
 
+#include <threads.h>
 
 // need to get the C values from aqualink manual and add those just incase
 // someone has the controller set to C.
@@ -18,8 +19,8 @@
 #define SWG_PERCENT_MAX 101
 #define SWG_PERCENT_MIN 0
 
-#define PTHREAD_ARG 25
-#define LIGHT_MODE_BUFER PTHREAD_ARG
+#define THREAD_ARG 25
+#define LIGHT_MODE_BUFER THREAD_ARG
 
 typedef enum {
   AQP_NULL = -1,
@@ -43,9 +44,9 @@ typedef enum {
 } program_type;
 
 struct programmingThreadCtrl {
-  pthread_t thread_id;
+  thrd_t thread_id;
   //void *thread_args;
-  char thread_args[PTHREAD_ARG];
+  char thread_args[THREAD_ARG];
   struct aqualinkdata *aq_data;
 };
 

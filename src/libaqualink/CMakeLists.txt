@@ -1,10 +1,29 @@
 cmake_minimum_required(VERSION 3.12)
 project(aqualink C)
 
+find_package(Threads REQUIRED)
+find_package(libm REQUIRED)
+find_package(libmicrohttpd REQUIRED)
+
 set(SOURCE_FILES
   aq_programmer.c 
-  aq_serial.c 
-  aq_serial_statemachine.c
+  serial/aq_serial.c 
+  serial/aq_serial_message_ack.c
+  serial/aq_serial_message_probe.c
+  serial/aq_serial_message_status.c
+  serial/aq_serial_message_unknown.c
+  serial/aq_serial_messages.c
+  serial/aq_serial_statemachine.c
+  serial/aq_serial_threaded.c
+  threads/thread_utils.c
+  web/aq_web.c
+  web/aq_web_authentication.c
+  web/aq_web_connection_handler.c
+  web/aq_web_error_methodnotallowed.c
+  web/aq_web_error_notfound.c
+  web/aq_web_page_controller.c
+  web/aq_web_page_simple.c
+  web/aq_web_websockets.c
   aquapure.c 
   config.c 
   init_buttons.c 
@@ -46,9 +65,22 @@ target_compile_definitions(aqualink
 target_include_directories(aqualink
   PRIVATE
     ${AQUALINKD_HEADERS_DIR}
+    ${LIBMICROHTTPD_INCLUDE_DIRS}
 
   PUBLIC
-    # NOTHING HERE
+    # Nothing here
+)
+
+target_link_libraries(aqualink
+  PRIVATE 
+	Threads::Threads
+
+  INTERFACE
+    ${LIBM_LIBRARIES}
+    ${LIBMICROHTTPD_LIBRARIES}
+  
+  PUBLIC 
+    # Nothing here
 )
 
 install(TARGETS aqualink DESTINATION ${AQUALINKD_INSTALL_LIB_DIR})

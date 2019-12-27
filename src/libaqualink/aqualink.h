@@ -2,9 +2,9 @@
 #ifndef AQUALINK_H_
 #define AQUALINK_H_
 
-#include <pthread.h>
+#include <threads.h>
 #include <stdbool.h>
-#include "aq_serial.h"
+#include "serial/aq_serial.h"
 #include "aq_programmer.h"
 
 #define TIME_CHECK_INTERVAL  3600
@@ -37,7 +37,7 @@ enum {
 typedef struct aqualinkkey
 {
   //int number;
-  //aqledstate *state;
+  //AQ_LED_States *state;
   aqled *led;
   char *label;
   char *name;
@@ -50,9 +50,9 @@ typedef struct aqualinkkey
 //typedef struct ProgramThread ProgramThread;  // Definition is later
 
 struct programmingthread {
-  pthread_t *thread_id;
-  pthread_mutex_t thread_mutex;
-  pthread_cond_t thread_cond;
+  thrd_t *thread_id;
+  mtx_t thread_mutex;
+  cnd_t thread_cond;
   program_type ptype;
   //void *thread_args;
 };
@@ -116,8 +116,8 @@ struct aqualinkdata
   unsigned char ar_swg_status;
   int swg_delayed_percent;
   bool simulate_panel;
-  aqledstate service_mode_state;
-  aqledstate frz_protect_state;
+  AQ_LED_States service_mode_state;
+  AQ_LED_States frz_protect_state;
   unsigned char last_packet_type;
   pump_detail pumps[MAX_PUMPS];
   int open_websockets;

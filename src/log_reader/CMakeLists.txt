@@ -1,6 +1,8 @@
 ﻿cmake_minimum_required(VERSION 3.12)
 project(log_reader C)
 
+find_package(Threads REQUIRED)
+
 set(SOURCE_FILES 
   log_reader.c
 )

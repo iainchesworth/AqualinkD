@@ -7,9 +7,9 @@ typedef enum pda_type {
   PDA
 } pda_type;
 
-void *get_aqualink_PDA_device_status( void *ptr );
-void *set_aqualink_PDA_device_on_off( void *ptr );
-void *set_aqualink_PDA_wakeinit( void *ptr );
+int get_aqualink_PDA_device_status( void *ptr );
+int set_aqualink_PDA_device_on_off( void *ptr );
+int set_aqualink_PDA_wakeinit( void *ptr );
 
 bool set_PDA_aqualink_heater_setpoint(struct aqualinkdata *aq_data, int val, bool isPool);
 bool set_PDA_aqualink_SWG_setpoint(struct aqualinkdata *aq_data, int val);

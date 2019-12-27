@@ -1,6 +1,9 @@
 ﻿cmake_minimum_required(VERSION 3.12)
 project(serial_logger C)
 
+find_package(Threads REQUIRED)
+
+
 set(SOURCE_FILES 
   serial_logger.c
 )

@@ -21,7 +21,7 @@
 #include <string.h>
 
 #include "aqualink.h"
-#include "aq_serial.h"
+#include "serial/aq_serial.h"
 #include "pentair_messages.h"
 #include "utils.h"
 

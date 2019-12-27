@@ -35,7 +35,7 @@
 
 #include "config.h"
 #include "utils.h"
-#include "aq_serial.h"
+#include "serial/aq_serial.h"
 
 #define MAXCFGLINE 256
 

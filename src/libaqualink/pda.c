@@ -117,7 +117,7 @@ unsigned char get_last_pda_packet_type()
 
 void set_pda_led(struct aqualinkled *led, char state)
 {
-  aqledstate old_state = led->state;
+    AQ_LED_States old_state = led->state;
   if (state == 'N')
   {
     led->state = ON;

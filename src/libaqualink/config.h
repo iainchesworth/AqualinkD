@@ -3,7 +3,7 @@
 #define CONFIG_H_
 
 #include "utils.h"
-#include "aq_serial.h"
+#include "serial/aq_serial.h"
 #include "aqualink.h"
 
 

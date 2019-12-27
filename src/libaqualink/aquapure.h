@@ -9,6 +9,6 @@ bool processPacketToSWG(unsigned char *packet, int packet_length, struct aqualin
 bool processPacketFromSWG(const unsigned char *packet, int packet_length, struct aqualinkdata *aqdata);
 
 void get_swg_status_mqtt(struct aqualinkdata *aqdata, char *message, int *status, int *dzalert);
-aqledstate get_swg_led_state(struct aqualinkdata *aqdata);
+AQ_LED_States get_swg_led_state(struct aqualinkdata *aqdata);
 
 #endif // AQUAPURE_H_

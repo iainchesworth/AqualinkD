@@ -34,7 +34,8 @@
 #include "aqualink.h"
 #include "utils.h"
 #include "config.h"
-#include "aq_serial.h"
+#include "serial/aq_serial.h"
+#include "web/aq_web.h"
 #include "init_buttons.h"
 #include "aq_programmer.h"
 #include "net_services.h"
@@ -950,7 +951,64 @@ unsigned char find_unused_address(const unsigned char* packet)
 	return 0x00;
 }
 
+#include <threads.h>
+
+#include "serial/aq_serial_threaded.h"
+#include "threads/thread_utils.h"
+#include "web/aq_web.h"
+
 void main_loop()
+{
+	thrd_t serial_worker_thread, webserver_worker_thread, mqtt_worker_thread;
+	struct sigaction new_action, old_action;
+
+	// 1. Initialise configuration parameters and global data sets.
+	if (!initialise_termination_handler())
+	{
+		logMessage(LOG_ERR, "Aqualink.c | main_loop() | Failed to create worker synchronisation primitives\n");
+		exit(EXIT_FAILURE);
+	}
+
+	// 2. Create various "server" threads.
+	else if (thrd_success != thrd_create(&serial_worker_thread, &serial_thread, (void*)&wait_for_termination))
+	{
+		logMessage(LOG_ERR, "Aqualink.c | main_loop() | Failed to start serial worker thread\n");
+		exit(EXIT_FAILURE);
+	}
+	else if (thrd_success != thrd_create(&webserver_worker_thread, &webserver_thread, (void*)&wait_for_termination))
+	{
+		logMessage(LOG_ERR, "Aqualink.c | main_loop() | Failed to start web worker thread\n");
+		exit(EXIT_FAILURE);
+	}
+	else
+	{
+		logMessage(LOG_INFO, "Aqualink.c | main_loop() | Serial worker thread is running\n");
+	}
+
+	// 3. Go!
+	new_action.sa_handler = termination_handler;
+	sigemptyset(&new_action.sa_mask);
+	new_action.sa_flags = 0;
+
+	sigaction(SIGINT, NULL, &old_action);
+	if (SIG_IGN != old_action.sa_handler) { sigaction(SIGINT, &new_action, NULL); }
+	sigaction(SIGHUP, NULL, &old_action);
+	if (SIG_IGN != old_action.sa_handler) { sigaction(SIGHUP, &new_action, NULL); }
+	sigaction(SIGTERM, NULL, &old_action);
+	if (SIG_IGN != old_action.sa_handler) { sigaction(SIGTERM, &new_action, NULL); }
+
+	logMessage(LOG_INFO, "Aqualink.c | main_loop() | Running AqualinkD...\n");
+	if (!wait_for_termination())
+	{
+		logMessage(LOG_ERR, "Aqualink.c | main_loop() | Failed when attempting to block-wait for termination handler\n");
+	}
+
+	// 4. Clean up shop and terminate worker threads.
+	logMessage(LOG_INFO, "Aqualink.c | main_loop() | Cleaning up and closing down\n");
+	cleanup_termination_handler();
+}
+
+/*void main_loop()
 {
 	struct mg_mgr mgr;
 	int rs_fd;
@@ -1062,15 +1120,22 @@ void main_loop()
 		}
 		else if (packet_length == 0)
 		{
+			logMessage(LOG_DEBUG, "Blank packed received\n");
 			blank_read++;
 		}
 		else if (_config_parameters.device_id == 0x00) {
+			logMessage(LOG_DEBUG, "Finding an unused address\n");
 			blank_read = 0;
 			_config_parameters.device_id = find_unused_address(packet_buffer);
 			continue;
 		}
 		else if (packet_length > 0)
 		{
+			logMessage(LOG_DEBUG, "Processing packet\n");
+
+			///TEST TEST TEST
+			process_aqualink_packet(packet_buffer, packet_length);
+
 			blank_read = 0;
 			changed = false;
 
@@ -1083,7 +1148,7 @@ void main_loop()
 
 				// Process the packet. This includes deriving general status, and identifying
 				// warnings and errors.  If something changed, notify any listeners
-
+				
 				if (process_packet(packet_buffer, packet_length) != false)
 				{
 					changed = true;
@@ -1168,3 +1233,4 @@ void main_loop()
 	logMessage(LOG_NOTICE, "Exit!\n");
 	exit(EXIT_FAILURE);
 }
+*/

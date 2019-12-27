@@ -2,7 +2,9 @@
 #ifndef AQ_SERIAL_H_
 #define AQ_SERIAL_H_
 
+#include <stdbool.h>
 #include <termios.h>
+#include "aq_serial_types.h"
 
 #define CONNECTION_ERROR "ERROR No connection to RS control panel"
 
@@ -55,24 +57,6 @@
 #define AQ_MSGLEN      16
 #define AQ_MSGLONGLEN 128
 #define AQ_TADLEN      13
-
-/* COMMANDS */
-#define CMD_PROBE       0x00
-#define CMD_ACK         0x01
-#define CMD_STATUS      0x02
-#define CMD_MSG         0x03
-#define CMD_MSG_LONG    0x04
-
-/* ACK RETURN COMMANDS */
-#define ACK_NORMAL               0x00
-#define ACK_SCREEN_BUSY          0x01 // Seems to be busy but can cache a message,
-#define ACK_SCREEN_BUSY_BLOCK    0x03 // Seems to be don't send me shit.
-#define ACK_PDA                  0x40
-
-/* AquaRite commands */
-#define CMD_GETID       0x14  // May be remote control control
-#define CMD_PERCENT     0x11  // Set Percent
-#define CMD_PPM         0x16  // Received PPM
 
 /* PDA KEY CODES */  // Just plating at the moment
 #define KEY_PDA_UP     0x06
@@ -213,20 +197,7 @@ SPILLOVER IS DISABLED WHILE SPA IS ON
 #define SWG_STATUS_CHECK_PCB    0x80 // check PCB 0x80
 
 
-#define CMD_PDA_0x04           0x04 // No idea, might be building menu
-#define CMD_PDA_0x05           0x05 // No idea
-#define CMD_PDA_0x1B           0x1b
-#define CMD_PDA_HIGHLIGHT      0x08
-#define CMD_PDA_CLEAR          0x09
-#define CMD_PDA_SHIFTLINES     0x0F
-#define CMD_PDA_HIGHLIGHTCHARS 0x10
-
-/* iAqualink */
-#define CMD_IAQ_MSG           0x25
-#define CMD_IAQ_MENU_MSG      0x24
-
-
-
+/*
 typedef enum {
 	ON,
 	OFF,
@@ -234,12 +205,14 @@ typedef enum {
 	ENABLE,
 	LED_S_UNKNOWN
 } aqledstate;
+*/
 
 typedef struct aqualinkled
 {
 	//int number;
-	aqledstate state;
+	AQ_LED_States state;
 } aqled;
+
 
 // Battery Status Identifiers
 enum {

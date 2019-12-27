@@ -22,7 +22,7 @@
 #include <string.h>
 
 #include "pda_menu.h"
-#include "aq_serial.h"
+#include "serial/aq_serial.h"
 #include "utils.h"
 
 int _hlightindex = -1;
@@ -246,81 +246,3 @@ bool process_pda_menu_packet(unsigned char* packet, int length)
 
   return rtn;
 }
-
-
-#ifdef DO_NOT_COMPILE
-bool NEW_process_pda_menu_packet_NEW(unsigned char* packet, int length)
-{
-  bool rtn = true;
-  signed char first_line;
-  signed char last_line;
-  signed char line_shift;
-  signed char i;
-
-  pthread_mutex_lock(&_pda_menu_mutex);
-  switch (packet[PKT_CMD]) {
-    case CMD_STATUS:
-      pthread_cond_signal(&_pda_menu_update_complete_cond);
-    break;
-    case CMD_PDA_CLEAR:
-      rtn = pda_m_clear();
-    break;
-    case CMD_MSG_LONG:
-      if (packet[PKT_DATA] < 10) {
-        memset(_menu[packet[PKT_DATA]], 0, AQ_MSGLEN);
-        strncpy(_menu[packet[PKT_DATA]], (char*)packet+PKT_DATA+1, AQ_MSGLEN);
-        _menu[packet[PKT_DATA]][AQ_MSGLEN] = '\0';
-      }
-      if (packet[PKT_DATA] == _hlightindex) {
-          logMessage(LOG_DEBUG, "process_pda_menu_packet: hlight changed from shift or up/down value\n");
-          pthread_cond_signal(&_pda_menu_hlight_change_cond);
-      }
-      if (getLogLevel() >= LOG_DEBUG){print_menu();}
-      update_pda_menu_type();
-    break;
-    case CMD_PDA_HIGHLIGHT:
-      // when switching from hlight to hlightchars index 255 is sent to turn off hlight
-      if (packet[4] <= PDA_LINES) {
-        _hlightindex = packet[4];
-      } else {
-        _hlightindex = -1;
-      }
-      pthread_cond_signal(&_pda_menu_hlight_change_cond);
-      if (getLogLevel() >= LOG_DEBUG){print_menu();}
-    break;
-    case CMD_PDA_HIGHLIGHTCHARS:
-      if (packet[4] <= PDA_LINES) {
-        _hlightindex = packet[4];
-      } else {
-        _hlightindex = -1;
-      }
-      pthread_cond_signal(&_pda_menu_hlight_change_cond);
-      if (getLogLevel() >= LOG_DEBUG){print_menu();}
-    break;
-    case CMD_PDA_SHIFTLINES:
-      // press up from top - shift menu down by 1
-      //   PDA Shif | HEX: 0x10|0x02|0x62|0x0f|0x01|0x08|0x01|0x8d|0x10|0x03|
-      // press down from bottom - shift menu up by 1
-      //   PDA Shif | HEX: 0x10|0x02|0x62|0x0f|0x01|0x08|0xff|0x8b|0x10|0x03|
-      first_line = (signed char)(packet[4]);
-      last_line = (signed char)(packet[5]);
-      line_shift = (signed char)(packet[6]);
-      logMessage(LOG_DEBUG, "\n");
-      if (line_shift < 0) {
-          for (i = first_line-line_shift; i <= last_line; i++) {
-              memcpy(_menu[i+line_shift], _menu[i], AQ_MSGLEN+1);
-          }
-      } else {
-          for (i = last_line; i >= first_line+line_shift; i--) {
-              memcpy(_menu[i], _menu[i-line_shift], AQ_MSGLEN+1);
-          }
-      }
-      if (getLogLevel() >= LOG_DEBUG){print_menu();}
-    break;
-    
-  }
-  pthread_mutex_unlock(&_pda_menu_mutex);
-
-  return rtn;
-}
-#endif

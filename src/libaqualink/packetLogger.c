@@ -3,7 +3,7 @@
 #include <stdarg.h>
 
 #include "packetLogger.h"
-#include "aq_serial.h"
+#include "serial/aq_serial.h"
 #include "utils.h"
 
 static FILE *_packetLogFile = NULL;
