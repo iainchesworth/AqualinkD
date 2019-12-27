@@ -86,15 +86,11 @@ typedef struct pumpd
 
 struct aqualinkdata
 {
-  //char crap[AQ_MSGLEN];
   char version[AQ_MSGLEN*2];
   char date[AQ_MSGLEN];
   char time[AQ_MSGLEN];
-  //char datestr[DATE_STRING_LEN];
   char last_message[AQ_MSGLONGLEN+1]; // NSF just temp for PDA crap
-  //char *last_message; // Be careful using this, can get core dumps.
   char last_display_message[AQ_MSGLONGLEN+1];
-  //bool display_last_message;  
   unsigned char raw_status[AQ_PSTLEN];
   aqled aqualinkleds[TOTAL_LEDS];
   aqkey aqbuttons[TOTAL_BUTTONS];
@@ -104,11 +100,9 @@ struct aqualinkdata
   int temp_units;
   bool single_device; // Pool or Spa only, not Pool & Spa (Thermostat setpoints are different)
   int battery;
-  //int freeze_protection;
   int frz_protect_set_point;
   int pool_htr_set_point;
   int spa_htr_set_point;
-  //unsigned char aq_command;
   struct programmingthread active_thread;
   struct action unactioned;
   int swg_percent;
@@ -123,13 +117,10 @@ struct aqualinkdata
   int open_websockets;
   bool boost;
   char boost_msg[BOOST_MSGLEN];
-  //bool last_msg_was_status;
-  //bool ar_swg_connected;
   #ifdef AQ_DEBUG
   struct timespec last_active_time;
   struct timespec start_active_time;
   #endif
 };
-
 
 #endif 

@@ -5,6 +5,7 @@ find_package(Threads REQUIRED)
 
 set(SOURCE_FILES 
   aqualinkd.c
+  options.c
 )
 
 add_executable(aqualinkd ${SOURCE_FILES})
@@ -22,6 +23,9 @@ target_link_directories(aqualinkd
 target_link_libraries(aqualinkd 
   PRIVATE 
     aqualink
+  
+  LINK_PUBLIC 
+    ${LIBCONFUSE_LIBRARY}
     ${LIBM_LIBRARIES}
 	Threads::Threads
   

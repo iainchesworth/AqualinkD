@@ -80,7 +80,7 @@ target_link_libraries(aqualink
     ${LIBMICROHTTPD_LIBRARIES}
   
   PUBLIC 
-    # Nothing here
+    ${LIBCONFUSE_INCLUDE_DIR}
 )
 
 install(TARGETS aqualink DESTINATION ${AQUALINKD_INSTALL_LIB_DIR})
