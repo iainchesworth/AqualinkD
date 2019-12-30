@@ -32,7 +32,8 @@
 #include "mongoose.h"
 #include "aqualink.h"
 #include "utils.h"
-#include "config.h"
+#include "config/config.h"
+#include "config/config_helpers.h"
 #include "serial/aq_serial.h"
 #include "web/aq_web.h"
 #include "init_buttons.h"
@@ -48,7 +49,6 @@
 #include "options.h"
 
 static volatile bool _keepRunning = true;
-static struct aqconfig _config_parameters;
 static struct aqualinkdata _aqualink_data;
 
 void main_loop();
@@ -159,7 +159,7 @@ void queueGetProgramData()
 	aq_programmer(AQ_GET_POOL_SPA_HEATER_TEMPS, NULL, &_aqualink_data);
 	aq_programmer(AQ_GET_FREEZE_PROTECT_TEMP, NULL, &_aqualink_data);
 
-	if (_config_parameters.use_panel_aux_labels == true)
+	if (CFG_UsePanelAuxLabels() == true)
 	{
 		aq_programmer(AQ_GET_AUX_LABELS, NULL, &_aqualink_data);
 	}
@@ -216,7 +216,7 @@ void processMessage(char* message)
 		}
 
 		// If we have more than 40 messages without "SALT or AQUAPURE" assume SWG is off.
-		if (_config_parameters.read_all_devices == false)
+		if (CFG_ReadAllDevices() == false)
 		{
 			if (_aqualink_data.ar_swg_status == SWG_STATUS_ON && swg_msg_count++ > 40)
 			{
@@ -424,14 +424,14 @@ void processMessage(char* message)
 	{
 		logMessage(LOG_NOTICE, "Program data '%s'\n", msg);
 	}
-	else if (_config_parameters.override_freeze_protect == TRUE && strncasecmp(msg, "Press Enter* to override Freeze Protection with", 47) == 0)
+	else if (CFG_OverrideFreezeProtect() == TRUE && strncasecmp(msg, "Press Enter* to override Freeze Protection with", 47) == 0)
 	{
 		aq_send_cmd(KEY_ENTER);
 	}
 	else if ((msg[4] == ':') && (strncasecmp(msg, "AUX", 3) == 0))
 	{ // AUX label "AUX1:"
 		int labelid = atoi(msg + 3);
-		if (labelid > 0 && _config_parameters.use_panel_aux_labels == true)
+		if (labelid > 0 && CFG_UsePanelAuxLabels() == true)
 		{
 			// Aux1: on panel = Button 3 in aqualinkd  (button 2 in array)
 			logMessage(LOG_NOTICE, "AUX LABEL %d '%s'\n", labelid + 1, msg);
@@ -493,7 +493,7 @@ bool process_packet(unsigned char* packet, int length)
 	_aqualink_data.last_packet_type = packet[PKT_CMD];
 	rtn = true;
 
-	if (_config_parameters.pda_mode == true)
+	if (CFG_PdaMode() == true)
 	{
 		return process_pda_packet(packet, length);
 	}
@@ -678,14 +678,14 @@ int main(int argc, char* argv[])
 	setlogmask(LOG_UPTO(LOG_NOTICE));
 
 	// Initialize the daemon's parameters.
-	initParameters(&_config_parameters);
+	initialise_config_parameters();
 	initButtons(&_aqualink_data);
 
 	// Process any options on the command line.
-	handleOptions();
+	handleOptions(argc, argv);
 
 	// Finally, process any settings from the configuration file.
-	handleConfigurationFileOptions();
+	handle_configuration_file_options();
 
 	if (getuid() != 0)
 	{
@@ -694,53 +694,53 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	if (_config_parameters.display_warnings_web == true)
+	if (CFG_DisplayWarningsWeb() == true)
 	{
-		setLoggingPrms(_config_parameters.log_level, _config_parameters.deamonize, _config_parameters.log_file, _aqualink_data.last_display_message);
+		setLoggingPrms(CFG_LogLevel(), CFG_Daemonize(), CFG_LogFile(), _aqualink_data.last_display_message);
 	}
 	else
 	{
-		setLoggingPrms(_config_parameters.log_level, _config_parameters.deamonize, _config_parameters.log_file, NULL);
+		setLoggingPrms(CFG_LogLevel(), CFG_Daemonize(), CFG_LogFile(), NULL);
 	}
 
 	logMessage(LOG_NOTICE, "%s v%s\n", AQUALINKD_NAME, AQUALINKD_VERSION);
 
-	logMessage(LOG_NOTICE, "Config log_level         = %d\n", _config_parameters.log_level);
-	logMessage(LOG_NOTICE, "Config socket_port       = %s\n", _config_parameters.socket_port);
-	logMessage(LOG_NOTICE, "Config serial_port       = %s\n", _config_parameters.serial_port);
-	logMessage(LOG_NOTICE, "Config web_directory     = %s\n", _config_parameters.web_directory);
-	logMessage(LOG_NOTICE, "Config device_id         = 0x%02hhx\n", _config_parameters.device_id);
-	logMessage(LOG_NOTICE, "Config read_all_devices  = %s\n", bool2text(_config_parameters.read_all_devices));
-	logMessage(LOG_NOTICE, "Config use_aux_labels    = %s\n", bool2text(_config_parameters.use_panel_aux_labels));
-	logMessage(LOG_NOTICE, "Config override frz prot = %s\n", bool2text(_config_parameters.override_freeze_protect));
+	logMessage(LOG_NOTICE, "Config log_level         = %d\n", CFG_LogLevel());
+	logMessage(LOG_NOTICE, "Config socket_port       = %s\n", CFG_SocketPort());
+	logMessage(LOG_NOTICE, "Config serial_port       = %s\n", CFG_SerialPort());
+	logMessage(LOG_NOTICE, "Config web_directory     = %s\n", CFG_WebDirectory());
+	logMessage(LOG_NOTICE, "Config device_id         = 0x%02hhx\n", CFG_DeviceId());
+	logMessage(LOG_NOTICE, "Config read_all_devices  = %s\n", bool2text(CFG_ReadAllDevices()));
+	logMessage(LOG_NOTICE, "Config use_aux_labels    = %s\n", bool2text(CFG_UsePanelAuxLabels()));
+	logMessage(LOG_NOTICE, "Config override frz prot = %s\n", bool2text(CFG_OverrideFreezeProtect()));
 
 #ifndef MG_DISABLE_MQTT
-	logMessage(LOG_NOTICE, "Config mqtt_server       = %s\n", _config_parameters.mqtt_server);
-	logMessage(LOG_NOTICE, "Config mqtt_dz_sub_topic = %s\n", _config_parameters.mqtt_dz_sub_topic);
-	logMessage(LOG_NOTICE, "Config mqtt_dz_pub_topic = %s\n", _config_parameters.mqtt_dz_pub_topic);
-	logMessage(LOG_NOTICE, "Config mqtt_aq_topic     = %s\n", _config_parameters.mqtt_aq_topic);
-	logMessage(LOG_NOTICE, "Config mqtt_user         = %s\n", _config_parameters.mqtt_user);
-	logMessage(LOG_NOTICE, "Config mqtt_passwd       = %s\n", _config_parameters.mqtt_passwd);
-	logMessage(LOG_NOTICE, "Config mqtt_ID           = %s\n", _config_parameters.mqtt_ID);
-	logMessage(LOG_NOTICE, "Config idx water temp    = %d\n", _config_parameters.dzidx_air_temp);
-	logMessage(LOG_NOTICE, "Config idx pool temp     = %d\n", _config_parameters.dzidx_pool_water_temp);
-	logMessage(LOG_NOTICE, "Config idx spa temp      = %d\n", _config_parameters.dzidx_spa_water_temp);
-	logMessage(LOG_NOTICE, "Config idx SWG Percent   = %d\n", _config_parameters.dzidx_swg_percent);
-	logMessage(LOG_NOTICE, "Config idx SWG PPM       = %d\n", _config_parameters.dzidx_swg_ppm);
-	logMessage(LOG_NOTICE, "Config PDA Mode          = %s\n", bool2text(_config_parameters.pda_mode));
-	logMessage(LOG_NOTICE, "Config PDA Sleep Mode    = %s\n", bool2text(_config_parameters.pda_sleep_mode));
-	logMessage(LOG_NOTICE, "Config force SWG         = %s\n", bool2text(_config_parameters.force_swg));
+	logMessage(LOG_NOTICE, "Config mqtt_server       = %s\n", CFG_MqttServer());
+	logMessage(LOG_NOTICE, "Config mqtt_dz_sub_topic = %s\n", CFG_MqttDzSubTopic());
+	logMessage(LOG_NOTICE, "Config mqtt_dz_pub_topic = %s\n", CFG_MqttDzPubTopic());
+	logMessage(LOG_NOTICE, "Config mqtt_aq_topic     = %s\n", CFG_MqttAqTopic());
+	logMessage(LOG_NOTICE, "Config mqtt_user         = %s\n", CFG_MqttUser());
+	logMessage(LOG_NOTICE, "Config mqtt_passwd       = %s\n", CFG_MqttPassword());
+	logMessage(LOG_NOTICE, "Config mqtt_ID           = %s\n", CFG_MqttId());
+	logMessage(LOG_NOTICE, "Config idx water temp    = %d\n", CFG_DzIdxAirTemp());
+	logMessage(LOG_NOTICE, "Config idx pool temp     = %d\n", CFG_DzIdxPoolWaterTemp());
+	logMessage(LOG_NOTICE, "Config idx spa temp      = %d\n", CFG_DzIdxSpaWaterTemp());
+	logMessage(LOG_NOTICE, "Config idx SWG Percent   = %d\n", CFG_DzIdxSwgPercent());
+	logMessage(LOG_NOTICE, "Config idx SWG PPM       = %d\n", CFG_DzIdxSwgPpm());
+	logMessage(LOG_NOTICE, "Config PDA Mode          = %s\n", bool2text(CFG_PdaMode()));
+	logMessage(LOG_NOTICE, "Config PDA Sleep Mode    = %s\n", bool2text(CFG_PdaSleepMode()));
+	logMessage(LOG_NOTICE, "Config force SWG         = %s\n", bool2text(CFG_ForceSwg()));
 #endif // MG_DISABLE_MQTT
 
-	logMessage(LOG_NOTICE, "Config deamonize         = %s\n", bool2text(_config_parameters.deamonize));
-	logMessage(LOG_NOTICE, "Config log_file          = %s\n", _config_parameters.log_file);
-	logMessage(LOG_NOTICE, "Config light_pgm_mode    = %.2f\n", _config_parameters.light_programming_mode);
-	logMessage(LOG_NOTICE, "Debug RS485 protocol     = %s\n", bool2text(_config_parameters.debug_RSProtocol_packets));
-	logMessage(LOG_NOTICE, "Read Pentair Packets     = %s\n", bool2text(_config_parameters.read_pentair_packets));
-	logMessage(LOG_NOTICE, "Display warnings in web  = %s\n", bool2text(_config_parameters.display_warnings_web));
+	logMessage(LOG_NOTICE, "Config deamonize         = %s\n", bool2text(CFG_Daemonize()));
+	logMessage(LOG_NOTICE, "Config log_file          = %s\n", CFG_LogFile());
+	logMessage(LOG_NOTICE, "Config light_pgm_mode    = %.2f\n", CFG_LightProgrammingMode());
+	logMessage(LOG_NOTICE, "Debug RS485 protocol     = %s\n", bool2text(CFG_DebugRsProtocolPackets()));
+	logMessage(LOG_NOTICE, "Read Pentair Packets     = %s\n", bool2text(CFG_ReadPentairPackets()));
+	logMessage(LOG_NOTICE, "Display warnings in web  = %s\n", bool2text(CFG_DisplayWarningsWeb()));
 
-	if (_config_parameters.swg_zero_ignore > 0) {
-		logMessage(LOG_NOTICE, "Ignore SWG 0 msg count   = %d\n", _config_parameters.swg_zero_ignore);
+	if (CFG_SwgZeroIgnore() > 0) {
+		logMessage(LOG_NOTICE, "Ignore SWG 0 msg count   = %d\n", CFG_SwgZeroIgnore());
 	}
 
 	for (i = 0; i < TOTAL_BUTONS; i++)
@@ -751,10 +751,10 @@ int main(int argc, char* argv[])
 				sprintf(vsp, "0x%02hhx", _aqualink_data.pumps[j].pumpID);
 			}
 		}
-		if (!_config_parameters.pda_mode) {
+		if (!CFG_PdaMode()) {
 			logMessage(LOG_NOTICE, "Config BTN %-13s = label %-15s | VSP ID %-4s  | dzidx %d | %s\n",
 				_aqualink_data.aqbuttons[i].name, _aqualink_data.aqbuttons[i].label, vsp, _aqualink_data.aqbuttons[i].dz_idx,
-				(i > 0 && (i == _config_parameters.light_programming_button_pool || i == _config_parameters.light_programming_button_spa) ? "Programable" : ""));
+				(i > 0 && (i == CFG_LightProgrammingButtonPool() || i == CFG_LightProgrammingButtonSpa()) ? "Programable" : ""));
 		}
 		else {
 			logMessage(LOG_NOTICE, "Config BTN %-13s = label %-15s | VSP ID %-4s  | PDAlabel %-15s | dzidx %d\n",
@@ -763,7 +763,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	if (_config_parameters.deamonize == true)
+	if (CFG_Daemonize() == true)
 	{
 		char pidfile[256];
 		sprintf(pidfile, "%s/%s.pid", "/run", basename(argv[0]));
@@ -785,8 +785,8 @@ void caculate_ack_packet(int rs_fd, unsigned char* packet_buffer)
 	static int delayAckCnt = 0;
 
 	// if PDA mode, should we sleep? if not Can only send command to status message on PDA.
-	if (_config_parameters.pda_mode == true) {
-		if (_config_parameters.pda_sleep_mode && pda_shouldSleep()) {
+	if (CFG_PdaMode() == true) {
+		if (CFG_PdaSleepMode() && pda_shouldSleep()) {
 			logMessage(LOG_DEBUG, "PDA Aqualink daemon in sleep mode\n");
 			return;
 		}

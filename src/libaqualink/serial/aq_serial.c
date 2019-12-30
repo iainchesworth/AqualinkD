@@ -26,11 +26,11 @@
 #include <stdbool.h>
 #include <assert.h>
 
+#include "config/config.h"
 #include "aq_serial.h"
 #include "aq_serial_statemachine.h"
 #include "aq_serial_types.h"
 #include "utils.h"
-#include "config.h"
 #include "packetLogger.h"
 
 static struct termios _oldtio;
@@ -57,7 +57,9 @@ const char* get_packet_type(unsigned char* packet, int length)
 	static char buf[15];
 
 	if (length <= 0)
+	{
 		return "";
+	}
 
 	switch (packet[PKT_CMD]) {
 	case CMD_ACK:
@@ -116,26 +118,31 @@ const char* get_packet_type(unsigned char* packet, int length)
 }
 
 // Generate and return checksum of packet.
-int generate_checksum(unsigned char* packet, int length)
+int generate_checksum(const unsigned char* packet, int length)
 {
 	int i, sum, n;
 
 	n = length - 3;
 	sum = 0;
 	for (i = 0; i < n; i++)
+	{
 		sum += (int)packet[i];
+	}
+
 	return(sum & 0x0ff);
 }
 
-bool check_jandy_checksum(unsigned char* packet, int length)
+bool check_jandy_checksum(const unsigned char* packet, int length)
 {
 	if (generate_checksum(packet, length) == packet[length - 3])
+	{
 		return true;
+	}
 
 	return false;
 }
 
-bool check_pentair_checksum(unsigned char* packet, int length)
+bool check_pentair_checksum(const unsigned char* packet, int length)
 {
 	int i, sum, n;
 	n = packet[8] + 9;
@@ -146,7 +153,9 @@ bool check_pentair_checksum(unsigned char* packet, int length)
 
 	// Check against calculated length
 	if (sum == (packet[length - 2] * 256 + packet[length - 1]))
+	{
 		return true;
+	}
 
 	// Check against actual # length
 	if (sum == (packet[n] * 256 + packet[n + 1])) {
@@ -162,20 +171,28 @@ void generate_pentair_checksum(unsigned char* packet, int length)
 	int i, sum, n;
 	n = packet[8] + 9;
 	sum = 0;
-	for (i = 3; i < n; i++) {
+
+	for (i = 3; i < n; i++) 
+	{
 		sum += (int)packet[i];
 	}
 
 	packet[n + 1] = (unsigned char)(sum & 0xFF);        // Low Byte
-	packet[n] = (unsigned char)((sum >> 8) & 0xFF); // High Byte
+	packet[n] = (unsigned char)((sum >> 8) & 0xFF);		// High Byte
 
 }
 
-protocolType getProtocolType(unsigned char* packet) {
+protocolType getProtocolType(const unsigned char* packet) 
+{
 	if (packet[0] == DLE)
+	{
 		return JANDY;
-	else if (packet[0] == PP1)
+	}
+	
+	if (packet[0] == PP1)
+	{
 		return PENTAIR;
+	}
 
 	return P_UNKNOWN;
 }

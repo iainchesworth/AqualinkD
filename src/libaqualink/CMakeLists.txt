@@ -2,11 +2,18 @@ cmake_minimum_required(VERSION 3.12)
 project(aqualink C)
 
 find_package(Threads REQUIRED)
+find_package(libjson-c REQUIRED)
 find_package(libm REQUIRED)
 find_package(libmicrohttpd REQUIRED)
 
 set(SOURCE_FILES
   aq_programmer.c 
+  config/config.c
+  config/config_helpers.c
+  config/config_private.c
+  json/json_messages.c
+  json/json_serializer.c
+  json/json_string_utils.c
   serial/aq_serial.c 
   serial/aq_serial_message_ack.c
   serial/aq_serial_message_probe.c
@@ -25,9 +32,7 @@ set(SOURCE_FILES
   web/aq_web_page_simple.c
   web/aq_web_websockets.c
   aquapure.c 
-  config.c 
   init_buttons.c 
-  json_messages.c 
   net_services.c 
   pda.c 
   pda_aq_programmer.c 
@@ -65,10 +70,11 @@ target_compile_definitions(aqualink
 target_include_directories(aqualink
   PRIVATE
     ${AQUALINKD_HEADERS_DIR}
+    ${LIBJSON_C_INCLUDE_DIRS}
     ${LIBMICROHTTPD_INCLUDE_DIRS}
 
   PUBLIC
-    # Nothing here
+    ${LIBCONFUSE_INCLUDE_DIR}
 )
 
 target_link_libraries(aqualink
@@ -76,11 +82,13 @@ target_link_libraries(aqualink
 	Threads::Threads
 
   INTERFACE
+    ${LIBCONFUSE_LIBRARY}
+    ${LIBJSON_C_LIBRARIES}
     ${LIBM_LIBRARIES}
     ${LIBMICROHTTPD_LIBRARIES}
   
   PUBLIC 
-    ${LIBCONFUSE_INCLUDE_DIR}
+    # Nothing here
 )
 
 install(TARGETS aqualink DESTINATION ${AQUALINKD_INSTALL_LIB_DIR})

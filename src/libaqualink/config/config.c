@@ -14,6 +14,9 @@
  *  https://github.com/sfeakes/aqualinkd
  */
 
+#include "config.h"
+#include "config_private.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -23,21 +26,14 @@
 #include <libgen.h>
 
 #include <sys/ioctl.h>
-//#include <sys/socket.h>
-//#include <sys/time.h>
-//#include <syslog.h>
-//#include <unistd.h>
 #include <netdb.h>
-//#include <linux/if.h>
-//#include <sys/types.h>
 #include <unistd.h>
 #include <net/if.h>
 #include <confuse.h>
 
-#include "config.h"
-#include "utils.h"
-#include "aq_serial.h" 
+#include "serial/aq_serial.h"
 #include "aqualink.h"  // Included for TEMP_UNKNOWN
+#include "utils.h"
 
 static cfg_opt_t _config_parameters_defaults[] =
 {
@@ -47,7 +43,7 @@ static cfg_opt_t _config_parameters_defaults[] =
     CFG_STR(CONFIG_STR_SOCKET_PORT, DEFAULT_WEBPORT, CFGF_NONE),
     CFG_STR(CONFIG_STR_WEB_DIRECTORY, DEFAULT_WEBROOT, CFGF_NONE),
     CFG_INT(CONFIG_INT_DEVICE_ID, 0x0A, CFGF_NONE), // strtoul(DEFAULT_DEVICE_ID, NULL, 16)
-    CFG_BOOL("override_freeze_protect", FALSE, CFGF_NONE),
+    CFG_BOOL(CONFIG_BOOL_OVERRIDE_FREEZE_PROTECT, FALSE, CFGF_NONE),
 
     CFG_STR(CONFIG_STR_MQTT_DZ_SUB_TOPIC, DEFAULT_MQTT_DZ_OUT, CFGF_NONE),
     CFG_STR(CONFIG_STR_MQTT_DZ_PUB_TOPIC, DEFAULT_MQTT_DZ_IN, CFGF_NONE),
@@ -70,32 +66,34 @@ static cfg_opt_t _config_parameters_defaults[] =
     CFG_INT(CONFIG_INT_LIGHT_PROGRAMMING_BUTTON_POOL, TEMP_UNKNOWN, CFGF_NONE),
     CFG_INT(CONFIG_INT_LIGHT_PROGRAMMING_BUTTON_SPA, TEMP_UNKNOWN, CFGF_NONE),
 	CFG_BOOL(CONFIG_BOOL_DAEMONIZE, true, CFGF_NONE),
-	CFG_STR("log_file", "\0", CFGF_NONE),
-    CFG_BOOL("pda_mode", false, CFGF_NONE),
-    CFG_BOOL("pda_sleep_mode", false, CFGF_NONE),
+	CFG_STR(CONFIG_STR_LOG_FILE, "\0", CFGF_NONE),
+    CFG_BOOL(CONFIG_BOOL_PDA_MODE, false, CFGF_NONE),
+    CFG_BOOL(CONFIG_BOOL_PDA_SLEEP_MODE, false, CFGF_NONE),
     CFG_BOOL(CONFIG_BOOL_CONVERT_MQTT_TEMP, true, CFGF_NONE),
     CFG_BOOL(CONFIG_BOOL_CONVERT_DZ_TEMP, true, CFGF_NONE),
     CFG_BOOL(CONFIG_BOOL_REPORT_ZERO_POOL_TEMP, false, CFGF_NONE),
     CFG_BOOL(CONFIG_BOOL_REPORT_ZERO_SPA_TEMP, false, CFGF_NONE),
     CFG_BOOL(CONFIG_BOOL_READ_ALL_DEVICES, true, CFGF_NONE),
-    CFG_BOOL("use_panel_aux_labels", false, CFGF_NONE),
-    CFG_BOOL("debug_RSProtocol_packets", false, CFGF_NONE),
+    CFG_BOOL(CONFIG_BOOL_USE_PANEL_AUX_LABELS, false, CFGF_NONE),
     CFG_BOOL(CONFIG_BOOL_FORCE_SWG, false, CFGF_NONE),
     CFG_INT(CONFIG_INT_SWG_ZERO_IGNORE, DEFAILT_SWG_ZERO_IGNORE_COUNT, CFGF_NONE),
     CFG_BOOL(CONFIG_BOOL_READ_PENTAIR_PACKETS, false, CFGF_NONE),
-    CFG_BOOL("display_warnings_web", false, CFGF_NONE),
+    CFG_BOOL(CONFIG_BOOL_DISPLAY_WARNINGS_WEB, false, CFGF_NONE),
     CFG_BOOL(CONFIG_BOOL_DEBUG_RSPROTOCOL_PACKETS, false, CFGF_NONE),
     CFG_BOOL(CONFIG_BOOL_LOG_RAW_RS_BYTES, false, CFGF_NONE),
 
     CFG_END()
 };
 
-void initParameters()
+// This is the "global" configuration parameter store (initialised in config.c).
+cfg_t* _config_parameters = 0;
+
+void initialise_config_parameters()
 {
     _config_parameters = cfg_init(_config_parameters_defaults, CFGF_NONE);
 }
 
-void handleConfigurationFileOptions()
+void handle_configuration_file_options()
 {
     const char* configuration_file = cfg_getstr(_config_parameters, CONFIG_STR_CONFIG_FILE);
 
@@ -122,7 +120,7 @@ char *generate_mqtt_id(char *buf, int len);
 /*
 * initialize data to default values
 */
-void initParameters (struct aqconfig * parms)
+void initialise_parameters (struct aqconfig * parms)
 {
   //char *p;
   parms->serial_port = DEFAULT_SERIALPORT;

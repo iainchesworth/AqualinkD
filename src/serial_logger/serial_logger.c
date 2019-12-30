@@ -25,8 +25,7 @@
 
 #include <fcntl.h>
 
-
-#include "aq_serial.h"
+#include "serial/aq_serial.h"
 #include "utils.h"
 
 #define SLOG_MAX 80

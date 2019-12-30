@@ -14,10 +14,10 @@
  *  https://github.com/sfeakes/aqualinkd
  */
 
-#include "config.h"
+#include "config/config.h"
+#include "serial/aq_serial.h"
 #include "domoticz.h"
 #include "aqualink.h"
-#include "aq_serial.h"
 
 /*
 *  Link LED numbers to buttons, this is valid for RS8 and below, RS10 and above are different

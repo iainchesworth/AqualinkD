@@ -25,7 +25,7 @@
 
 typedef void (*worker_termination_handler_t)();	
 
-void setLoggingPrms(int level, bool deamonized, char* log_file, char* error_messages);
+void setLoggingPrms(int level, bool deamonized, const char* log_file, const char* error_messages);
 int getLogLevel();
 void daemonise(char* pidFile, void (*main_function)(void));
 void displayLastSystemError(const char* on_what);

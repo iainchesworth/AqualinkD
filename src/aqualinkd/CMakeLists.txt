@@ -24,13 +24,10 @@ target_link_libraries(aqualinkd
   PRIVATE 
     aqualink
   
-  LINK_PUBLIC 
+ PUBLIC 
     ${LIBCONFUSE_LIBRARY}
     ${LIBM_LIBRARIES}
 	Threads::Threads
-  
-  PUBLIC 
-    # Nothing here
 )
 
 install(TARGETS aqualinkd DESTINATION ${AQUALINKD_INSTALL_BIN_DIR})

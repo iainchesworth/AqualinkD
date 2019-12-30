@@ -54,7 +54,7 @@ static int _cfg_log_level;
 
 static char* _loq_display_message = NULL;
 
-void setLoggingPrms(int level, bool deamonized, char* log_file, char* error_messages)
+void setLoggingPrms(int level, bool deamonized, const char* log_file, const char* error_messages)
 {
 	_log_level = level;
 	_daemonise = deamonized;

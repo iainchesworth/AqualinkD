@@ -25,12 +25,14 @@
 
 #include "mongoose.h"
 
+#include "config/config_helpers.h"
+#include "json/json_messages.h"
+#include "json/json_string_utils.h"
+#include "serial/aq_serial_types.h"
 #include "aqualink.h"
-#include "config.h"
 #include "aq_programmer.h"
 #include "utils.h"
 #include "net_services.h"
-#include "json_messages.h"
 #include "domoticz.h"
 #include "aq_mqtt.h"
 #include "pda.h"
@@ -131,7 +133,7 @@ void broadcast_aqualinkstate(struct mg_connection* nc)
 	}
 }
 
-void send_mqtt(struct mg_connection* nc, char* topic, char* message)
+void send_mqtt(struct mg_connection* nc, const char* topic, char* message)
 {
 	static uint16_t msg_id = 0;
 
@@ -155,11 +157,10 @@ void send_mqtt(struct mg_connection* nc, char* topic, char* message)
 
 void send_domoticz_mqtt_state_msg(struct mg_connection* nc, int idx, int value)
 {
-	assert(0 != _config_parameters);
 	assert(0 != nc);
 
 	char mqtt_msg[JSON_MQTT_MSG_SIZE];
-	const char* mqtt_dz_pub_topic = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_DZ_PUB_TOPIC);
+	const char* mqtt_dz_pub_topic = CFG_MqttDzPubTopic();
 
 	if (idx <= 0)
 	{
@@ -174,13 +175,12 @@ void send_domoticz_mqtt_state_msg(struct mg_connection* nc, int idx, int value)
 
 void send_domoticz_mqtt_temp_msg(struct mg_connection* nc, int idx, int value)
 {
-	assert(0 != _config_parameters);
 	assert(0 != nc);
 
 	char mqtt_msg[JSON_MQTT_MSG_SIZE];
 
-	const char* mqtt_dz_pub_topic = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_DZ_PUB_TOPIC);
-	const bool convert_dz_temp = cfg_getbool(_config_parameters, CONFIG_BOOL_CONVERT_DZ_TEMP);
+	const char* mqtt_dz_pub_topic = CFG_MqttDzPubTopic();
+	const bool convert_dz_temp = CFG_ConvertDzTemp();
 
 	if (idx <= 0) 
 	{
@@ -194,11 +194,10 @@ void send_domoticz_mqtt_temp_msg(struct mg_connection* nc, int idx, int value)
 }
 void send_domoticz_mqtt_numeric_msg(struct mg_connection* nc, int idx, int value)
 {
-	assert(0 != _config_parameters);
 	assert(0 != nc);
 
 	char mqtt_msg[JSON_MQTT_MSG_SIZE];
-	const char* mqtt_dz_pub_topic = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_DZ_PUB_TOPIC);
+	const char* mqtt_dz_pub_topic = CFG_MqttDzPubTopic();
 
 	if (idx <= 0)
 	{
@@ -212,11 +211,10 @@ void send_domoticz_mqtt_numeric_msg(struct mg_connection* nc, int idx, int value
 }
 void send_domoticz_mqtt_status_message(struct mg_connection* nc, int idx, int value, char* svalue)
 {
-	assert(0 != _config_parameters);
 	assert(0 != nc);
 
 	char mqtt_msg[JSON_MQTT_MSG_SIZE];
-	const char* mqtt_dz_pub_topic = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_DZ_PUB_TOPIC);
+	const char* mqtt_dz_pub_topic = CFG_MqttDzPubTopic();
 
 	if (idx <= 0)
 	{
@@ -229,16 +227,15 @@ void send_domoticz_mqtt_status_message(struct mg_connection* nc, int idx, int va
 	}
 }
 
-void send_mqtt_state_msg(struct mg_connection* nc, char* dev_name, aqledstate state)
+void send_mqtt_state_msg(struct mg_connection* nc, char* dev_name, AQ_LED_States state)
 {
-	assert(0 != _config_parameters);
 	assert(0 != nc);
 	assert(0 != dev_name);
 
 	const unsigned int MQTT_PUB_TOPIC_LEN = 250;
 	static char mqtt_pub_topic[MQTT_PUB_TOPIC_LEN];
 
-	const char* mqtt_aq_topic = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_AQ_TOPIC);
+	const char* mqtt_aq_topic = CFG_MqttAqTopic();
 
 	snprintf(mqtt_pub_topic, MQTT_PUB_TOPIC_LEN, "%s/%s/delay", mqtt_aq_topic, dev_name);
 	send_mqtt(nc, mqtt_pub_topic, (state == FLASH ? MQTT_ON : MQTT_OFF));
@@ -249,7 +246,6 @@ void send_mqtt_state_msg(struct mg_connection* nc, char* dev_name, aqledstate st
 
 void send_mqtt_aux_msg(struct mg_connection* nc, char* dev_name, char* dev_topic, int value)
 {
-	assert(0 != _config_parameters);
 	assert(0 != nc);
 	assert(0 != dev_name);
 	assert(0 != dev_topic);
@@ -259,7 +255,7 @@ void send_mqtt_aux_msg(struct mg_connection* nc, char* dev_name, char* dev_topic
 	const unsigned int MSG_LEN = 10;
 	static char msg[MSG_LEN];
 
-	const char* mqtt_aq_topic = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_AQ_TOPIC);
+	const char* mqtt_aq_topic = CFG_MqttAqTopic();
 
 	snprintf(msg, MSG_LEN, "%d", value);
 	snprintf(mqtt_pub_topic, MQTT_PUB_TOPIC_LEN, "%s/%s%s", mqtt_aq_topic, dev_name, dev_topic);
@@ -267,16 +263,15 @@ void send_mqtt_aux_msg(struct mg_connection* nc, char* dev_name, char* dev_topic
 	send_mqtt(nc, mqtt_pub_topic, msg);
 }
 
-void send_mqtt_heater_state_msg(struct mg_connection* nc, char* dev_name, aqledstate state)
+void send_mqtt_heater_state_msg(struct mg_connection* nc, char* dev_name, AQ_LED_States state)
 {
-	assert(0 != _config_parameters);
 	assert(0 != nc);
 	assert(0 != dev_name);
 	
 	const unsigned int MQTT_PUB_TOPIC_LEN = 250;
 	static char mqtt_pub_topic[MQTT_PUB_TOPIC_LEN];
 
-	const char* mqtt_aq_topic = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_AQ_TOPIC);
+	const char* mqtt_aq_topic = CFG_MqttAqTopic();
 
 	snprintf(mqtt_pub_topic, MQTT_PUB_TOPIC_LEN, "%s/%s", mqtt_aq_topic, dev_name);
 
@@ -297,7 +292,6 @@ void send_mqtt_heater_state_msg(struct mg_connection* nc, char* dev_name, aqleds
 // NSF need to change this function to the _new once finished.
 void send_mqtt_temp_msg(struct mg_connection* nc, char* dev_name, long value)
 {
-	assert(0 != _config_parameters);
 	assert(0 != nc);
 	assert(0 != dev_name);
 
@@ -306,8 +300,8 @@ void send_mqtt_temp_msg(struct mg_connection* nc, char* dev_name, long value)
 	const unsigned int DEGC_LEN = 10;
 	static char degC[DEGC_LEN];
 
-	const char* mqtt_aq_topic = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_AQ_TOPIC);
-	const bool convert_mqtt_temp = cfg_getbool(_config_parameters, CONFIG_BOOL_CONVERT_MQTT_TEMP);
+	const char* mqtt_aq_topic = CFG_MqttAqTopic();
+	const bool convert_mqtt_temp = CFG_ConvertMqttTemp();
 	
 	snprintf(degC, DEGC_LEN, "%.2f", (_aqualink_data->temp_units == FAHRENHEIT && convert_mqtt_temp) ? degFtoC(value) : value);
 	snprintf(mqtt_pub_topic, MQTT_PUB_TOPIC_LEN, "%s/%s", mqtt_aq_topic, dev_name);
@@ -317,7 +311,6 @@ void send_mqtt_temp_msg(struct mg_connection* nc, char* dev_name, long value)
 
 void send_mqtt_setpoint_msg(struct mg_connection* nc, char* dev_name, long value)
 {
-	assert(0 != _config_parameters);
 	assert(0 != nc);
 	assert(0 != dev_name);
 
@@ -326,8 +319,8 @@ void send_mqtt_setpoint_msg(struct mg_connection* nc, char* dev_name, long value
 	const unsigned int DEGC_LEN = 10;
 	static char degC[DEGC_LEN];
 
-	const char* mqtt_aq_topic = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_AQ_TOPIC);
-	const bool convert_mqtt_temp = cfg_getbool(_config_parameters, CONFIG_BOOL_CONVERT_MQTT_TEMP);
+	const char* mqtt_aq_topic = CFG_MqttAqTopic();
+	const bool convert_mqtt_temp = CFG_ConvertMqttTemp();
 
 	snprintf(degC, DEGC_LEN, "%.2f", (_aqualink_data->temp_units == FAHRENHEIT && convert_mqtt_temp) ? degFtoC(value) : value);
 	snprintf(mqtt_pub_topic, MQTT_PUB_TOPIC_LEN, "%s/%s/setpoint", mqtt_aq_topic, dev_name);
@@ -335,7 +328,6 @@ void send_mqtt_setpoint_msg(struct mg_connection* nc, char* dev_name, long value
 }
 void send_mqtt_numeric_msg(struct mg_connection* nc, char* dev_name, int value)
 {
-	assert(0 != _config_parameters);
 	assert(0 != nc);
 	assert(0 != dev_name);
 
@@ -344,7 +336,7 @@ void send_mqtt_numeric_msg(struct mg_connection* nc, char* dev_name, int value)
 	const unsigned int MSG_LEN = 10;
 	static char msg[MSG_LEN];
 
-	const char* mqtt_aq_topic = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_AQ_TOPIC);
+	const char* mqtt_aq_topic = CFG_MqttAqTopic();
 
 	snprintf(msg, MSG_LEN, "%d", value);
 	snprintf(mqtt_pub_topic, MQTT_PUB_TOPIC_LEN, "%s/%s", mqtt_aq_topic, dev_name);
@@ -352,7 +344,6 @@ void send_mqtt_numeric_msg(struct mg_connection* nc, char* dev_name, int value)
 }
 void send_mqtt_float_msg(struct mg_connection* nc, char* dev_name, float value) 
 {
-	assert(0 != _config_parameters);
 	assert(0 != nc);
 	assert(0 != dev_name);
 
@@ -361,7 +352,7 @@ void send_mqtt_float_msg(struct mg_connection* nc, char* dev_name, float value)
 	const unsigned int MSG_LEN = 10;
 	static char msg[MSG_LEN];
 
-	const char* mqtt_aq_topic = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_AQ_TOPIC);
+	const char* mqtt_aq_topic = CFG_MqttAqTopic();
 
 	snprintf(msg, MSG_LEN, "%.2f", value);
 	snprintf(mqtt_pub_topic, MQTT_PUB_TOPIC_LEN, "%s/%s", mqtt_aq_topic, dev_name);
@@ -375,14 +366,13 @@ void send_mqtt_int_msg(struct mg_connection* nc, char* dev_name, int value)
 
 void send_mqtt_string_msg(struct mg_connection* nc, char* dev_name, char* msg) 
 {
-	assert(0 != _config_parameters);
 	assert(0 != nc);
 	assert(0 != dev_name);
 
 	const unsigned int MQTT_PUB_TOPIC_LEN = 250;
 	static char mqtt_pub_topic[MQTT_PUB_TOPIC_LEN];
 
-	const char* mqtt_aq_topic = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_AQ_TOPIC);
+	const char* mqtt_aq_topic = CFG_MqttAqTopic();
 
 	snprintf(mqtt_pub_topic, MQTT_PUB_TOPIC_LEN, "%s/%s", mqtt_aq_topic, dev_name);
 	send_mqtt(nc, mqtt_pub_topic, msg);
@@ -390,18 +380,17 @@ void send_mqtt_string_msg(struct mg_connection* nc, char* dev_name, char* msg)
 
 void mqtt_broadcast_aqualinkstate(struct mg_connection* nc)
 {
-	assert(0 != _config_parameters);
 	assert(0 != _aqualink_data);
 
-	const int dzidx_air_temp = cfg_getint(_config_parameters, CONFIG_INT_DZIDX_AIR_TEMP);
-	const int dzidx_pool_water_temp = cfg_getint(_config_parameters, CONFIG_INT_DZIDX_POOL_WATER_TEMP);
-	const int dzidx_spa_water_temp = cfg_getint(_config_parameters, CONFIG_INT_DZIDX_SPA_WATER_TEMP);
-	const int dzidx_swg_percent = cfg_getint(_config_parameters, CONFIG_INT_DZIDX_SWG_PERCENT);
-	const int dzidx_swg_ppm = cfg_getint(_config_parameters, CONFIG_INT_DZIDX_SWG_PPM);
-	const int dzidx_swg_status = cfg_getint(_config_parameters, CONFIG_INT_DZIDX_SWG_STATUS);
-	const bool convert_mqtt_temp = cfg_getbool(_config_parameters, CONFIG_BOOL_CONVERT_MQTT_TEMP);
-	const bool report_zero_pool_temp = cfg_getbool(_config_parameters, CONFIG_BOOL_REPORT_ZERO_POOL_TEMP);
-	const bool report_zero_spa_temp = cfg_getbool(_config_parameters, CONFIG_BOOL_REPORT_ZERO_SPA_TEMP);
+	const int dzidx_air_temp = CFG_DzIdxAirTemp();
+	const int dzidx_pool_water_temp = CFG_DzIdxPoolWaterTemp();
+	const int dzidx_spa_water_temp = CFG_DzIdxSpaWaterTemp();
+	const int dzidx_swg_percent = CFG_DzIdxSwgPercent();
+	const int dzidx_swg_ppm = CFG_DzIdxSwgPpm();
+	const int dzidx_swg_status = CFG_DzIdxSwgStatus();
+	const bool convert_mqtt_temp = CFG_ConvertMqttTemp();
+	const bool report_zero_pool_temp = CFG_ReportZeroPoolTemp();
+	const bool report_zero_spa_temp = CFG_ReportZeroSpaTemp();
 
 	static int cnt = 0;
 	bool force_update = false;
@@ -513,7 +502,7 @@ void mqtt_broadcast_aqualinkstate(struct mg_connection* nc)
 
 		if (!_aqualink_data->simulate_panel) 
 		{
-			sprintf(_aqualink_data->last_display_message, message);
+			sprintf(_aqualink_data->last_display_message, "%s", message);
 		}
 
 		send_domoticz_mqtt_status_message(nc, dzidx_swg_status, dzalert, &message[9]);
@@ -632,15 +621,14 @@ int getTempforMeteohub(char* buffer)
 
 void set_light_mode(char* value, int button)
 {
-	assert(0 != _config_parameters);
 	assert(0 != value);
 
-	const bool pda_mode = cfg_getbool(_config_parameters, CONFIG_BOOL_PDA_MODE);
-	const float light_programming_mode = cfg_getfloat(_config_parameters, CONFIG_FLOAT_LIGHT_PROGRAMMING_MODE);
-	const int light_programming_initial_on = cfg_getint(_config_parameters, CONFIG_INT_LIGHT_PROGRAMMING_INITIAL_ON);
-	const int light_programming_initial_off = cfg_getint(_config_parameters, CONFIG_INT_LIGHT_PROGRAMMING_INITIAL_OFF);
-	const int light_programming_button_pool = cfg_getint(_config_parameters, CONFIG_INT_LIGHT_PROGRAMMING_BUTTON_POOL);
-	const int light_programming_button_spa = cfg_getint(_config_parameters, CONFIG_INT_LIGHT_PROGRAMMING_BUTTON_SPA);
+	const bool pda_mode = CFG_PdaMode();
+	const float light_programming_mode = CFG_LightProgrammingMode();
+	const int light_programming_initial_on = CFG_LightProgrammingInitialOn();
+	const int light_programming_initial_off = CFG_LightProgrammingInitialOff();
+	const int light_programming_button_pool = CFG_LightProgrammingButtonPool();
+	const int light_programming_button_spa = CFG_LightProgrammingButtonSpa();
 
 	if (pda_mode == true) 
 	{
@@ -666,9 +654,9 @@ void set_light_mode(char* value, int button)
 	aq_programmer(AQ_SET_COLORMODE, buf, _aqualink_data);
 }
 
+/*
 void action_web_request(struct mg_connection* nc, struct http_message* http_msg) 
 {
-	assert(0 != _config_parameters);
 	assert(0 != nc);
 	assert(0 != http_msg);
 
@@ -794,6 +782,8 @@ void action_web_request(struct mg_connection* nc, struct http_message* http_msg)
 			char* webrtn;
 			mg_get_http_var(&http_msg->query_string, "param", param, sizeof(param));
 			mg_get_http_var(&http_msg->query_string, "value", value, sizeof(value));
+
+			///FIXME FIXME FIXME
 
 			if (setConfigValue(_aqualink_config, _aqualink_data, param, value)) 
 			{
@@ -952,16 +942,16 @@ void action_web_request(struct mg_connection* nc, struct http_message* http_msg)
 		mg_serve_http(nc, http_msg, s_http_server_opts);
 	}
 }
+*/
 
 void action_websocket_request(struct mg_connection* nc, struct websocket_message* wm) 
 {
-	assert(0 != _config_parameters);
 	assert(0 != nc);
 	assert(0 != wm);
 
-	const int light_programming_button_pool = cfg_getint(_config_parameters, CONFIG_INT_LIGHT_PROGRAMMING_BUTTON_POOL);
-	const int light_programming_button_spa = cfg_getint(_config_parameters, CONFIG_INT_LIGHT_PROGRAMMING_BUTTON_SPA);
-	const bool pda_mode = cfg_getbool(_config_parameters, CONFIG_BOOL_PDA_MODE);
+	const int light_programming_button_pool = CFG_LightProgrammingButtonPool();
+	const int light_programming_button_spa = CFG_LightProgrammingButtonSpa();
+	const bool pda_mode = CFG_PdaMode();
 
 	char buffer[50];
 	struct JSONwebrequest request;
@@ -1038,7 +1028,7 @@ void action_websocket_request(struct mg_connection* nc, struct websocket_message
 					}
 					else 
 					{
-						char msg[PTHREAD_ARG];
+						char msg[THREAD_ARG];
 						sprintf(msg, "%-5d%-5d", i, (_aqualink_data->aqbuttons[i].led->state != OFF) ? OFF : ON);
 						aq_programmer(AQ_PDA_DEVICE_ON_OFF, msg, _aqualink_data);
 					}
@@ -1102,12 +1092,11 @@ void action_websocket_request(struct mg_connection* nc, struct websocket_message
 
 void action_mqtt_message(struct mg_connection* nc, struct mg_mqtt_message* msg) 
 {
-	assert(0 != _config_parameters);
 	assert(0 != nc);
 	assert(0 != msg);
 
-	const char* mqtt_aq_topic = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_AQ_TOPIC);
-	const bool convert_mqtt_temp = cfg_getbool(_config_parameters, CONFIG_BOOL_CONVERT_MQTT_TEMP);
+	const char* mqtt_aq_topic = CFG_MqttAqTopic();
+	const bool convert_mqtt_temp = CFG_ConvertMqttTemp();
 
 	unsigned int i;
 
@@ -1231,13 +1220,13 @@ void action_mqtt_message(struct mg_connection* nc, struct mg_mqtt_message* msg)
 				else 
 				{
 					logMessage(LOG_INFO, "MQTT: received '%s' for '%s', turning '%s'\n", (value == 0 ? "OFF" : "ON"), _aqualink_data->aqbuttons[i].name, (value == 0 ? "OFF" : "ON"));
-					if (pda_mode == false) 
+					if (CFG_PdaMode() == false) 
 					{
 						aq_send_cmd(_aqualink_data->aqbuttons[i].code);
 					}
 					else 
 					{
-						char msg[PTHREAD_ARG];
+						char msg[THREAD_ARG];
 						sprintf(msg, "%-5d%-5d", i, (value == 0 ? OFF : ON));
 						aq_programmer(AQ_PDA_DEVICE_ON_OFF, msg, _aqualink_data);
 					}
@@ -1286,13 +1275,13 @@ void action_domoticz_mqtt_message(struct mg_connection* nc, struct mg_mqtt_messa
 					else 
 					{
 						logMessage(LOG_INFO, "MQTT: DZ: received '%s' for '%s', turning '%s'\n", (nvalue == DZ_OFF ? "OFF" : "ON"), _aqualink_data->aqbuttons[i].name, (nvalue == DZ_OFF ? "OFF" : "ON"));
-						if (pda_mode == false) 
+						if (CFG_PdaMode() == false) 
 						{
 							aq_send_cmd(_aqualink_data->aqbuttons[i].code);
 						}
 						else 
 						{
-							char msg[PTHREAD_ARG];
+							char msg[THREAD_ARG];
 							sprintf(msg, "%-5d%-5d", i, (nvalue == DZ_OFF ? OFF : ON));
 							aq_programmer(AQ_PDA_DEVICE_ON_OFF, msg, _aqualink_data);
 						}
@@ -1308,15 +1297,14 @@ void action_domoticz_mqtt_message(struct mg_connection* nc, struct mg_mqtt_messa
 
 static void ev_handler(struct mg_connection* nc, int ev, void* ev_data) 
 {
-	assert(0 != _config_parameters);
 	assert(0 != nc);
 	assert(0 != ev_data);
 
-	const char* mqtt_dz_sub_topic = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_DZ_SUB_TOPIC);
-	const char* mqtt_aq_topic = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_AQ_TOPIC);
-	const char* mqtt_user = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_USER);
-	const char* mqtt_passwd = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_PASSWD);
-	const char* mqtt_id = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_ID);
+	const char* mqtt_dz_sub_topic = CFG_MqttDzSubTopic();
+	const char* mqtt_aq_topic = CFG_MqttAqTopic();
+	const char* mqtt_user = CFG_MqttUser();
+	const char* mqtt_passwd = CFG_MqttPassword();
+	const char* mqtt_id = CFG_MqttId();
 
 	struct mg_mqtt_message* mqtt_msg;
 	struct http_message* http_msg;
@@ -1326,7 +1314,10 @@ static void ev_handler(struct mg_connection* nc, int ev, void* ev_data)
 	switch (ev) {
 	case MG_EV_HTTP_REQUEST:
 		http_msg = (struct http_message*)ev_data;
-		action_web_request(nc, http_msg);
+		
+		///FIXME
+		//action_web_request(nc, http_msg);
+		
 		logMessage(LOG_DEBUG, "Served WEB request\n");
 		break;
 
@@ -1449,13 +1440,12 @@ static void ev_handler(struct mg_connection* nc, int ev, void* ev_data)
 
 void start_mqtt(struct mg_mgr* mgr) 
 {
-	assert(0 != _config_parameters);
 	assert(0 != mgr);
 
-	const char* mqtt_dz_pub_topic = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_DZ_PUB_TOPIC);
-	const char* mqtt_dz_sub_topic = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_DZ_SUB_TOPIC);
-	const char* mqtt_aq_topic = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_AQ_TOPIC);
-	const char* mqtt_server = cfg_getstr(_config_parameters, CONFIG_STR_MQTT_SERVER);
+	const char* mqtt_dz_pub_topic = CFG_MqttDzPubTopic();
+	const char* mqtt_dz_sub_topic = CFG_MqttDzSubTopic();
+	const char* mqtt_aq_topic = CFG_MqttAqTopic();
+	const char* mqtt_server = CFG_MqttServer();
 
 	logMessage(LOG_NOTICE, "Starting MQTT client to %s\n", mqtt_server);
 	
@@ -1487,15 +1477,14 @@ void start_mqtt(struct mg_mgr* mgr)
 
 bool start_net_services(struct mg_mgr* mgr, struct aqualinkdata* aqdata) 
 {
-	assert(0 != _config_parameters);
 	assert(0 != mgr);
 	assert(0 != aqdata);
 
 	struct mg_connection* nc;
 	_aqualink_data = aqdata;
 
-	const char* socket_port = cfg_getint(_config_parameters, CONFIG_STR_SOCKET_PORT);
-	const char* web_directory = cfg_getint(_config_parameters, CONFIG_STR_WEB_DIRECTORY);
+	const char* socket_port = CFG_SocketPort();
+	const char* web_directory = CFG_WebDirectory();
 
 	signal(SIGTERM, signal_handler);
 	signal(SIGINT, signal_handler);

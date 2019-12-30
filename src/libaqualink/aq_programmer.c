@@ -59,7 +59,6 @@ int set_aqualink_boost(void* ptr);
 bool waitForButtonState(struct aqualinkdata* aq_data, aqkey* button, AQ_LED_States state, int numMessageReceived);
 bool waitForEitherMessage(struct aqualinkdata* aq_data, char* message1, char* message2, int numMessageReceived);
 
-bool push_aq_cmd(unsigned char cmd);
 void waitfor_queue2empty();
 
 #define MAX_STACK 20
