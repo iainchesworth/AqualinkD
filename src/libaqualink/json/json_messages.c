@@ -27,12 +27,14 @@
 #include <json-c/json_object.h>
 
 #include "config/config.h"
+#include "hardware/buttons/buttons.h"
+#include "logging/logging.h"
+#include "version/version.h"
 #include "aqualink.h"
 #include "utils.h"
 #include "domoticz.h"
 #include "aq_mqtt.h"
 #include "aquapure.h"
-#include "version.h"
 
 const char* getStatus(struct aqualinkdata* aqdata)
 {
@@ -77,14 +79,10 @@ const char* getStatus(struct aqualinkdata* aqdata)
 				}
 			}
 		}
-		//printf("JSON Sending '%s'\n",aqdata->last_display_message);
+
 		return aqdata->last_display_message;
 	}
-	/*
-	  if (aqdata->display_last_message == true) {
-		return aqdata->last_message;
-	  }
-	*/
+
 	return JSON_READY;
 }
 
@@ -205,7 +203,7 @@ int build_aqualink_status_JSON(struct aqualinkdata* aqdata, char* buffer, int bu
 		json_object* jleds = json_object_new_object();
 		int button_index;
 
-		for (button_index = 0; button_index < TOTAL_BUTTONS; ++button_index)
+		for (button_index = 0; button_index < AqualinkButtonCount; ++button_index)
 		{
 			assert(0 != aqdata->aqbuttons[button_index].name);
 			assert(0 != aqdata->aqbuttons[button_index].label);
@@ -325,7 +323,7 @@ int build_device_JSON(struct aqualinkdata* aqdata, int programable_switch1, int 
 
 	length += sprintf(buffer + length, ", \"devices\": [");
 
-	for (i = 0; i < TOTAL_BUTTONS; i++)
+	for (i = 0; i < AqualinkButtonCount; i++)
 	{
 		if (strcmp(BTN_POOL_HTR, aqdata->aqbuttons[i].name) == 0 && aqdata->pool_htr_set_point != TEMP_UNKNOWN) {
 			length += sprintf(buffer + length, "{\"type\": \"setpoint_thermo\", \"id\": \"%s\", \"name\": \"%s\", \"state\": \"%s\", \"status\": \"%s\", \"spvalue\": \"%.*f\", \"value\": \"%.*f\", \"int_status\": \"%d\" },",
@@ -465,7 +463,7 @@ int build_device_JSON(struct aqualinkdata* aqdata, int programable_switch1, int 
 	*/
 	length += sprintf(buffer + length, "]}");
 
-	logMessage(LOG_DEBUG, "WEB: homebridge used %d of %d", length, size);
+	DEBUG("WEB: homebridge used %d of %d", length, size);
 
 	buffer[length] = '\0';
 
@@ -482,7 +480,7 @@ int build_aux_labels_JSON(struct aqualinkdata* aqdata, char* buffer, int size)
 
 	length += sprintf(buffer + length, "{\"type\": \"aux_labels\"");
 
-	for (i = 0; i < TOTAL_BUTTONS; i++)
+	for (i = 0; i < AqualinkButtonCount; i++)
 	{
 		length += sprintf(buffer + length, ",\"%s\": \"%s\"", aqdata->aqbuttons[i].name, aqdata->aqbuttons[i].label);
 	}
@@ -490,10 +488,6 @@ int build_aux_labels_JSON(struct aqualinkdata* aqdata, char* buffer, int size)
 	length += sprintf(buffer + length, "}");
 
 	return length;
-
-	//printf("%s\n",buffer);
-
-	  //return strlen(buffer);
 }
 
 // WS Received '{"parameter":"SPA_HTR","value":99}'
@@ -517,7 +511,6 @@ bool parseJSONwebrequest(char* buffer, struct JSONwebrequest* request)
 
 	while (i < length)
 	{
-		//printf ("Reading %c",buffer[i]);
 		switch (buffer[i]) {
 		case '{':
 		case '"':
@@ -527,7 +520,6 @@ bool parseJSONwebrequest(char* buffer, struct JSONwebrequest* request)
 		case ' ':
 			// Ignore space , : if reading a string
 			if (reading == true && buffer[i] != ' ' && buffer[i] != ',' && buffer[i] != ':') {
-				//printf (" <-  END");
 				reading = false;
 				buffer[i] = '\0';
 				found++;
@@ -536,7 +528,6 @@ bool parseJSONwebrequest(char* buffer, struct JSONwebrequest* request)
 
 		default:
 			if (reading == false) {
-				//printf (" <-  START");
 				reading = true;
 				switch (found) {
 				case 0:
@@ -588,8 +579,6 @@ bool parseJSONmqttrequest(const char* str, size_t len, int* idx, int* nvalue, ch
 						found++;
 					}
 				}
-				//if (*idx == 45) 
-				//  printf("%s\n",str);
 			}
 			else if (strncmp("\"nvalue\"", (char*)&str[i], 8) == 0) {
 				i = i + 8;

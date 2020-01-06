@@ -4,10 +4,11 @@
 
 #include "json/json_messages.h"
 #include "json/json_string_utils.h"
+#include "hardware/buttons/buttons.h"
+#include "version/version.h"
 
 #include "aqualink.h"
 #include "aq_mqtt.h"
-#include "version.h"
 
 static void verify_key_and_value_exist_in_json(struct json_object* obj, const char* EXPECTED_KEY, const int EXPECTED_VALUE)
 {
@@ -131,7 +132,7 @@ TEST(JSON_Messages, MQTT_AqualinkStatus)
     struct aqualinkdata testdata;
     unsigned char raw_status[AQ_PSTLEN] = { 0x01, 0x02, 0x03, 0x04, 0x05 };
     aqled aqualinkleds[TOTAL_LEDS] = { ON, OFF, ON, OFF, FLASH, ON, OFF, ON, OFF, ENABLE, ON, OFF, ON, OFF, LED_S_UNKNOWN, ON, OFF, ON, OFF, FLASH };
-    aqkey aqbuttons[TOTAL_BUTTONS] = 
+    aqkey aqbuttons[AqualinkButtonCount] = 
     { 
         { &aqualinkleds[0],  (char*) "LABEL_00", (char*) "NAME_00", (char*) "PDA_LABEL_00", 0x00, 0 },
         { &aqualinkleds[1],  (char*) "LABEL_01", (char*) "NAME_01", (char*) "PDA_LABEL_01", 0x01, 1 },
@@ -160,7 +161,7 @@ TEST(JSON_Messages, MQTT_AqualinkStatus)
     strcpy(testdata.last_display_message, "LASTDISPLAYMESSAGE");
     memcpy(testdata.raw_status, raw_status, AQ_PSTLEN * sizeof(unsigned char));
     memcpy(testdata.aqualinkleds, aqualinkleds, TOTAL_LEDS * sizeof(aqled));
-    memcpy(testdata.aqbuttons, aqbuttons, TOTAL_BUTTONS * sizeof(aqkey));
+    memcpy(testdata.aqbuttons, aqbuttons, AqualinkButtonCount * sizeof(aqkey));
     testdata.air_temp = 10;
     testdata.pool_temp = 20;
     testdata.spa_temp = 30;
@@ -183,7 +184,7 @@ TEST(JSON_Messages, MQTT_AqualinkStatus)
     memcpy(&(testdata.pumps), pumps, MAX_PUMPS * sizeof(pump_detail));
     testdata.open_websockets = 3;
     testdata.boost = true;
-    strcpy(testdata.boost_msg, "BOOSTMESSAGE");
+    strcpy(testdata.boost_msg, "BOOSTMSG");
 
     int length = build_aqualink_status_JSON(&testdata, json, MAX_JSON_LENGTH);
 
@@ -236,7 +237,7 @@ TEST(JSON_Messages, MQTT_AqualinkStatus_TEMP_UNKNOWN)
     struct aqualinkdata testdata;
     unsigned char raw_status[AQ_PSTLEN] = { 0x01, 0x02, 0x03, 0x04, 0x05 };
     aqled aqualinkleds[TOTAL_LEDS] = { ON, OFF, ON, OFF, FLASH, ON, OFF, ON, OFF, ENABLE, ON, OFF, ON, OFF, LED_S_UNKNOWN, ON, OFF, ON, OFF, FLASH };
-    aqkey aqbuttons[TOTAL_BUTTONS] =
+    aqkey aqbuttons[AqualinkButtonCount] =
     {
         { &aqualinkleds[0],  (char*)"LABEL_00", (char*)"NAME_00", (char*)"PDA_LABEL_00", 0x00, 0 },
         { &aqualinkleds[1],  (char*)"LABEL_01", (char*)"NAME_01", (char*)"PDA_LABEL_01", 0x01, 1 },
@@ -265,7 +266,7 @@ TEST(JSON_Messages, MQTT_AqualinkStatus_TEMP_UNKNOWN)
     strcpy(testdata.last_display_message, "LASTDISPLAYMESSAGE");
     memcpy(testdata.raw_status, raw_status, AQ_PSTLEN * sizeof(unsigned char));
     memcpy(testdata.aqualinkleds, aqualinkleds, TOTAL_LEDS * sizeof(aqled));
-    memcpy(testdata.aqbuttons, aqbuttons, TOTAL_BUTTONS * sizeof(aqkey));
+    memcpy(testdata.aqbuttons, aqbuttons, AqualinkButtonCount * sizeof(aqkey));
     testdata.air_temp = TEMP_UNKNOWN;
     testdata.pool_temp = TEMP_UNKNOWN;
     testdata.spa_temp = TEMP_UNKNOWN;
@@ -288,7 +289,7 @@ TEST(JSON_Messages, MQTT_AqualinkStatus_TEMP_UNKNOWN)
     memcpy(&(testdata.pumps), pumps, MAX_PUMPS * sizeof(pump_detail));
     testdata.open_websockets = 3;
     testdata.boost = true;
-    strcpy(testdata.boost_msg, "BOOSTMESSAGE");
+    strcpy(testdata.boost_msg, "BOOSTMSG");
 
     int length = build_aqualink_status_JSON(&testdata, json, MAX_JSON_LENGTH);
 

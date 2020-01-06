@@ -11,7 +11,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
 project(aqualinkd)
 
-set(CMAKE_C_STANARD 11)
+set(VERSION_MAJOR 1)  # MAJOR version when you make incompatible API changes
+set(VERSION_MINOR 4)  # MINOR version when you add functionality in a backwards-compatible manner
+set(VERSION_PATCH 0)  # PATCH version when you make backwards-compatible bug fixes
+
+set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_CLANG_TIDY clang-tidy -checks=-*,readability-*,warnings-as-errors=*)
 
 set(CMAKE_CXX_STANDARD 17)

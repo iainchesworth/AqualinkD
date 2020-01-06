@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <stdbool.h>
 #include <threads.h>
+#include "logging/logging.h"
 #include "utils.h"
 
 static cnd_t termination_cv;
@@ -13,15 +14,15 @@ bool initialise_termination_handler()
 {
 	if (termination_inited)
 	{
-		logMessage(LOG_DEBUG, "Thread_Utils.c | initialise_termination_handler | Multiple calls attempting to initialise termination handler\n");
+		DEBUG("Multiple calls attempting to initialise termination handler");
 	}
 	else if (thrd_success != cnd_init(&termination_cv))
 	{
-		logMessage(LOG_DEBUG, "Thread_Utils.c | initialise_termination_handler | Failed while initiialising termination condition variable\n");
+		DEBUG("Failed while initiialising termination condition variable");
 	}
 	else if (thrd_success != mtx_init(&termination_mtx, mtx_plain))
 	{
-		logMessage(LOG_DEBUG, "Thread_Utils.c | initialise_termination_handler | Failed while initiialising termination mutex\n");
+		DEBUG("Failed while initiialising termination mutex");
 	}
 	else
 	{
@@ -31,9 +32,15 @@ bool initialise_termination_handler()
 	return termination_inited;
 }
 
+void trigger_application_termination()
+{
+	INFO("Terminating application");
+	cnd_broadcast(&termination_cv);
+}
+
 void termination_handler(int signum)
 {
-	logMessage(LOG_INFO, "Aqualink.c | termination_handler() | Received signal %d...terminating\n", signum);
+	INFO("Received signal %d...terminating", signum);
 	cnd_broadcast(&termination_cv);
 }
 
@@ -48,7 +55,7 @@ bool wait_for_termination()
 	}
 	else
 	{
-		logMessage(LOG_DEBUG, "Thread_Utils.c | wait_for_termination | Attempted to wait for termination before termination handler was init'ed\n");
+		DEBUG("Attempted to wait for termination before termination handler was init'ed");
 	}
 
 	return ret;
@@ -56,6 +63,6 @@ bool wait_for_termination()
 
 void cleanup_termination_handler()
 {
-	logMessage(LOG_DEBUG, "Thread_Utils.c | cleanup_termination_handler | Cleaning up termination condition variable\n");
+	DEBUG("Cleaning up termination condition variable");
 	cnd_destroy(&termination_cv);
 }

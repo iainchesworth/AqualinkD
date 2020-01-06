@@ -34,18 +34,20 @@
 #include "utils.h"
 #include "config/config.h"
 #include "config/config_helpers.h"
+#include "logging/logging.h"
+#include "logging/logging_sink_basic_file.h"
+#include "logging/logging_utils.h"
+#include "hardware/buttons/buttons.h"
 #include "serial/aq_serial.h"
+#include "version/version.h"
 #include "web/aq_web.h"
-#include "init_buttons.h"
 #include "aq_programmer.h"
 #include "net_services.h"
 #include "pda_menu.h"
 #include "pda.h"
 #include "pentair_messages.h"
 #include "pda_aq_programmer.h"
-#include "packetLogger.h"
 #include "aquapure.h"
-#include "version.h"
 #include "options.h"
 
 static volatile bool _keepRunning = true;
@@ -58,13 +60,12 @@ void intHandler(int dummy)
 	UNREFERENCED_PARAMETER(dummy);
 
 	_keepRunning = false;
-	logMessage(LOG_NOTICE, "Stopping!");
+	NOTICE("Stopping!");
 
 }
 
 void processLEDstate()
 {
-
 	int i = 0;
 	int byte;
 	int bit;
@@ -118,7 +119,7 @@ bool checkAqualinkTime()
 	time_difference = (int)difftime(now, last_checked);
 	if (time_difference < TIME_CHECK_INTERVAL)
 	{
-		logMessage(LOG_DEBUG, "time not checked, will check in %d seconds", TIME_CHECK_INTERVAL - time_difference);
+		DEBUG("time not checked, will check in %d seconds", TIME_CHECK_INTERVAL - time_difference);
 		return true;
 	}
 
@@ -131,7 +132,7 @@ bool checkAqualinkTime()
 
 	if (strptime(datestr, "%m/%d/%y %a %I:%M %p", &aq_tm) == NULL)
 	{
-		logMessage(LOG_ERR, "Could not convert RS time string '%s'", datestr);
+		ERROR("Could not convert RS time string '%s'", datestr);
 		last_checked = (time_t)NULL;
 		return true;
 	}
@@ -140,7 +141,7 @@ bool checkAqualinkTime()
 	aqualink_time = mktime(&aq_tm);
 	time_difference = (int)difftime(now, aqualink_time);
 
-	logMessage(LOG_INFO, "Aqualink time is off by %d seconds...\n", time_difference);
+	INFO("Aqualink time is off by %d seconds...", time_difference);
 
 	if (abs(time_difference) <= ACCEPTABLE_TIME_DIFF)
 	{
@@ -167,7 +168,7 @@ void queueGetProgramData()
 
 void setUnits(char* msg)
 {
-	logMessage(LOG_DEBUG, "Getting temp units from message %s, looking at %c", msg, msg[strlen(msg) - 1]);
+	DEBUG("Getting temp units from message %s, looking at %c", msg, msg[strlen(msg) - 1]);
 
 	if (msg[strlen(msg) - 1] == 'F') {
 		_aqualink_data.temp_units = FAHRENHEIT;
@@ -179,7 +180,7 @@ void setUnits(char* msg)
 		_aqualink_data.temp_units = UNKNOWN;
 	}
 
-	logMessage(LOG_INFO, "Temp Units set to %d (F=0, C=1, Unknown=3)", _aqualink_data.temp_units);
+	INFO("Temp Units set to %d (F=0, C=1, Unknown=3)", _aqualink_data.temp_units);
 }
 
 void processMessage(char* message)
@@ -195,7 +196,7 @@ void processMessage(char* message)
 	msg = stripwhitespace(message);
 	strcpy(_aqualink_data.last_message, msg);
 
-	logMessage(LOG_INFO, "RS Message :- '%s'\n", msg);
+	INFO("RS Message :- '%s'", msg);
 
 	// Check long messages in this if/elseif block first, as some messages are similar.
 	// ie "POOL TEMP" and "POOL TEMP IS SET TO"  so want correct match first.
@@ -207,7 +208,8 @@ void processMessage(char* message)
 	}
 
 	// Don't do any message counts if we are programming
-	if (_aqualink_data.active_thread.thread_id == 0) {
+	if (_aqualink_data.active_thread.thread_id == 0) 
+	{
 		// If we have more than 10 messages without "Service Mode is active" assume it's off.
 		if (_aqualink_data.service_mode_state != OFF && service_msg_count++ > 10)
 		{
@@ -306,7 +308,7 @@ void processMessage(char* message)
 		if (_aqualink_data.single_device != true)
 		{
 			_aqualink_data.single_device = true;
-			logMessage(LOG_NOTICE, "AqualinkD set to 'Pool OR Spa Only' mode\n");
+			NOTICE("AqualinkD set to 'Pool OR Spa Only' mode");
 		}
 	}
 	else if (stristr(msg, LNG_MSG_WATER_TEMP1_SET) != NULL)
@@ -320,7 +322,7 @@ void processMessage(char* message)
 		if (_aqualink_data.single_device != true)
 		{
 			_aqualink_data.single_device = true;
-			logMessage(LOG_NOTICE, "AqualinkD set to 'Pool OR Spa Only' mode\n");
+			NOTICE("AqualinkD set to 'Pool OR Spa Only' mode");
 		}
 	}
 	else if (stristr(msg, LNG_MSG_WATER_TEMP2_SET) != NULL)
@@ -334,13 +336,13 @@ void processMessage(char* message)
 		if (_aqualink_data.single_device != true)
 		{
 			_aqualink_data.single_device = true;
-			logMessage(LOG_NOTICE, "AqualinkD set to 'Pool OR Spa Only' mode\n");
+			NOTICE("AqualinkD set to 'Pool OR Spa Only' mode");
 		}
 	}
 	else if (stristr(msg, LNG_MSG_SERVICE_ACTIVE) != NULL)
 	{
 		if (_aqualink_data.service_mode_state == OFF) {
-			logMessage(LOG_NOTICE, "AqualinkD set to Service Mode\n");
+			NOTICE("AqualinkD set to Service Mode");
 		}
 		_aqualink_data.service_mode_state = ON;
 		service_msg_count = 0;
@@ -348,7 +350,7 @@ void processMessage(char* message)
 	else if (stristr(msg, LNG_MSG_TIMEOUT_ACTIVE) != NULL)
 	{
 		if (_aqualink_data.service_mode_state == OFF) {
-			logMessage(LOG_NOTICE, "AqualinkD set to Timeout Mode\n");
+			NOTICE("AqualinkD set to Timeout Mode");
 		}
 		_aqualink_data.service_mode_state = FLASH;
 		service_msg_count = 0;
@@ -392,17 +394,17 @@ void processMessage(char* message)
 		// Setting time takes a long time, so don't try until we have all other programmed data.
 		if ((_initWithRS == true) && strlen(_aqualink_data.date) > 1 && checkAqualinkTime() != true)
 		{
-			logMessage(LOG_NOTICE, "RS time is NOT accurate '%s %s', re-setting on controller!\n", _aqualink_data.time, _aqualink_data.date);
+			NOTICE("RS time is NOT accurate '%s %s', re-setting on controller!", _aqualink_data.time, _aqualink_data.date);
 			aq_programmer(AQ_SET_TIME, NULL, &_aqualink_data);
 		}
 		else
 		{
-			logMessage(LOG_DEBUG, "RS time is accurate '%s %s'\n", _aqualink_data.time, _aqualink_data.date);
+			DEBUG("RS time is accurate '%s %s'", _aqualink_data.time, _aqualink_data.date);
 		}
 		// If we get a time message before REV, the controller didn't see us as we started too quickly.
 		if (_gotREV == false)
 		{
-			logMessage(LOG_NOTICE, "Getting control panel information\n", msg);
+			NOTICE("Getting control panel information", msg);
 			aq_programmer(AQ_GET_DIAGNOSTICS_MODEL, NULL, &_aqualink_data);
 			_gotREV = true; // Force it to true just incase we don't understand the model#
 		}
@@ -413,7 +415,7 @@ void processMessage(char* message)
 		// A master firmware revision message.
 		strcpy(_aqualink_data.version, msg);
 		_gotREV = true;
-		logMessage(LOG_NOTICE, "Control Panel %s\n", msg);
+		NOTICE("Control Panel %s", msg);
 		if (_initWithRS == false)
 		{
 			queueGetProgramData();
@@ -422,7 +424,7 @@ void processMessage(char* message)
 	}
 	else if (stristr(msg, " TURNS ON") != NULL)
 	{
-		logMessage(LOG_NOTICE, "Program data '%s'\n", msg);
+		NOTICE("Program data '%s'", msg);
 	}
 	else if (CFG_OverrideFreezeProtect() == TRUE && strncasecmp(msg, "Press Enter* to override Freeze Protection with", 47) == 0)
 	{
@@ -434,7 +436,7 @@ void processMessage(char* message)
 		if (labelid > 0 && CFG_UsePanelAuxLabels() == true)
 		{
 			// Aux1: on panel = Button 3 in aqualinkd  (button 2 in array)
-			logMessage(LOG_NOTICE, "AUX LABEL %d '%s'\n", labelid + 1, msg);
+			NOTICE("AUX LABEL %d '%s'", labelid + 1, msg);
 			_aqualink_data.aqbuttons[labelid + 1].label = prettyString(cleanalloc(msg + 5));
 		}
 	}
@@ -450,7 +452,7 @@ void processMessage(char* message)
 	}
 	else
 	{
-		logMessage(LOG_DEBUG_SERIAL, "Ignoring '%s'\n", msg);
+		TRACE("Ignoring '%s'", msg);
 
 		if (_aqualink_data.active_thread.thread_id == 0 &&
 			stristr(msg, "JANDY AquaLinkRS") == NULL &&
@@ -485,7 +487,7 @@ bool process_packet(unsigned char* packet, int length)
 	// Check packet against last check if different.
 	if (memcmp(packet, last_packet, length) == 0)
 	{
-		logMessage(LOG_DEBUG_SERIAL, "RS Received duplicate, ignoring.\n", length);
+		TRACE("RS Received duplicate, ignoring.", length);
 		return rtn;
 	}
 
@@ -514,16 +516,16 @@ bool process_packet(unsigned char* packet, int length)
 		memcpy(_aqualink_data.raw_status, packet + 4, AQ_PSTLEN);
 		processLEDstate();
 
-		if (_aqualink_data.aqbuttons[PUMP_INDEX].led->state == OFF)
+		if (_aqualink_data.aqbuttons[FilterPump].led->state == OFF)
 		{
 			_aqualink_data.pool_temp = TEMP_UNKNOWN;
 			_aqualink_data.spa_temp = TEMP_UNKNOWN;
 		}
-		else if (_aqualink_data.aqbuttons[SPA_INDEX].led->state == OFF && _aqualink_data.single_device != true)
+		else if (_aqualink_data.aqbuttons[SpaMode].led->state == OFF && _aqualink_data.single_device != true)
 		{
 			_aqualink_data.spa_temp = TEMP_UNKNOWN;
 		}
-		else if (_aqualink_data.aqbuttons[SPA_INDEX].led->state == ON && _aqualink_data.single_device != true)
+		else if (_aqualink_data.aqbuttons[SpaMode].led->state == ON && _aqualink_data.single_device != true)
 		{
 			_aqualink_data.pool_temp = TEMP_UNKNOWN;
 		}
@@ -547,7 +549,7 @@ bool process_packet(unsigned char* packet, int length)
 		{
 			strncpy(&message[(processing_long_msg * AQ_MSGLEN)], (char*)packet + PKT_DATA + 1, AQ_MSGLEN);
 			if (++processing_long_msg != index) {
-				logMessage(LOG_ERR, "Long message index %d doesn't match buffer %d\n", index, processing_long_msg);
+				ERROR("Long message index %d doesn't match buffer %d", index, processing_long_msg);
 			}
 #ifdef  PROCESS_INCOMPLETE_MESSAGES
 			kick_aq_program_thread(&_aqualink_data);
@@ -562,12 +564,12 @@ bool process_packet(unsigned char* packet, int length)
 	break;
 
 	case CMD_PROBE:
-		logMessage(LOG_DEBUG, "RS Received PROBE length %d.\n", length);
+		DEBUG("RS Received PROBE length %d.", length);
 		rtn = false;
 		break;
 
 	default:
-		logMessage(LOG_INFO, "RS Received unknown packet, 0x%02hhx\n", packet[PKT_CMD]);
+		INFO("RS Received unknown packet, 0x%02hhx", packet[PKT_CMD]);
 		rtn = false;
 		break;
 	}
@@ -592,11 +594,11 @@ void action_delayed_request()
 		if (_aqualink_data.pool_htr_set_point != _aqualink_data.unactioned.value)
 		{
 			aq_programmer(AQ_SET_POOL_HEATER_TEMP, sval, &_aqualink_data);
-			logMessage(LOG_NOTICE, "Setting pool heater setpoint to %d\n", _aqualink_data.unactioned.value);
+			NOTICE("Setting pool heater setpoint to %d", _aqualink_data.unactioned.value);
 		}
 		else
 		{
-			logMessage(LOG_NOTICE, "Pool heater setpoint is already %d, not changing\n", _aqualink_data.unactioned.value);
+			NOTICE("Pool heater setpoint is already %d, not changing", _aqualink_data.unactioned.value);
 		}
 	}
 	else if (_aqualink_data.unactioned.type == SPA_HTR_SETOINT)
@@ -605,11 +607,11 @@ void action_delayed_request()
 		if (_aqualink_data.spa_htr_set_point != _aqualink_data.unactioned.value)
 		{
 			aq_programmer(AQ_SET_SPA_HEATER_TEMP, sval, &_aqualink_data);
-			logMessage(LOG_NOTICE, "Setting spa heater setpoint to %d\n", _aqualink_data.unactioned.value);
+			NOTICE("Setting spa heater setpoint to %d", _aqualink_data.unactioned.value);
 		}
 		else
 		{
-			logMessage(LOG_NOTICE, "Spa heater setpoint is already %d, not changing\n", _aqualink_data.unactioned.value);
+			NOTICE("Spa heater setpoint is already %d, not changing", _aqualink_data.unactioned.value);
 		}
 	}
 	else if (_aqualink_data.unactioned.type == FREEZE_SETPOINT)
@@ -618,11 +620,11 @@ void action_delayed_request()
 		if (_aqualink_data.frz_protect_set_point != _aqualink_data.unactioned.value)
 		{
 			aq_programmer(AQ_SET_FRZ_PROTECTION_TEMP, sval, &_aqualink_data);
-			logMessage(LOG_NOTICE, "Setting freeze protect to %d\n", _aqualink_data.unactioned.value);
+			NOTICE("Setting freeze protect to %d", _aqualink_data.unactioned.value);
 		}
 		else
 		{
-			logMessage(LOG_NOTICE, "Freeze setpoint is already %d, not changing\n", _aqualink_data.unactioned.value);
+			NOTICE("Freeze setpoint is already %d, not changing", _aqualink_data.unactioned.value);
 		}
 	}
 	else if (_aqualink_data.unactioned.type == SWG_SETPOINT)
@@ -638,11 +640,11 @@ void action_delayed_request()
 			if (_aqualink_data.swg_percent != _aqualink_data.unactioned.value)
 			{
 				aq_programmer(AQ_SET_SWG_PERCENT, sval, &_aqualink_data);
-				logMessage(LOG_NOTICE, "Setting SWG %% to %d\n", _aqualink_data.unactioned.value);
+				NOTICE("Setting SWG %% to %d", _aqualink_data.unactioned.value);
 			}
 			else
 			{
-				logMessage(LOG_NOTICE, "SWG % is already %d, not changing\n", _aqualink_data.unactioned.value);
+				NOTICE("SWG % is already %d, not changing", _aqualink_data.unactioned.value);
 			}
 		}
 		// Let's just tell everyone we set it, before we actually did.  Makes homekit happy, and it will re-correct on error.
@@ -651,10 +653,10 @@ void action_delayed_request()
 	else if (_aqualink_data.unactioned.type == SWG_BOOST)
 	{
 		if (_aqualink_data.ar_swg_status == SWG_STATUS_OFF) {
-			logMessage(LOG_ERR, "SWG is off, can't Boost pool\n");
+			ERROR("SWG is off, can't Boost pool");
 		}
 		else if (_aqualink_data.unactioned.value == _aqualink_data.boost) {
-			logMessage(LOG_ERR, "Request to turn Boost %s ignored, Boost is already %s\n", _aqualink_data.unactioned.value ? "On" : "Off", _aqualink_data.boost ? "On" : "Off");
+			ERROR("Request to turn Boost %s ignored, Boost is already %s", _aqualink_data.unactioned.value ? "On" : "Off", _aqualink_data.boost ? "On" : "Off");
 		}
 		else {
 			aq_programmer(AQ_SET_BOOST, sval, &_aqualink_data);
@@ -675,11 +677,12 @@ int main(int argc, char* argv[])
 
 	// Log only NOTICE messages and above. Debug and info messages
 	// will not be logged to syslog.
-	setlogmask(LOG_UPTO(LOG_NOTICE));
+	initialize_logging(&aqualink_default_logger);
+	set_verbosity(&aqualink_default_logger, Notice);
 
 	// Initialize the daemon's parameters.
 	initialise_config_parameters();
-	initButtons(&_aqualink_data);
+	init_buttons(&_aqualink_data);
 
 	// Process any options on the command line.
 	handleOptions(argc, argv);
@@ -687,63 +690,70 @@ int main(int argc, char* argv[])
 	// Finally, process any settings from the configuration file.
 	handle_configuration_file_options();
 
-	if (getuid() != 0)
+	if (0 != getuid())
 	{
-		//logMessage(LOG_ERR, "%s Can only be run as root\n", argv[0]);
-		fprintf(stderr, "ERROR %s Can only be run as root\n", argv[0]);
+		// ERROR("%s Can only be run as root", argv[0]);
+		ERROR("%s Can only be run as root", argv[0]);
 		return EXIT_FAILURE;
 	}
 
-	if (CFG_DisplayWarningsWeb() == true)
+	// Do all the configuration goodness...
 	{
-		setLoggingPrms(CFG_LogLevel(), CFG_Daemonize(), CFG_LogFile(), _aqualink_data.last_display_message);
-	}
-	else
-	{
-		setLoggingPrms(CFG_LogLevel(), CFG_Daemonize(), CFG_LogFile(), NULL);
+		set_verbosity(&aqualink_default_logger, CFG_LogLevel());
+
+		if (0 == CFG_LogFile())
+		{
+			LoggingSinkBasicFileUserData* aqualink_basic_file_user_data = (LoggingSinkBasicFileUserData*)malloc(sizeof(LoggingSinkBasicFileUserData));
+			aqualink_basic_file_user_data->Filename = CFG_ConfigFile();
+
+			aqualink_default_logger_sink_file.Initialise(&aqualink_default_logger_sink_file);
+			register_logging_sink(&aqualink_default_logger.Sinks, &aqualink_default_logger_sink_file);
+		}
 	}
 
-	logMessage(LOG_NOTICE, "%s v%s\n", AQUALINKD_NAME, AQUALINKD_VERSION);
+	NOTICE("%s v%s", AQUALINKD_NAME, AQUALINKD_VERSION);
 
-	logMessage(LOG_NOTICE, "Config log_level         = %d\n", CFG_LogLevel());
-	logMessage(LOG_NOTICE, "Config socket_port       = %s\n", CFG_SocketPort());
-	logMessage(LOG_NOTICE, "Config serial_port       = %s\n", CFG_SerialPort());
-	logMessage(LOG_NOTICE, "Config web_directory     = %s\n", CFG_WebDirectory());
-	logMessage(LOG_NOTICE, "Config device_id         = 0x%02hhx\n", CFG_DeviceId());
-	logMessage(LOG_NOTICE, "Config read_all_devices  = %s\n", bool2text(CFG_ReadAllDevices()));
-	logMessage(LOG_NOTICE, "Config use_aux_labels    = %s\n", bool2text(CFG_UsePanelAuxLabels()));
-	logMessage(LOG_NOTICE, "Config override frz prot = %s\n", bool2text(CFG_OverrideFreezeProtect()));
+	NOTICE("Config level             = %s", logging_level_to_string(CFG_LogLevel()));
+	NOTICE("Config socket_port       = %s", CFG_SocketPort());
+	NOTICE("Config serial_port       = %s", CFG_SerialPort());
+	NOTICE("Config web_directory     = %s", CFG_WebDirectory());
+	NOTICE("Config device_id         = 0x%02hhx", CFG_DeviceId());
+	NOTICE("Config read_all_devices  = %s", bool2text(CFG_ReadAllDevices()));
+	NOTICE("Config use_aux_labels    = %s", bool2text(CFG_UsePanelAuxLabels()));
+	NOTICE("Config override frz prot = %s", bool2text(CFG_OverrideFreezeProtect()));
 
 #ifndef MG_DISABLE_MQTT
-	logMessage(LOG_NOTICE, "Config mqtt_server       = %s\n", CFG_MqttServer());
-	logMessage(LOG_NOTICE, "Config mqtt_dz_sub_topic = %s\n", CFG_MqttDzSubTopic());
-	logMessage(LOG_NOTICE, "Config mqtt_dz_pub_topic = %s\n", CFG_MqttDzPubTopic());
-	logMessage(LOG_NOTICE, "Config mqtt_aq_topic     = %s\n", CFG_MqttAqTopic());
-	logMessage(LOG_NOTICE, "Config mqtt_user         = %s\n", CFG_MqttUser());
-	logMessage(LOG_NOTICE, "Config mqtt_passwd       = %s\n", CFG_MqttPassword());
-	logMessage(LOG_NOTICE, "Config mqtt_ID           = %s\n", CFG_MqttId());
-	logMessage(LOG_NOTICE, "Config idx water temp    = %d\n", CFG_DzIdxAirTemp());
-	logMessage(LOG_NOTICE, "Config idx pool temp     = %d\n", CFG_DzIdxPoolWaterTemp());
-	logMessage(LOG_NOTICE, "Config idx spa temp      = %d\n", CFG_DzIdxSpaWaterTemp());
-	logMessage(LOG_NOTICE, "Config idx SWG Percent   = %d\n", CFG_DzIdxSwgPercent());
-	logMessage(LOG_NOTICE, "Config idx SWG PPM       = %d\n", CFG_DzIdxSwgPpm());
-	logMessage(LOG_NOTICE, "Config PDA Mode          = %s\n", bool2text(CFG_PdaMode()));
-	logMessage(LOG_NOTICE, "Config PDA Sleep Mode    = %s\n", bool2text(CFG_PdaSleepMode()));
-	logMessage(LOG_NOTICE, "Config force SWG         = %s\n", bool2text(CFG_ForceSwg()));
+	NOTICE("Config mqtt_server       = %s", CFG_MqttServer());
+	NOTICE("Config mqtt_dz_sub_topic = %s", CFG_MqttDzSubTopic());
+	NOTICE("Config mqtt_dz_pub_topic = %s", CFG_MqttDzPubTopic());
+	NOTICE("Config mqtt_aq_topic     = %s", CFG_MqttAqTopic());
+	NOTICE("Config mqtt_user         = %s", CFG_MqttUser());
+	NOTICE("Config mqtt_passwd       = %s", CFG_MqttPassword());
+	NOTICE("Config mqtt_ID           = %s", CFG_MqttId());
+	NOTICE("Config idx water temp    = %d", CFG_DzIdxAirTemp());
+	NOTICE("Config idx pool temp     = %d", CFG_DzIdxPoolWaterTemp());
+	NOTICE("Config idx spa temp      = %d", CFG_DzIdxSpaWaterTemp());
+	NOTICE("Config idx SWG Percent   = %d", CFG_DzIdxSwgPercent());
+	NOTICE("Config idx SWG PPM       = %d", CFG_DzIdxSwgPpm());
+	NOTICE("Config PDA Mode          = %s", bool2text(CFG_PdaMode()));
+	NOTICE("Config PDA Sleep Mode    = %s", bool2text(CFG_PdaSleepMode()));
+	NOTICE("Config force SWG         = %s", bool2text(CFG_ForceSwg()));
 #endif // MG_DISABLE_MQTT
 
-	logMessage(LOG_NOTICE, "Config deamonize         = %s\n", bool2text(CFG_Daemonize()));
-	logMessage(LOG_NOTICE, "Config log_file          = %s\n", CFG_LogFile());
-	logMessage(LOG_NOTICE, "Config light_pgm_mode    = %.2f\n", CFG_LightProgrammingMode());
-	logMessage(LOG_NOTICE, "Debug RS485 protocol     = %s\n", bool2text(CFG_DebugRsProtocolPackets()));
-	logMessage(LOG_NOTICE, "Read Pentair Packets     = %s\n", bool2text(CFG_ReadPentairPackets()));
-	logMessage(LOG_NOTICE, "Display warnings in web  = %s\n", bool2text(CFG_DisplayWarningsWeb()));
+	NOTICE("Config deamonize         = %s", bool2text(CFG_Daemonize()));
+	NOTICE("Config file              = %s", CFG_ConfigFile());
+	NOTICE("Config light_pgm_mode    = %.2f", CFG_LightProgrammingMode());
+	NOTICE("Log file                 = %s", CFG_LogFile());
+	NOTICE("Debug RS485 protocol     = %s", bool2text(CFG_DebugRsProtocolPackets()));
+	NOTICE("Read Pentair Packets     = %s", bool2text(CFG_ReadPentairPackets()));
+	NOTICE("Display warnings in web  = %s", bool2text(CFG_DisplayWarningsWeb()));
 
-	if (CFG_SwgZeroIgnore() > 0) {
-		logMessage(LOG_NOTICE, "Ignore SWG 0 msg count   = %d\n", CFG_SwgZeroIgnore());
+	if (CFG_SwgZeroIgnore() > 0) 
+	{
+		NOTICE("Ignore SWG 0 msg count   = %d", CFG_SwgZeroIgnore());
 	}
 
-	for (i = 0; i < TOTAL_BUTONS; i++)
+	for (i = 0; i < AqualinkButtonCount; i++)
 	{
 		char vsp[] = "None";
 		for (j = 0; j < MAX_PUMPS; j++) {
@@ -752,12 +762,12 @@ int main(int argc, char* argv[])
 			}
 		}
 		if (!CFG_PdaMode()) {
-			logMessage(LOG_NOTICE, "Config BTN %-13s = label %-15s | VSP ID %-4s  | dzidx %d | %s\n",
+			NOTICE("Config BTN %-13s = label %-15s | VSP ID %-4s  | dzidx %d | %s",
 				_aqualink_data.aqbuttons[i].name, _aqualink_data.aqbuttons[i].label, vsp, _aqualink_data.aqbuttons[i].dz_idx,
 				(i > 0 && (i == CFG_LightProgrammingButtonPool() || i == CFG_LightProgrammingButtonSpa()) ? "Programable" : ""));
 		}
 		else {
-			logMessage(LOG_NOTICE, "Config BTN %-13s = label %-15s | VSP ID %-4s  | PDAlabel %-15s | dzidx %d\n",
+			NOTICE("Config BTN %-13s = label %-15s | VSP ID %-4s  | PDAlabel %-15s | dzidx %d",
 				_aqualink_data.aqbuttons[i].name, _aqualink_data.aqbuttons[i].label, vsp,
 				_aqualink_data.aqbuttons[i].pda_label, _aqualink_data.aqbuttons[i].dz_idx);
 		}
@@ -774,6 +784,8 @@ int main(int argc, char* argv[])
 		main_loop();
 	}
 
+	shutdown_logging(&aqualink_default_logger);
+
 	return EXIT_SUCCESS;
 }
 
@@ -787,7 +799,7 @@ void caculate_ack_packet(int rs_fd, unsigned char* packet_buffer)
 	// if PDA mode, should we sleep? if not Can only send command to status message on PDA.
 	if (CFG_PdaMode() == true) {
 		if (CFG_PdaSleepMode() && pda_shouldSleep()) {
-			logMessage(LOG_DEBUG, "PDA Aqualink daemon in sleep mode\n");
+			DEBUG("PDA Aqualink daemon in sleep mode");
 			return;
 		}
 
@@ -816,7 +828,7 @@ void caculate_ack_packet(int rs_fd, unsigned char* packet_buffer)
 		}
 		else 
 		{
-			logMessage(LOG_NOTICE, "Sending display busy due to Simulator mode \n");
+			NOTICE("Sending display busy due to Simulator mode ");
 
 			if (delayAckCnt < MAX_BLOCK_ACK) 
 			{
@@ -857,7 +869,7 @@ unsigned char find_unused_address(const unsigned char* packet)
 	else if (lastID != 0x00) {
 		ID[lastID - 8]++;
 		if (ID[lastID - 8] >= 3) {
-			logMessage(LOG_NOTICE, "Found valid unused ID 0x%02hhx\n", lastID);
+			NOTICE("Found valid unused ID 0x%02hhx", lastID);
 			return lastID;
 		}
 		lastID = 0x00;
@@ -883,24 +895,24 @@ void main_loop()
 	// 1. Initialise configuration parameters and global data sets.
 	if (!initialise_termination_handler())
 	{
-		logMessage(LOG_ERR, "Aqualink.c | main_loop() | Failed to create worker synchronisation primitives\n");
+		ERROR("Aqualink.c | main_loop() | Failed to create worker synchronisation primitives");
 		exit(EXIT_FAILURE);
 	}
 
 	// 2. Create various "server" threads.
 	else if (thrd_success != thrd_create(&serial_worker_thread, &serial_thread, (void*)&wait_for_termination))
 	{
-		logMessage(LOG_ERR, "Aqualink.c | main_loop() | Failed to start serial worker thread\n");
+		ERROR("Aqualink.c | main_loop() | Failed to start serial worker thread");
 		exit(EXIT_FAILURE);
 	}
 	else if (thrd_success != thrd_create(&webserver_worker_thread, &webserver_thread, (void*)&wait_for_termination))
 	{
-		logMessage(LOG_ERR, "Aqualink.c | main_loop() | Failed to start web worker thread\n");
+		ERROR("Aqualink.c | main_loop() | Failed to start web worker thread");
 		exit(EXIT_FAILURE);
 	}
 	else
 	{
-		logMessage(LOG_INFO, "Aqualink.c | main_loop() | Serial worker thread is running\n");
+		INFO("Aqualink.c | main_loop() | Serial worker thread is running");
 	}
 
 	// 3. Go!
@@ -915,14 +927,14 @@ void main_loop()
 	sigaction(SIGTERM, NULL, &old_action);
 	if (SIG_IGN != old_action.sa_handler) { sigaction(SIGTERM, &new_action, NULL); }
 
-	logMessage(LOG_INFO, "Aqualink.c | main_loop() | Running AqualinkD...\n");
+	INFO("Aqualink.c | main_loop() | Running AqualinkD...");
 	if (!wait_for_termination())
 	{
-		logMessage(LOG_ERR, "Aqualink.c | main_loop() | Failed when attempting to block-wait for termination handler\n");
+		ERROR("Aqualink.c | main_loop() | Failed when attempting to block-wait for termination handler");
 	}
 
 	// 4. Clean up shop and terminate worker threads.
-	logMessage(LOG_INFO, "Aqualink.c | main_loop() | Cleaning up and closing down\n");
+	INFO("Aqualink.c | main_loop() | Cleaning up and closing down");
 	cleanup_termination_handler();
 }
 
@@ -974,7 +986,7 @@ void main_loop()
 
 	if (!start_net_services(&mgr, &_aqualink_data))
 	{
-		logMessage(LOG_ERR, "Can not start webserver on port %s.\n", socket_port);
+		ERROR("Can not start webserver on port %s.", socket_port);
 		exit(EXIT_FAILURE);
 	}
 
@@ -985,7 +997,7 @@ void main_loop()
 
 	int blank_read = 0;
 	rs_fd = init_serial_port(serial_port);
-	logMessage(LOG_NOTICE, "Listening to Aqualink RS8 on serial port: %s\n", serial_port);
+	NOTICE("Listening to Aqualink RS8 on serial port: %s", serial_port);
 
 	if (pda_mode == true)
 	{
@@ -999,7 +1011,7 @@ void main_loop()
 	}
 
 	if (device_id == 0x00) {
-		logMessage(LOG_NOTICE, "Searching for valid ID, please configure one for faster startup\n");
+		NOTICE("Searching for valid ID, please configure one for faster startup");
 	}
 
 	while (_keepRunning == true)
@@ -1009,21 +1021,21 @@ void main_loop()
 			if (rs_fd < 0)
 			{
 				sprintf(_aqualink_data.last_display_message, CONNECTION_ERROR);
-				logMessage(LOG_ERR, "Aqualink daemon attempting to connect to master device...\n");
+				ERROR("Aqualink daemon attempting to connect to master device...");
 				broadcast_aqualinkstate_error(mgr.active_connections, CONNECTION_ERROR);
 				mg_mgr_poll(&mgr, 1000); // Sevice messages
 				mg_mgr_poll(&mgr, 3000); // should donothing for 3 seconds.
 			}
 			else
 			{
-				logMessage(LOG_ERR, "Aqualink daemon looks like serial error, resetting.\n");
+				ERROR("Aqualink daemon looks like serial error, resetting.");
 				close_serial_port(rs_fd);
 			}
 			rs_fd = init_serial_port(serial_port);
 			blank_read = 0;
 		}
 
-		if (log_raw_RS_bytes) {
+		if (raw_RS_bytes) {
 			packet_length = get_packet_lograw(rs_fd, packet_buffer);
 		}
 		else {
@@ -1033,23 +1045,23 @@ void main_loop()
 		if (packet_length == -1)
 		{
 			// Unrecoverable read error. Force an attempt to reconnect.
-			logMessage(LOG_ERR, "Bad packet length, reconnecting\n");
+			ERROR("Bad packet length, reconnecting");
 			blank_read = MAX_ZERO_READ_BEFORE_RECONNECT;
 		}
 		else if (packet_length == 0)
 		{
-			logMessage(LOG_DEBUG, "Blank packed received\n");
+			DEBUG("Blank packed received");
 			blank_read++;
 		}
 		else if (_config_parameters.device_id == 0x00) {
-			logMessage(LOG_DEBUG, "Finding an unused address\n");
+			DEBUG("Finding an unused address");
 			blank_read = 0;
 			device_id = find_unused_address(packet_buffer);
 			continue;
 		}
 		else if (packet_length > 0)
 		{
-			logMessage(LOG_DEBUG, "Processing packet\n");
+			DEBUG("Processing packet");
 
 			///TEST TEST TEST
 			process_aqualink_packet(packet_buffer, packet_length);
@@ -1060,9 +1072,9 @@ void main_loop()
 			if (packet_length > 0 && packet_buffer[PKT_DEST] == device_id)
 			{
 
-				if (getLogLevel() >= LOG_DEBUG) 
+				if (getLogLevel() >= DEBUG) 
 				{
-					logMessage(LOG_DEBUG, "RS received packet of type %s length %d\n", get_packet_type(packet_buffer, packet_length), packet_length);
+					DEBUG("RS received packet of type %s length %d", get_packet_type(packet_buffer, packet_length), packet_length);
 				}
 
 				// Process the packet. This includes deriving general status, and identifying
@@ -1128,7 +1140,7 @@ void main_loop()
 			time(&now);
 			if (difftime(now, _aqualink_data.unactioned.requested) > 2)
 			{
-				logMessage(LOG_DEBUG, "Actioning delayed request\n");
+				DEBUG("Actioning delayed request");
 				action_delayed_request();
 			}
 		}
@@ -1150,7 +1162,7 @@ void main_loop()
 
 	// NSF need to run through config memory and clean up.
 
-	logMessage(LOG_NOTICE, "Exit!\n");
+	NOTICE("Exit!");
 	exit(EXIT_FAILURE);
 }
 */

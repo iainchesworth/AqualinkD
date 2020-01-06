@@ -1,6 +1,7 @@
 #include "aq_serial_messages.h"
 
 #include <assert.h>
+#include "logging/logging.h"
 #include "aq_serial.h"
 #include "aq_serial_message_ack.h"
 #include "aq_serial_message_probe.h"
@@ -21,74 +22,74 @@ bool process_aqualink_packet(unsigned char* rawPacket, unsigned int length)
 	switch (rawPacket[COMMAND_ID_BYTE_LOCATION])
 	{
 	case CMD_ACK:
-		logMessage(LOG_DEBUG, "AQ_Serial_Messages.c | process_aqualink_packet | Received CMD_ACK packet\n");
+		DEBUG("Received CMD_ACK packet");
 		returnCode = process_ack_packet(rawPacket, length);
 		break;
 
 	case CMD_STATUS:
-		logMessage(LOG_DEBUG, "AQ_Serial_Messages.c | process_aqualink_packet | Received CMD_STATUS packet\n");
+		DEBUG("Received CMD_STATUS packet");
 		returnCode = process_status_packet(rawPacket, length);
 		break;
 
 	case CMD_MSG:
-		logMessage(LOG_DEBUG, "AQ_Serial_Messages.c | process_aqualink_packet | Received CMD_MSG packet\n");
+		DEBUG("Received CMD_MSG packet");
 		break;
 
 	case CMD_MSG_LONG:
-		logMessage(LOG_DEBUG, "AQ_Serial_Messages.c | process_aqualink_packet | Received CMD_MSG_LONG packet\n");
+		DEBUG("Received CMD_MSG_LONG packet");
 		break;
 
 	case CMD_PROBE:
-		logMessage(LOG_DEBUG, "AQ_Serial_Messages.c | process_aqualink_packet | Received CMD_PROBE packet\n");
+		DEBUG("Received CMD_PROBE packet");
 		returnCode = process_probe_packet(rawPacket, length);
 		break;
 
 	case CMD_GETID:
-		logMessage(LOG_DEBUG, "AQ_Serial_Messages.c | process_aqualink_packet | Received CMD_GETID packet\n");
+		DEBUG("Received CMD_GETID packet");
 		break;
 
 	case CMD_PERCENT:
-		logMessage(LOG_DEBUG, "AQ_Serial_Messages.c | process_aqualink_packet | Received CMD_PERCENT packet\n");
+		DEBUG("Received CMD_PERCENT packet");
 		break;
 
 	case CMD_PPM:
-		logMessage(LOG_DEBUG, "AQ_Serial_Messages.c | process_aqualink_packet | Received CMD_PPM packet\n");
+		DEBUG("Received CMD_PPM packet");
 		break;
 
 	case CMD_PDA_0x05:	// PDA UNKNOWN
-		logMessage(LOG_DEBUG, "AQ_Serial_Messages.c | process_aqualink_packet | Received CMD_PDA_0x05 packet\n");
+		DEBUG("Received CMD_PDA_0x05 packet");
 		break;
 
 	case CMD_PDA_0x1B:	// PDA INIT (guess)
-		logMessage(LOG_DEBUG, "AQ_Serial_Messages.c | process_aqualink_packet | Received CMD_PDA_0x1B packet\n");
+		DEBUG("Received CMD_PDA_0x1B packet");
 		break;
 
 	case CMD_PDA_HIGHLIGHT:
-		logMessage(LOG_DEBUG, "AQ_Serial_Messages.c | process_aqualink_packet | Received CMD_PDA_HIGHLIGHT packet\n");
+		DEBUG("Received CMD_PDA_HIGHLIGHT packet");
 		break;
 
 	case CMD_PDA_CLEAR:
-		logMessage(LOG_DEBUG, "AQ_Serial_Messages.c | process_aqualink_packet | Received CMD_PDA_CLEAR packet\n");
+		DEBUG("Received CMD_PDA_CLEAR packet");
 		break;
 
 	case CMD_PDA_SHIFTLINES:
-		logMessage(LOG_DEBUG, "AQ_Serial_Messages.c | process_aqualink_packet | Received CMD_PDA_SHIFTLINES packet\n");
+		DEBUG("Received CMD_PDA_SHIFTLINES packet");
 		break;
 
 	case CMD_PDA_HIGHLIGHTCHARS:
-		logMessage(LOG_DEBUG, "AQ_Serial_Messages.c | process_aqualink_packet | Received CMD_PDA_HIGHLIGHTCHARS packet\n");
+		DEBUG("Received CMD_PDA_HIGHLIGHTCHARS packet");
 		break;
 
 	case CMD_IAQ_MSG:
-		logMessage(LOG_DEBUG, "AQ_Serial_Messages.c | process_aqualink_packet | Received CMD_IAQ_MSG packet\n");
+		DEBUG("Received CMD_IAQ_MSG packet");
 		break;
 
 	case CMD_IAQ_MENU_MSG:
-		logMessage(LOG_DEBUG, "AQ_Serial_Messages.c | process_aqualink_packet | Received CMD_IAQ_MENU_MSG packet\n");
+		DEBUG("Received CMD_IAQ_MENU_MSG packet");
 		break;
 
 	default:
-		logMessage(LOG_DEBUG, "AQ_Serial_Messages.c | process_aqualink_packet | Received unknown packet type\n");
+		DEBUG("Received unknown packet type");
 		returnCode = process_unknown_packet(rawPacket, length);
 		break;
 	}

@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "aquapure.h"
+#include "logging/logging.h"
 #include "serial/aq_serial.h"
 #include "aqualink.h"
 #include "utils.h"
@@ -18,22 +19,18 @@ bool processPacketToSWG(unsigned char* packet, int packet_length, struct aqualin
 
 		// SWG can get ~10 messages to set to 0 then go back again for some reason, so don't go to 0 until 10 messages are received
 		if (swg_zero_cnt <= swg_zero_ignore && packet[4] == 0x00 && packet[5] == 0x73) {
-			logMessage(LOG_DEBUG, "Ignoring SWG set to %d due to packet packet count %d <= %d from control panel to SWG 0x%02hhx 0x%02hhx\n", (int)packet[4],
+			DEBUG("Ignoring SWG set to %d due to packet packet count %d <= %d from control panel to SWG 0x%02hhx 0x%02hhx", (int)packet[4],
 				swg_zero_cnt, swg_zero_ignore, packet[4], packet[5]);
 			swg_zero_cnt++;
 		}
 		else if (swg_zero_cnt > swg_zero_ignore&& packet[4] == 0x00 && packet[5] == 0x73) {
 			aqdata->swg_percent = (int)packet[4];
 			changedAnything = true;
-			// logMessage(LOG_DEBUG, "SWG set to %d due to packet packet count %d <= %d from control panel to SWG 0x%02hhx 0x%02hhx\n",
-			// (int)packet[4],swg_zero_cnt,SWG_ZERO_IGNORE_COUNT,packet[4],packet[5]);  swg_zero_cnt++;
 		}
 		else {
 			swg_zero_cnt = 0;
 			aqdata->swg_percent = (int)packet[4];
 			changedAnything = true;
-			// logMessage(LOG_DEBUG, "SWG set to %d due to packet from control panel to SWG 0x%02hhx 0x%02hhx\n",
-			// aqdata.swg_percent,packet[4],packet[5]);
 		}
 
 		if (aqdata->swg_percent > 100) {
@@ -55,12 +52,12 @@ bool processPacketFromSWG(const unsigned char* packet, int packet_length, struct
 			char sval[10];
 			snprintf(sval, 9, "%d", aqdata->swg_delayed_percent);
 			aq_programmer(AQ_SET_SWG_PERCENT, sval, aqdata);
-			logMessage(LOG_NOTICE, "Setting SWG %% to %d, from delayed message\n", aqdata->swg_delayed_percent);
+			NOTICE("Setting SWG %% to %d, from delayed message", aqdata->swg_delayed_percent);
 			aqdata->swg_delayed_percent = TEMP_UNKNOWN;
 		}
 		aqdata->swg_ppm = packet[4] * 100;
 		changedAnything = true;
-		// logMessage(LOG_DEBUG, "Read SWG PPM %d from ID 0x%02hhx\n", aqdata.swg_ppm, SWG_DEV_ID);
+		// DEBUG("Read SWG PPM %d from ID 0x%02hhx", aqdata.swg_ppm, SWG_DEV_ID);
 	}
 
 	return changedAnything;

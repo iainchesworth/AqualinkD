@@ -5,8 +5,10 @@
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
+#include "logging/logging.h"
 #include "aq_serial.h"
-#include "packetLogger.h"
+#include "aq_serial_checksums.h"
+#include "aq_serial_data_logger.h"
 #include "utils.h"
 
 int serial_getnextpacket(int fd, unsigned char* packet)
@@ -35,7 +37,7 @@ int serial_getnextpacket(int fd, unsigned char* packet)
 		switch (state)
 		{
 		case ST_WAITFOR_PACKETSTART:
-			logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | ST_WAITFOR_PACKETSTART\n");
+			TRACE("ST_WAITFOR_PACKETSTART");
 			{
 				// Clear the byte buffer to prevent any unintended data being copied.
 				unsigned char byte = 0;
@@ -49,24 +51,30 @@ int serial_getnextpacket(int fd, unsigned char* packet)
 					// code different from EAGAIN.  To make a program portable, one should check for both codes and treat them the same way.
 
 					// Nothing to do...so stop looking for serial data.
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | Transition: ST_WAITFOR_PACKETSTART --> ST_TERMINATE_READPACKET\n");
+					TRACE("Transition: ST_WAITFOR_PACKETSTART --> ST_TERMINATE_READPACKET");
 					state = ST_TERMINATE_READPACKET;
 				}
 				else if ((bytesRead < 0) && (EBADF == errno))
 				{
 					// The file descriptor seems to have closed...that's bad but nothing can be done.
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | Transition: ST_WAITFOR_PACKETSTART --> ST_ERROR_OCCURRED\n");
+					TRACE("Transition: ST_WAITFOR_PACKETSTART --> ST_ERROR_OCCURRED");
 					state = ST_ERROR_OCCURRED;
 				}
 				else if ((1 == bytesRead) && (DLE == byte))
 				{
+					// Log the raw byte (which will go out to file if initialised)...
+					TRACE_TO(&aq_serial_data_logger, "%d", byte);
+
 					// This might be the first byte of a new packet...wait and check for the STX byte.
 					prevByte = byte;
 				}
 				else if ((1 == bytesRead) && (STX == byte) && (DLE == prevByte))
 				{
+					// Log the raw byte (which will go out to file if initialised)...
+					TRACE_TO(&aq_serial_data_logger, "%d", byte);
+
 					// Valid packet start...transition and receive the packet payload and terminators.
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | Transition: ST_WAITFOR_PACKETSTART --> ST_RECEIVE_PACKETPAYLOAD\n");
+					TRACE("Transition: ST_WAITFOR_PACKETSTART --> ST_RECEIVE_PACKETPAYLOAD");
 					state = ST_RECEIVE_PACKETPAYLOAD;
 
 					// Clear the prevByte buffer to prevent data carry-over issues.
@@ -74,26 +82,30 @@ int serial_getnextpacket(int fd, unsigned char* packet)
 				}
 				else if (1 == bytesRead)
 				{
+					// Log the raw byte (which will go out to file if initialised)...
+					TRACE_TO(&aq_serial_data_logger, "%d", byte);
+
 					// It was a valid byte but since we are waiting for a packet start...do nothing.
 				}
 				else
 				{
+					log_serial_packet(rawPacketBytes, AQ_MAXPKTLEN, true);
+
 					// Something unexpected/unplanned has happened....log and transition to error.
-					logMessage(LOG_WARNING, "Unknown/unexpected error occured in ST_WAITFOR_PACKETSTART\n");
-					logMessage(LOG_WARNING, "Read error: %d - %s\n", errno, strerror(errno));
+					WARN("Unknown/unexpected error occured in ST_WAITFOR_PACKETSTART");
+					WARN("Read error: %d - %s", errno, strerror(errno));
 
-					logMessage(LOG_DEBUG, "            %d bytes read in last read\n", bytesRead);
-					logMessage(LOG_DEBUG, "            0x%02x read in last read\n", byte);
+					DEBUG("            %d bytes read in last read", bytesRead);
+					DEBUG("            0x%02x read in last read", byte);
 
-					logPacketError(rawPacketBytes, AQ_MAXPKTLEN);
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | Transition: ST_WAITFOR_PACKETSTART --> ST_ERROR_OCCURRED\n");
+					TRACE("Transition: ST_WAITFOR_PACKETSTART --> ST_ERROR_OCCURRED");
 					state = ST_ERROR_OCCURRED;
 				}
 			}
 			break;
 
 		case ST_RECEIVE_PACKETPAYLOAD:
-			logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | ST_RECEIVE_PACKETPAYLOAD\n");
+			TRACE("ST_RECEIVE_PACKETPAYLOAD");
 			{
 				// Clear the byte buffer to prevent any unintended data being copied.
 				unsigned char byte = 0;
@@ -107,25 +119,31 @@ int serial_getnextpacket(int fd, unsigned char* packet)
 					// code different from EAGAIN.  To make a program portable, one should check for both codes and treat them the same way.
 
 					// We were receiving a packet and something's happened...let's retry.
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | Transition: ST_RECEIVE_PACKETPAYLOAD --> ST_RETRY_RECEIVEPAYLOAD\n");
+					TRACE("Transition: ST_RECEIVE_PACKETPAYLOAD --> ST_RETRY_RECEIVEPAYLOAD");
 					state = ST_RETRY_RECEIVEPAYLOAD;
 				}
 				else if ((bytesRead < 0) && (EBADF == errno))
 				{
 					// The file descriptor seems to have closed...that's bad but nothing can be done.
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | Transition: ST_RETRY_RECEIVEPAYLOAD --> ST_ERROR_OCCURRED\n");
+					TRACE("Transition: ST_RETRY_RECEIVEPAYLOAD --> ST_ERROR_OCCURRED");
 					state = ST_ERROR_OCCURRED;
 				}
 				else if ((1 == bytesRead) && (DLE == byte))
 				{
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | ST_RECEIVE_PACKETPAYLOAD - A - 0x%02x\n", byte);
+					// Log the raw byte (which will go out to file if initialised)...
+					TRACE_TO(&aq_serial_data_logger, "%d", byte);
+
+					TRACE("ST_RECEIVE_PACKETPAYLOAD - A - 0x%02x", byte);
 
 					// This might be the last-but-one byte of the current packet...wait and check for the ETX byte.
 					prevByte = byte;
 				}
 				else if ((1 == bytesRead) && (NUL == byte) && (DLE == prevByte))
 				{
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | ST_RECEIVE_PACKETPAYLOAD - B - 0x%02x\n", byte);
+					// Log the raw byte (which will go out to file if initialised)...
+					TRACE_TO(&aq_serial_data_logger, "%d", byte);
+
+					TRACE("ST_RECEIVE_PACKETPAYLOAD - B - 0x%02x", byte);
 
 					// Okay, this is an escaped DLE that is merely part of the packet so keep processing bytes.
 
@@ -139,7 +157,10 @@ int serial_getnextpacket(int fd, unsigned char* packet)
 				}
 				else if ((1 == bytesRead) && (ETX == byte) && (DLE == prevByte))
 				{
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | ST_RECEIVE_PACKETPAYLOAD - C - 0x%02x\n", byte);
+					// Log the raw byte (which will go out to file if initialised)...
+					TRACE_TO(&aq_serial_data_logger, "%d", byte);
+
+					TRACE("ST_RECEIVE_PACKETPAYLOAD - C - 0x%02x", byte);
 
 					// Compute the total number of bytes in the "packet".
 					totalPacketBytesRead = packetPayloadBytesRead + 4;
@@ -151,7 +172,7 @@ int serial_getnextpacket(int fd, unsigned char* packet)
 					rawPacketBytes[packetPayloadBytesRead + 2 + 0] = DLE;
 					rawPacketBytes[packetPayloadBytesRead + 2 + 1] = ETX;
 
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | Transition: ST_RECEIVE_PACKETPAYLOAD --> ST_VALIDATE_PACKETPAYLOAD\n");
+					TRACE("Transition: ST_RECEIVE_PACKETPAYLOAD --> ST_VALIDATE_PACKETPAYLOAD");
 					state = ST_VALIDATE_PACKETPAYLOAD;
 
 					// Clear the prevByte buffer to prevent data carry-over issues.
@@ -159,7 +180,10 @@ int serial_getnextpacket(int fd, unsigned char* packet)
 				}
 				else if ((1 == bytesRead) && (MAXIMUM_PAYLOAD_LENGTH > packetPayloadBytesRead))
 				{
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | ST_RECEIVE_PACKETPAYLOAD - D - 0x%02x\n", byte);
+					// Log the raw byte (which will go out to file if initialised)...
+					TRACE_TO(&aq_serial_data_logger, "%d", byte);
+
+					TRACE("ST_RECEIVE_PACKETPAYLOAD - D - 0x%02x", byte);
 
 					// A payload byte was received - store it away (in the payload section).
 					rawPacketBytes[packetPayloadBytesRead + 2] = byte;
@@ -167,73 +191,76 @@ int serial_getnextpacket(int fd, unsigned char* packet)
 				}
 				else if (MAXIMUM_PAYLOAD_LENGTH <= packetPayloadBytesRead)
 				{
+					log_serial_packet(rawPacketBytes, AQ_MAXPKTLEN, true);
+
+					DEBUG_TO(&aq_serial_data_logger, "BAD PACKET %8.8s Packet | HEX: ", "", "");
+
 					// The payload is too long.  Transition to error state and throw it all away.
-					logMessage(LOG_WARNING, "Serial read too long\n");
-					logPacketError(rawPacketBytes, AQ_MAXPKTLEN);
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | Transition: ST_RECEIVE_PACKETPAYLOAD --> ST_ERROR_OCCURRED\n");
+					WARN("Serial read too long");					
+					TRACE("Transition: ST_RECEIVE_PACKETPAYLOAD --> ST_ERROR_OCCURRED");
 					state = ST_ERROR_OCCURRED;
 				}
 				else
 				{
+					log_serial_packet(rawPacketBytes, AQ_MAXPKTLEN, true);
+
 					// Something unexpected/unplanned has happened....log and transition to error.
-					logMessage(LOG_WARNING, "Unknown/unexpected error occured in ST_RECEIVE_PACKETPAYLOAD\n");
-					logPacketError(rawPacketBytes, AQ_MAXPKTLEN);
+					WARN("Unknown/unexpected error occured in ST_RECEIVE_PACKETPAYLOAD");
+					WARN("Read error: %d - %s", errno, strerror(errno));
 
-					logMessage(LOG_WARNING, "Read error: %d - %s\n", errno, strerror(errno));
-					logMessage(LOG_DEBUG, "            %d bytes read in last read\n", bytesRead);
-					logMessage(LOG_DEBUG, "            0x%02x read in last read\n", byte);
+					DEBUG("            %d bytes read in last read", bytesRead);
+					DEBUG("            0x%02x read in last read", byte);
 
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | Transition: ST_RECEIVE_PACKETPAYLOAD --> ST_ERROR_OCCURRED\n");
+					TRACE("Transition: ST_RECEIVE_PACKETPAYLOAD --> ST_ERROR_OCCURRED");
 					state = ST_ERROR_OCCURRED;
 				}
 			}
 			break;
 
 		case ST_RETRY_RECEIVEPAYLOAD:
-			logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | ST_RETRY_RECEIVEPAYLOAD\n");
+			TRACE("ST_RETRY_RECEIVEPAYLOAD");
 			{
 				++retryCounter;
 
 				if (MAXIMUM_RETRY_COUNT <= retryCounter)
 				{
-					logMessage(LOG_WARNING, "Serial read too short\n");
-					logPacketError(rawPacketBytes, AQ_MAXPKTLEN);
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | Transition: ST_RETRY_RECEIVEPAYLOAD --> ST_ERROR_OCCURRED\n");
+					log_serial_packet(rawPacketBytes, AQ_MAXPKTLEN, true);
+					WARN("Serial read too short");
+					TRACE("Transition: ST_RETRY_RECEIVEPAYLOAD --> ST_ERROR_OCCURRED");
 					state = ST_ERROR_OCCURRED;
 				}
 				else
 				{
-					logMessage(LOG_DEBUG, "Serial read too short - retrying....\n");
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | Transition: ST_RETRY_RECEIVEPAYLOAD --> ST_RECEIVE_PACKETPAYLOAD\n");
+					DEBUG("Serial read too short - retrying....");
+					TRACE("Transition: ST_RETRY_RECEIVEPAYLOAD --> ST_RECEIVE_PACKETPAYLOAD");
 					state = ST_RECEIVE_PACKETPAYLOAD;
-
-					// At 9600 baud, each character takes approx. 1.04 milliseconds.  Delay for a sensible amount.
-					//delayMilliseconds(1);
 				}
 			}
 			break;
 
 		case ST_VALIDATE_PACKETPAYLOAD:
-			logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | ST_VALIDATE_PACKETPAYLOAD\n");
+			TRACE("ST_VALIDATE_PACKETPAYLOAD");
 			{
 				// Valid packet end...validate the packet (semantically) and transition as appropriate.
 				const bool isPentairPacket = (4 <= packetPayloadBytesRead) && (PP1 == rawPacketBytes[2]) && (PP2 == rawPacketBytes[3]) && (PP3 == rawPacketBytes[4]) && (PP4 == rawPacketBytes[5]);
-				const bool checksumIsValid = (isPentairPacket) ? check_pentair_checksum(rawPacketBytes, totalPacketBytesRead) : check_jandy_checksum(rawPacketBytes, totalPacketBytesRead);
+				const bool checksumIsValid = (isPentairPacket) ? validate_pentair_checksum(rawPacketBytes, totalPacketBytesRead) : validate_jandy_checksum(rawPacketBytes, totalPacketBytesRead);
 
 				if (MINIMUM_PAYLOAD_LENGTH > packetPayloadBytesRead)
 				{
+					log_serial_packet(rawPacketBytes, AQ_MAXPKTLEN, true);
+
 					// The packet is too small...something has gone wrong so reject it.
-					logMessage(LOG_WARNING, "Serial read too short\n");
-					logPacketError(rawPacketBytes, AQ_MAXPKTLEN);
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | Transition: ST_VALIDATE_PACKETPAYLOAD --> ST_ERROR_OCCURRED\n");
+					WARN("Serial read too short");
+					TRACE("Transition: ST_VALIDATE_PACKETPAYLOAD --> ST_ERROR_OCCURRED");
 					state = ST_ERROR_OCCURRED;
 				}
 				else if (!checksumIsValid)
 				{
+					log_serial_packet(rawPacketBytes, AQ_MAXPKTLEN, true);
+
 					// The checksum for the packet is incorrect...something has gone wrong so reject it.
-					logMessage(LOG_WARNING, (isPentairPacket) ? "Serial read bad Pentair checksum, ignoring\n" : "Serial read bad Jandy checksum, ignoring\n");
-					logPacketError(rawPacketBytes, AQ_MAXPKTLEN);
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | Transition: ST_VALIDATE_PACKETPAYLOAD --> ST_ERROR_OCCURRED\n");
+					WARN((isPentairPacket) ? "Serial read bad Pentair checksum, ignoring" : "Serial read bad Jandy checksum, ignoring");
+					TRACE("Transition: ST_VALIDATE_PACKETPAYLOAD --> ST_ERROR_OCCURRED");
 					state = ST_ERROR_OCCURRED;
 				}
 				else
@@ -241,34 +268,30 @@ int serial_getnextpacket(int fd, unsigned char* packet)
 					// Looks like we have a good, valid packet so return it back to the caller...
 					memcpy(packet, rawPacketBytes, totalPacketBytesRead);
 					returnCodeOrBytesRead = totalPacketBytesRead;
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | Transition: ST_VALIDATE_PACKETPAYLOAD --> ST_TERMINATE_READPACKET\n");
+					TRACE("Transition: ST_VALIDATE_PACKETPAYLOAD --> ST_TERMINATE_READPACKET");
 					state = ST_TERMINATE_READPACKET;
 				}
 			}
 			break;
 
 		case ST_ERROR_OCCURRED:
-			logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | ST_ERROR_OCCURRED\n");
-			logMessage(LOG_ERR, "Something has happened and the AQ_Serial packet process has entered an error state!\n");
+			TRACE("ST_ERROR_OCCURRED");
+			ERROR("Something has happened and the AQ_Serial packet process has entered an error state!");
 			break;
 
 		case ST_TERMINATE_READPACKET:
-			logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | ST_TERMINATE_READPACKET\n");
+			TRACE("ST_TERMINATE_READPACKET");
 			break;
 
 		default:
-			logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | UNKNOWN STATE\n");
-			logMessage(LOG_ERR, "Something has happened and the AQ_Serial packet process has entered an unknown state!\n");
-			logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_getnextpacket | Transition: UNKNOWN STATE --> ST_ERROR_OCCURRED\n");
+			TRACE("UNKNOWN STATE");
+			ERROR("Something has happened and the AQ_Serial packet process has entered an unknown state!");
+			TRACE("Transition: UNKNOWN STATE --> ST_ERROR_OCCURRED");
 			state = ST_ERROR_OCCURRED;
 			break;
 		}
-
-		///TODO Make this loop act on blocking reads from the serial bus (i.e. no polling).
-
-		// The loop will poll and chew as much CPU as it can.  Delay by a small, but prime, amount.
-		delayMicroseconds(103);
-	} while ((ST_TERMINATE_READPACKET != state) && (ST_ERROR_OCCURRED != state));
+	} 
+	while ((ST_TERMINATE_READPACKET != state) && (ST_ERROR_OCCURRED != state));
 
 	// Return the number of bytes read.  Note this is set to 0 or -1 for error states.
 	return returnCodeOrBytesRead;

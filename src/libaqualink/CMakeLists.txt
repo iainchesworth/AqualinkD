@@ -2,19 +2,37 @@ cmake_minimum_required(VERSION 3.12)
 project(aqualink C)
 
 find_package(Threads REQUIRED)
+find_package(libconfuse REQUIRED)
 find_package(libjson-c REQUIRED)
 find_package(libm REQUIRED)
 find_package(libmicrohttpd REQUIRED)
 
 set(SOURCE_FILES
-  aq_programmer.c 
   config/config.c
   config/config_helpers.c
+  config/config_parsers.c
   config/config_private.c
+  config/config_validators.c
+  hardware/buttons/buttons.c
   json/json_messages.c
   json/json_serializer.c
   json/json_string_utils.c
+  logging/aqualink_default_logger.c
+  logging/logging.c
+  logging/logging_error_handler.c
+  logging/logging_formatter.c
+  logging/logging_levels.c
+  logging/logging_message.c
+  logging/logging_sink.c
+  logging/logging_sink_basic_file.c
+  logging/logging_sink_console.c
+  logging/logging_sink_console_terminal.c
+  logging/logging_sink_registry.c
+  logging/logging_utils.c
+  mqtt/mqtt_utils.c
   serial/aq_serial.c 
+  serial/aq_serial_checksums.c 
+  serial/aq_serial_data_logger.c
   serial/aq_serial_message_ack.c
   serial/aq_serial_message_probe.c
   serial/aq_serial_message_status.c
@@ -22,6 +40,7 @@ set(SOURCE_FILES
   serial/aq_serial_messages.c
   serial/aq_serial_statemachine.c
   serial/aq_serial_threaded.c
+  string/string_utils.c
   threads/thread_utils.c
   web/aq_web.c
   web/aq_web_authentication.c
@@ -31,13 +50,12 @@ set(SOURCE_FILES
   web/aq_web_page_controller.c
   web/aq_web_page_simple.c
   web/aq_web_websockets.c
-  aquapure.c 
-  init_buttons.c 
+  aq_programmer.c 
+  aquapure.c
   net_services.c 
   pda.c 
   pda_aq_programmer.c 
   pda_menu.c 
-  packetLogger.c 
   pentair_messages.c 
   mongoose.c
   utils.c 

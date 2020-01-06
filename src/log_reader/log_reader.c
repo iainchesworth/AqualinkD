@@ -63,13 +63,12 @@ void read_bin_file(char *filename)
 
   int fd = open(filename, O_RDWR | O_NOCTTY | O_NONBLOCK | O_NDELAY);
   if (fd < 0)  {
-    logMessage(LOG_ERR, "Unable to open port: %s\n", filename);
+    ERROR("Unable to open port: %s\n", filename);
     return;
   }
 
   while ( (packet_length = get_packet_new(fd, packet_buffer)) > -1){
     printf("----------------\n");
-    //logPacket(packet_buffer, packet_length);
   }
 
 }
@@ -81,9 +80,7 @@ void create_bin_file(FILE *in, FILE *out) {
   while ( fgets ( hex, 6, in ) != NULL ) /* read a line */
   {
     byte = (int)strtol(hex, NULL, 16);
-    //printf("read 0x%02hhx, %s\n",byte,hex);
     fwrite(&byte, 1,1, out);
-    //return;
   }
 }
 
@@ -142,7 +139,6 @@ int main(int argc, char *argv[]) {
       strncpy(hex, &line[i], 4);
       hex[5] = '\0';
       packet_buffer[packet_length] = (int)strtol(hex, NULL, 16);
-      //printf("%s = 0x%02hhx = %c\n", hex, packet_buffer[packet_length], packet_buffer[packet_length]);
       packet_length++;
     }
     packet_length--;
@@ -150,15 +146,9 @@ int main(int argc, char *argv[]) {
    
     if (packet_buffer[PKT_DEST] == 0x33 && packet_buffer[PKT_CMD] == 0x25)
       logiAqualinkMsg(packet_buffer, packet_length);
-    
-    //if (packet_buffer[PKT_CMD] == 0x24 || packet_buffer[PKT_CMD] == 0x25) {
       
     printf("To 0x%02hhx, type %15.15s, length %2.2d\n", packet_buffer[PKT_DEST], get_packet_type(packet_buffer, packet_length),packet_length);
-    fputs ( line, stdout ); 
-      //printf("Message : '");
-      //fwrite(packet_buffer + 4, 1, packet_length-7, stdout);
-      //printf("'\n");
-    //}
+    fputs ( line, stdout );
     
   }
 

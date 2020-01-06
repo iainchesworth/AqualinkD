@@ -155,12 +155,12 @@ const bool CFG_PdaSleepMode()
 
 const bool CFG_ConvertMqttTemp()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_CONVERT_MQTT_TEMP);
+	return cfg_getbool(_config_parameters, CONFIG_BOOL_CONVERT_MQTT_TEMP_TO_C);
 }
 
 const bool CFG_ConvertDzTemp()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_CONVERT_DZ_TEMP);
+	return cfg_getbool(_config_parameters, CONFIG_BOOL_CONVERT_DZ_TEMP_TO_C);
 }
 
 const bool CFG_ReportZeroPoolTemp()
@@ -200,7 +200,7 @@ const bool CFG_ReadPentairPackets()
 
 const bool CFG_DisplayWarningsWeb()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_DISPLAY_WARNINGS_WEB);
+	return cfg_getbool(_config_parameters, CONFIG_BOOL_DISPLAY_WARNINGS_IN_WEB);
 }
 
 const bool CFG_DebugRsProtocolPackets()
@@ -211,6 +211,11 @@ const bool CFG_DebugRsProtocolPackets()
 const bool CFG_LogRawRsBytes()
 {
 	return cfg_getbool(_config_parameters, CONFIG_BOOL_LOG_RAW_RS_BYTES);
+}
+
+const char* CFG_LogRawRsBytes_LogFile()
+{
+	return cfg_getstr(_config_parameters, CONFIG_STR_LOG_RAW_RS_BYTES_LOGFILE);
 }
 
 //-----------------------------------------------------------------------
@@ -242,4 +247,9 @@ void CFG_Set_DebugRsProtocolPackets(bool debugRsProtocolPackets)
 void CFG_Set_LogRawRsBytes(bool logRawRsBytes)
 {
 	cfg_setbool(_config_parameters, CONFIG_BOOL_LOG_RAW_RS_BYTES, logRawRsBytes);
+}
+
+void CFG_Set_LogRawRsBytes_LogFile(const char* logRawRsBytes_LogFile)
+{
+	cfg_setstr(_config_parameters, CONFIG_STR_LOG_RAW_RS_BYTES_LOGFILE, logRawRsBytes_LogFile);
 }

@@ -26,12 +26,13 @@
 #include "aqualink.h"
 #include "utils.h"
 #include "aq_programmer.h"
+#include "logging/logging.h"
 #include "serial/aq_serial.h"
 #include "pda.h"
 #include "pda_menu.h"
 #include "pda_aq_programmer.h"
 
-#include "init_buttons.h"
+#include "hardware/buttons/buttons.h"
 
 
 #ifdef AQ_DEBUG
@@ -74,7 +75,7 @@ bool loopover_devices(struct aqualinkdata* aq_data) {
 	int index = -1;
 
 	if (!goto_pda_menu(aq_data, PM_EQUIPTMENT_CONTROL)) {
-		logMessage(LOG_ERR, "loopover_devices :- can't goto PM_EQUIPTMENT_CONTROL menu\n");
+		ERROR("loopover_devices :- can't goto PM_EQUIPTMENT_CONTROL menu");
 		//cleanAndTerminateThread(threadCtrl);
 		return false;
 	}
@@ -86,7 +87,7 @@ bool loopover_devices(struct aqualinkdata* aq_data) {
 		waitForPDAMessageTypes(aq_data, CMD_PDA_HIGHLIGHT, CMD_MSG_LONG, 8);
 	}
 	if (index == -1) {
-		logMessage(LOG_ERR, "loopover_devices :- can't find ALL OFF\n");
+		ERROR("loopover_devices :- can't find ALL OFF");
 		return false;
 	}
 
@@ -104,7 +105,7 @@ bool find_pda_menu_item(struct aqualinkdata* aq_data, char* menuText, int charli
 	int index = -1;
 	int cnt = 0;
 
-	logMessage(LOG_DEBUG, "PDA Device programmer looking for menu text '%s'\n", menuText);
+	DEBUG("PDA Device programmer looking for menu text '%s'", menuText);
 
 	if (charlimit == 0)
 	{
@@ -133,12 +134,12 @@ bool find_pda_menu_item(struct aqualinkdata* aq_data, char* menuText, int charli
 				}
 			}
 			if (index < 0) {
-				logMessage(LOG_ERR, "PDA Device programmer couldn't find menu item on any page '%s'\n", menuText);
+				ERROR("PDA Device programmer couldn't find menu item on any page '%s'", menuText);
 				return false;
 			}
 		}
 		else {
-			logMessage(LOG_ERR, "PDA Device programmer couldn't find menu item '%s' in menu %d index %d\n", menuText, pda_m_type(), index);
+			ERROR("PDA Device programmer couldn't find menu item '%s' in menu %d index %d", menuText, pda_m_type(), index);
 			return false;
 		}
 	}
@@ -190,7 +191,7 @@ bool find_pda_menu_item(struct aqualinkdata* aq_data, char* menuText, int charli
 		}
 	}
 
-	logMessage(LOG_DEBUG, "find_pda_menu_item i=%d idx=%d min=%d max=%d\n",
+	DEBUG("find_pda_menu_item i=%d idx=%d min=%d max=%d",
 		i, index, min_index, max_index);
 
 	if (i < index) {
@@ -237,7 +238,7 @@ bool _select_pda_menu_item(struct aqualinkdata* aq_data, char* menuText, bool wa
 	if (find_pda_menu_item(aq_data, menuText, matchType)) {
 		send_cmd(KEY_PDA_SELECT);
 
-		logMessage(LOG_DEBUG, "PDA Device programmer selected menu item '%s'\n", menuText);
+		DEBUG("PDA Device programmer selected menu item '%s'", menuText);
 		if (waitForNextMenu)
 		{
 			waitForPDAnextMenu(aq_data);
@@ -246,7 +247,7 @@ bool _select_pda_menu_item(struct aqualinkdata* aq_data, char* menuText, bool wa
 		return true;
 	}
 
-	logMessage(LOG_ERR, "PDA Device programmer couldn't select menu item '%s' menu %d\n", menuText, pda_m_type());
+	ERROR("PDA Device programmer couldn't select menu item '%s' menu %d", menuText, pda_m_type());
 	return false;
 }
 
@@ -259,17 +260,17 @@ bool _select_pda_menu_item(struct aqualinkdata* aq_data, char* menuText, bool wa
 bool goto_pda_menu(struct aqualinkdata* aq_data, pda_menu_type menu) {
 	bool ret = true;
 
-	logMessage(LOG_DEBUG, "PDA Device programmer request for menu %d\n", menu);
+	DEBUG("PDA Device programmer request for menu %d", menu);
 
 	if (pda_m_type() == PM_FW_VERSION) {
-		logMessage(LOG_DEBUG, "goto_pda_menu at FW version menu\n");
+		DEBUG("goto_pda_menu at FW version menu");
 		send_cmd(KEY_PDA_BACK);
 		if (!waitForPDAnextMenu(aq_data)) {
-			logMessage(LOG_ERR, "PDA Device programmer wait for next menu failed");
+			ERROR("PDA Device programmer wait for next menu failed");
 		}
 	}
 	else if (pda_m_type() == PM_BUILDING_HOME) {
-		logMessage(LOG_DEBUG, "goto_pda_menu building home menu\n");
+		DEBUG("goto_pda_menu building home menu");
 		waitForPDAMessageType(aq_data, CMD_PDA_HIGHLIGHT, 15);
 	}
 
@@ -318,7 +319,7 @@ bool goto_pda_menu(struct aqualinkdata* aq_data, pda_menu_type menu) {
 				}
 			}
 			else {
-				logMessage(LOG_ERR, "PDA in AquaPlalm mode, there is no SYSTEM SETUP / LABEL AUX menu\n");
+				ERROR("PDA in AquaPlalm mode, there is no SYSTEM SETUP / LABEL AUX menu");
 			}
 			break;
 		case PM_SYSTEM_SETUP:
@@ -335,7 +336,7 @@ bool goto_pda_menu(struct aqualinkdata* aq_data, pda_menu_type menu) {
 				}
 			}
 			else {
-				logMessage(LOG_ERR, "PDA in AquaPlalm mode, there is no SYSTEM SETUP menu\n");
+				ERROR("PDA in AquaPlalm mode, there is no SYSTEM SETUP menu");
 			}
 			break;
 		case PM_FREEZE_PROTECT:
@@ -355,7 +356,7 @@ bool goto_pda_menu(struct aqualinkdata* aq_data, pda_menu_type menu) {
 				}
 			}
 			else {
-				logMessage(LOG_ERR, "PDA in AquaPlalm mode, there is no SYSTEM SETUP / FREEZE PROTECT menu\n");
+				ERROR("PDA in AquaPlalm mode, there is no SYSTEM SETUP / FREEZE PROTECT menu");
 			}
 			break;
 		case PM_AQUAPURE:
@@ -381,7 +382,6 @@ bool goto_pda_menu(struct aqualinkdata* aq_data, pda_menu_type menu) {
 				send_cmd(KEY_PDA_BACK);
 				ret = waitForPDAnextMenu(aq_data);
 			}
-			//printf("****MENU SELECT RETURN %d*****\n",ret);
 			break;
 		case PM_SET_TEMP:
 			if (pda_m_type() == PM_HOME) {
@@ -393,7 +393,7 @@ bool goto_pda_menu(struct aqualinkdata* aq_data, pda_menu_type menu) {
 				}
 				else {
 					// Depending on control panel config, may get an extra menu asking to press any key
-					logMessage(LOG_DEBUG, "PDA in single device mode, \n");
+					DEBUG("PDA in single device mode, ");
 					ret = select_pda_menu_item(aq_data, "SET TEMP", false);
 					// We could press enter here, but I can't test it, so just wait for message to dissapear.
 					ret = waitForPDAMessageTypes(aq_data, CMD_PDA_HIGHLIGHT, CMD_PDA_HIGHLIGHTCHARS, 25);
@@ -419,14 +419,14 @@ bool goto_pda_menu(struct aqualinkdata* aq_data, pda_menu_type menu) {
 			}
 			break;
 		default:
-			logMessage(LOG_ERR, "PDA Device programmer didn't understand requested menu\n");
+			ERROR("PDA Device programmer didn't understand requested menu");
 			return false;
 			break;
 		}
-		logMessage(LOG_DEBUG, "PDA Device programmer request for menu %d, current %d\n", menu, pda_m_type());
+		DEBUG("PDA Device programmer request for menu %d, current %d", menu, pda_m_type());
 	}
 	if (pda_m_type() != menu) {
-		logMessage(LOG_ERR, "PDA Device programmer didn't find a requested menu %d, current %d\n", menu, pda_m_type());
+		ERROR("PDA Device programmer didn't find a requested menu %d, current %d", menu, pda_m_type());
 		return false;
 	}
 
@@ -448,25 +448,25 @@ int set_aqualink_PDA_device_on_off(void* ptr)
 	unsigned int device = atoi(&buf[0]);
 	unsigned int state = atoi(&buf[5]);
 
-	if (device > TOTAL_BUTTONS) {
-		logMessage(LOG_ERR, "PDA Device On/Off :- bad device number '%d'\n", device);
+	if (device > AqualinkButtonCount) {
+		ERROR("PDA Device On/Off :- bad device number '%d'", device);
 		cleanAndTerminateThread(threadCtrl);
 		return 0;
 	}
 
-	logMessage(LOG_INFO, "PDA Device On/Off, device '%s', state %d\n", aq_data->aqbuttons[device].pda_label, state);
+	INFO("PDA Device On/Off, device '%s', state %d", aq_data->aqbuttons[device].pda_label, state);
 
 	if (!goto_pda_menu(aq_data, PM_EQUIPTMENT_CONTROL)) {
-		logMessage(LOG_ERR, "PDA Device On/Off :- can't find EQUIPTMENT CONTROL menu\n");
+		ERROR("PDA Device On/Off :- can't find EQUIPTMENT CONTROL menu");
 		cleanAndTerminateThread(threadCtrl);
 		return 0;
 	}
 
 	// If single config (Spa OR pool) rather than (Spa AND pool) heater is TEMP1 and TEMP2
-	if (aq_data->single_device == TRUE && device == POOL_HEAT_INDEX) { // rename Heater and Spa
+	if (aq_data->single_device == TRUE && device == PoolHeater) { // rename Heater and Spa
 		sprintf(device_name, "%-13s\n", "TEMP1");
 	}
-	else if (aq_data->single_device == TRUE && device == SPA_HEAT_INDEX) {// rename Heater and Spa
+	else if (aq_data->single_device == TRUE && device == SpaHeater) {// rename Heater and Spa
 		sprintf(device_name, "%-13s\n", "TEMP2");
 	}
 	else {
@@ -476,21 +476,20 @@ int set_aqualink_PDA_device_on_off(void* ptr)
 
 	if (find_pda_menu_item(aq_data, device_name, 13)) {
 		if (aq_data->aqbuttons[device].led->state != state) {
-			//printf("*** Select State ***\n");
-			logMessage(LOG_INFO, "PDA Device On/Off, found device '%s', changing state\n", aq_data->aqbuttons[device].pda_label, state);
+			INFO("PDA Device On/Off, found device '%s', changing state", aq_data->aqbuttons[device].pda_label, state);
 			send_cmd(KEY_PDA_SELECT);
 			while (get_aq_cmd_length() > 0) { delayMicroseconds(500); }
 			// If you are turning on a heater there will be a sub menu to set temp
-			if ((state == ON) && ((device == POOL_HEAT_INDEX) || (device == SPA_HEAT_INDEX))) {
+			if ((state == ON) && ((device == PoolHeater) || (device == SpaHeater))) {
 				if (!waitForPDAnextMenu(aq_data)) {
-					logMessage(LOG_ERR, "PDA Device On/Off: %s on - waitForPDAnextMenu\n",
+					ERROR("PDA Device On/Off: %s on - waitForPDAnextMenu",
 						aq_data->aqbuttons[device].pda_label);
 				}
 				else {
 					send_cmd(KEY_PDA_SELECT);
 					while (get_aq_cmd_length() > 0) { delayMicroseconds(500); }
 					if (!waitForPDAMessageType(aq_data, CMD_PDA_HIGHLIGHT, 20)) {
-						logMessage(LOG_ERR, "PDA Device On/Off: %s on - wait for CMD_PDA_HIGHLIGHT\n",
+						ERROR("PDA Device On/Off: %s on - wait for CMD_PDA_HIGHLIGHT",
 							aq_data->aqbuttons[device].pda_label);
 					}
 				}
@@ -498,18 +497,18 @@ int set_aqualink_PDA_device_on_off(void* ptr)
 			else { // not turning on heater wait for line update
 			 // worst case spa when pool is running
 				if (!waitForPDAMessageType(aq_data, CMD_MSG_LONG, 2)) {
-					logMessage(LOG_ERR, "PDA Device On/Off: %s on - wait for CMD_MSG_LONG\n",
+					ERROR("PDA Device On/Off: %s on - wait for CMD_MSG_LONG",
 						aq_data->aqbuttons[device].pda_label);
 				}
 			}
 
 		}
 		else {
-			logMessage(LOG_INFO, "PDA Device On/Off, found device '%s', not changing state, is same\n", aq_data->aqbuttons[device].pda_label, state);
+			INFO("PDA Device On/Off, found device '%s', not changing state, is same", aq_data->aqbuttons[device].pda_label, state);
 		}
 	}
 	else {
-		logMessage(LOG_ERR, "PDA Device On/Off, device '%s' not found\n", aq_data->aqbuttons[device].pda_label);
+		ERROR("PDA Device On/Off, device '%s' not found", aq_data->aqbuttons[device].pda_label);
 	}
 
 	cleanAndTerminateThread(threadCtrl);
@@ -530,7 +529,7 @@ int get_aqualink_PDA_device_status(void* ptr)
 	goto_pda_menu(aq_data, PM_HOME);
 
 	if (!loopover_devices(aq_data)) {
-		logMessage(LOG_ERR, "PDA Device Status :- failed\n");
+		ERROR("PDA Device Status :- failed");
 	}
 
 	cleanAndTerminateThread(threadCtrl);
@@ -545,7 +544,7 @@ void* set_aqualink_PDA_init(void* ptr)
 
 	waitForSingleThreadOrTerminate(threadCtrl, AQ_PDA_INIT);
 
-	logMessage(LOG_DEBUG, "PDA Init\n");
+	DEBUG("PDA Init");
 
 	if (pda_m_type() == PM_FW_VERSION) {
 		// check pda_m_line(1) to "AquaPalm"
@@ -561,25 +560,25 @@ void* set_aqualink_PDA_init(void* ptr)
 		ptr2[AQ_MSGLEN + 1] = '\0';
 		snprintf(aq_data->version, (AQ_MSGLEN * 2) - 1, "%s %s", stripwhitespace(ptr1), stripwhitespace(ptr2));
 
-		logMessage(LOG_DEBUG, "PDA type=%d, version=%s\n", _PDA_Type, aq_data->version);
+		DEBUG("PDA type=%d, version=%s", _PDA_Type, aq_data->version);
 		// don't wait for version menu to time out press back to get to home menu faster
 		send_cmd(KEY_PDA_BACK);
 		if (!waitForPDAnextMenu(aq_data)) {
-			logMessage(LOG_ERR, "PDA Init :- wait for next menu failed");
+			ERROR("PDA Init :- wait for next menu failed");
 		}
 	}
 	else {
-		logMessage(LOG_ERR, "PDA Init :- should be called when on FW VERSION menu.\n");
+		ERROR("PDA Init :- should be called when on FW VERSION menu.");
 	}
 
 	// Get heater setpoints
 	if (!get_PDA_aqualink_pool_spa_heater_temps(aq_data)) {
-		logMessage(LOG_ERR, "PDA Init :- Error getting heater setpoints\n");
+		ERROR("PDA Init :- Error getting heater setpoints");
 	}
 
 	// Get freeze protect setpoint, AquaPalm doesn't have freeze protect in menu.
 	if (_PDA_Type != AQUAPALM && !get_PDA_freeze_protect_temp(aq_data)) {
-		logMessage(LOG_ERR, "PDA Init :- Error getting freeze setpoints\n");
+		ERROR("PDA Init :- Error getting freeze setpoints");
 	}
 
 	pda_reset_sleep();
@@ -599,11 +598,11 @@ int set_aqualink_PDA_wakeinit(void* ptr)
 	// it means the wake was called due to changing a device.
 	waitForSingleThreadOrTerminate(threadCtrl, AQ_PDA_WAKE_INIT);
 
-	logMessage(LOG_DEBUG, "PDA Wake Init\n");
+	DEBUG("PDA Wake Init");
 
 	// Get status of all devices
 	if (!loopover_devices(aq_data)) {
-		logMessage(LOG_ERR, "PDA Init :- can't find menu\n");
+		ERROR("PDA Init :- can't find menu");
 	}
 
 	cleanAndTerminateThread(threadCtrl);
@@ -624,7 +623,7 @@ bool get_PDA_freeze_protect_temp(struct aqualinkdata* aq_data) {
 	}
 
 
-	logMessage(LOG_INFO, "In PDA AquaPalm mode, freezepoints not supported\n");
+	INFO("In PDA AquaPalm mode, freezepoints not supported");
 	return false;
 }
 
@@ -640,7 +639,7 @@ bool get_PDA_aqualink_pool_spa_heater_temps(struct aqualinkdata* aq_data) {
 
 bool waitForPDAMessageHighlight(struct aqualinkdata* aq_data, int highlighIndex, int numMessageReceived)
 {
-	logMessage(LOG_DEBUG, "waitForPDAMessageHighlight index %d\n", highlighIndex);
+	DEBUG("waitForPDAMessageHighlight index %d", highlighIndex);
 
 	if (pda_m_hlightindex() == highlighIndex) 
 	{
@@ -652,7 +651,7 @@ bool waitForPDAMessageHighlight(struct aqualinkdata* aq_data, int highlighIndex,
 
 	while (++i <= numMessageReceived)
 	{
-		logMessage(LOG_DEBUG, "waitForPDAMessageHighlight last = 0x%02hhx : index %d : (%d of %d)\n", aq_data->last_packet_type, pda_m_hlightindex(), i, numMessageReceived);
+		DEBUG("waitForPDAMessageHighlight last = 0x%02hhx : index %d : (%d of %d)", aq_data->last_packet_type, pda_m_hlightindex(), i, numMessageReceived);
 
 		if (aq_data->last_packet_type == CMD_PDA_HIGHLIGHT && pda_m_hlightindex() == highlighIndex)
 		{
@@ -665,25 +664,25 @@ bool waitForPDAMessageHighlight(struct aqualinkdata* aq_data, int highlighIndex,
 	mtx_unlock(&aq_data->active_thread.thread_mutex);
 
 	if (pda_m_hlightindex() != highlighIndex) {
-		logMessage(LOG_DEBUG, "waitForPDAMessageHighlight: did not receive index '%d'\n", highlighIndex);
+		DEBUG("waitForPDAMessageHighlight: did not receive index '%d'", highlighIndex);
 		return false;
 	}
 	
-	logMessage(LOG_DEBUG, "waitForPDAMessageHighlight: received index '%d'\n", highlighIndex);
+	DEBUG("waitForPDAMessageHighlight: received index '%d'", highlighIndex);
 	return true;
 }
 
 
 bool waitForPDAMessageType(struct aqualinkdata* aq_data, unsigned char mtype, int numMessageReceived)
 {
-	logMessage(LOG_DEBUG, "waitForPDAMessageType  0x%02hhx\n", mtype);
+	DEBUG("waitForPDAMessageType  0x%02hhx", mtype);
 
 	int i = 0;
 	mtx_lock(&aq_data->active_thread.thread_mutex);
 
 	while (++i <= numMessageReceived)
 	{
-		logMessage(LOG_DEBUG, "waitForPDAMessageType 0x%02hhx, last message type was 0x%02hhx (%d of %d)\n", mtype, aq_data->last_packet_type, i, numMessageReceived);
+		DEBUG("waitForPDAMessageType 0x%02hhx, last message type was 0x%02hhx (%d of %d)", mtype, aq_data->last_packet_type, i, numMessageReceived);
 
 		if (aq_data->last_packet_type == mtype)
 		{
@@ -696,18 +695,18 @@ bool waitForPDAMessageType(struct aqualinkdata* aq_data, unsigned char mtype, in
 	mtx_unlock(&aq_data->active_thread.thread_mutex);
 
 	if (aq_data->last_packet_type != mtype) {
-		logMessage(LOG_DEBUG, "waitForPDAMessageType: did not receive 0x%02hhx\n", mtype);
+		DEBUG("waitForPDAMessageType: did not receive 0x%02hhx", mtype);
 		return false;
 	}
 	
-	logMessage(LOG_DEBUG, "waitForPDAMessageType: received 0x%02hhx\n", mtype);
+	DEBUG("waitForPDAMessageType: received 0x%02hhx", mtype);
 	return true;
 }
 
 // Wait for Message, hit return on particular menu.
 bool waitForPDAMessageTypesOrMenu(struct aqualinkdata* aq_data, unsigned char mtype1, unsigned char mtype2, int numMessageReceived, char* text, int line)
 {
-	logMessage(LOG_DEBUG, "waitForPDAMessageTypes  0x%02hhx or 0x%02hhx\n", mtype1, mtype2);
+	DEBUG("waitForPDAMessageTypes  0x%02hhx or 0x%02hhx", mtype1, mtype2);
 
 	int i = 0;
 	bool gotmenu = false;
@@ -719,10 +718,10 @@ bool waitForPDAMessageTypesOrMenu(struct aqualinkdata* aq_data, unsigned char mt
 			if (stristr(pda_m_line(line), text) != NULL) {
 				send_cmd(KEY_PDA_SELECT);
 				gotmenu = true;
-				logMessage(LOG_DEBUG, "waitForPDAMessageTypesOrMenu saw '%s' and line %d\n", text, line);
+				DEBUG("waitForPDAMessageTypesOrMenu saw '%s' and line %d", text, line);
 			}
 		}
-		logMessage(LOG_DEBUG, "waitForPDAMessageTypes 0x%02hhx | 0x%02hhx, last message type was 0x%02hhx (%d of %d)\n", mtype1, mtype2, aq_data->last_packet_type, i, numMessageReceived);
+		DEBUG("waitForPDAMessageTypes 0x%02hhx | 0x%02hhx, last message type was 0x%02hhx (%d of %d)", mtype1, mtype2, aq_data->last_packet_type, i, numMessageReceived);
 
 		if (aq_data->last_packet_type == mtype1 || aq_data->last_packet_type == mtype2)
 		{
@@ -735,11 +734,11 @@ bool waitForPDAMessageTypesOrMenu(struct aqualinkdata* aq_data, unsigned char mt
 	mtx_unlock(&aq_data->active_thread.thread_mutex);
 
 	if (aq_data->last_packet_type != mtype1 && aq_data->last_packet_type != mtype2) {
-		logMessage(LOG_ERR, "waitForPDAMessageTypes: did not receive 0x%02hhx or 0x%02hhx\n", mtype1, mtype2);
+		ERROR("waitForPDAMessageTypes: did not receive 0x%02hhx or 0x%02hhx", mtype1, mtype2);
 		return false;
 	}
 	
-	logMessage(LOG_DEBUG, "waitForPDAMessageTypes: received 0x%02hhx\n", aq_data->last_packet_type);
+	DEBUG("waitForPDAMessageTypes: received 0x%02hhx", aq_data->last_packet_type);
 	return true;
 }
 
@@ -752,7 +751,7 @@ bool set_PDA_numeric_field_value(struct aqualinkdata* aq_data, int val, const in
 	int i = 0;
 
 	if (val == *cur_val) {
-		logMessage(LOG_INFO, "PDA %s value : already at %d\n", select_label, val);
+		INFO("PDA %s value : already at %d", select_label, val);
 		return true;
 	}
 	if (select_label != NULL) {
@@ -764,7 +763,7 @@ bool set_PDA_numeric_field_value(struct aqualinkdata* aq_data, int val, const in
 			delayMicroseconds(500);  // Last message probably was CMD_PDA_HIGHLIGHT, so wait before checking.
 			waitForPDAMessageType(aq_data, CMD_PDA_HIGHLIGHT, 2);
 			if (i > 10) {
-				logMessage(LOG_ERR, "PDA numeric selector could not find string '%s'\n", select_label);
+				ERROR("PDA numeric selector could not find string '%s'", select_label);
 				return false;
 			}
 			i++;
@@ -773,25 +772,25 @@ bool set_PDA_numeric_field_value(struct aqualinkdata* aq_data, int val, const in
 	}
 
 	if (val < *cur_val) {
-		logMessage(LOG_DEBUG, "PDA %s value : lower from %d to %d\n", select_label, *cur_val, val);
+		DEBUG("PDA %s value : lower from %d to %d", select_label, *cur_val, val);
 		for (i = *cur_val; i > val; i = i - step) {
 			send_cmd(KEY_PDA_DOWN);
 		}
 	}
 	else if (val > * cur_val) {
-		logMessage(LOG_DEBUG, "PDA %s value : raise from %d to %d\n", select_label, *cur_val, val);
+		DEBUG("PDA %s value : raise from %d to %d", select_label, *cur_val, val);
 		for (i = *cur_val; i < val; i = i + step) {
 			send_cmd(KEY_PDA_UP);
 		}
 	}
 	else {
-		logMessage(LOG_INFO, "PDA %s value : already at %d\n", select_label, val);
+		INFO("PDA %s value : already at %d", select_label, val);
 		send_cmd(KEY_PDA_BACK);
 		return true;
 	}
 
 	send_cmd(KEY_PDA_SELECT);
-	logMessage(LOG_DEBUG, "PDA %s value : set to %d\n", select_label, *cur_val);
+	DEBUG("PDA %s value : set to %d", select_label, *cur_val);
 
 	return true;
 }
@@ -799,10 +798,10 @@ bool set_PDA_numeric_field_value(struct aqualinkdata* aq_data, int val, const in
 bool set_PDA_aqualink_SWG_setpoint(struct aqualinkdata* aq_data, int val) {
 
 	if (!goto_pda_menu(aq_data, PM_AQUAPURE)) {
-		logMessage(LOG_ERR, "Error finding SWG setpoints menu\n");
+		ERROR("Error finding SWG setpoints menu");
 	}
 
-	if (aq_data->aqbuttons[SPA_INDEX].led->state != OFF)
+	if (aq_data->aqbuttons[SpaMode].led->state != OFF)
 	{
 		return set_PDA_numeric_field_value(aq_data, val, &aq_data->swg_percent, "SET SPA", 5);
 	}
@@ -813,7 +812,7 @@ bool set_PDA_aqualink_SWG_setpoint(struct aqualinkdata* aq_data, int val) {
 bool set_PDA_aqualink_boost(struct aqualinkdata* aq_data, bool val)
 {
 	if (!goto_pda_menu(aq_data, PM_BOOST)) {
-		logMessage(LOG_ERR, "Error finding BOOST menu\n");
+		ERROR("Error finding BOOST menu");
 		return false;
 	}
 
@@ -827,7 +826,7 @@ bool set_PDA_aqualink_boost(struct aqualinkdata* aq_data, bool val)
 		}
 		else
 		{
-			logMessage(LOG_ERR, "Error finding BOOST START menu\n");
+			ERROR("Error finding BOOST START menu");
 			return false;
 		}
 	}
@@ -867,13 +866,13 @@ bool set_PDA_aqualink_heater_setpoint(struct aqualinkdata* aq_data, int val, boo
 	}
 
 	if (val == *cur_val) {
-		logMessage(LOG_INFO, "PDA %s setpoint : temp already %d\n", label, val);
+		INFO("PDA %s setpoint : temp already %d", label, val);
 		send_cmd(KEY_PDA_BACK);
 		return true;
 	}
 
 	if (!goto_pda_menu(aq_data, PM_SET_TEMP)) {
-		logMessage(LOG_ERR, "Error finding heater setpoints menu\n");
+		ERROR("Error finding heater setpoints menu");
 		return false;
 	}
 
@@ -886,19 +885,19 @@ bool set_PDA_aqualink_freezeprotect_setpoint(struct aqualinkdata* aq_data, int v
 
 	if (_PDA_Type != PDA) 
 	{
-		logMessage(LOG_INFO, "In PDA AquaPalm mode, freezepoints not supported\n");
+		INFO("In PDA AquaPalm mode, freezepoints not supported");
 		return false;
 	}
 	
 	if (!goto_pda_menu(aq_data, PM_FREEZE_PROTECT))
 	{
-		logMessage(LOG_ERR, "Error finding freeze protect setpoints menu\n");
+		ERROR("Error finding freeze protect setpoints menu");
 		return false;
 	}
 	
 	if (!set_PDA_numeric_field_value(aq_data, val, &aq_data->frz_protect_set_point, NULL, 1)) 
 	{
-		logMessage(LOG_ERR, "Error failed to set freeze protect temp value\n");
+		ERROR("Error failed to set freeze protect temp value");
 		return false;
 	}
 	

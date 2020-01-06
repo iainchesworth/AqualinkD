@@ -4,8 +4,6 @@
 #ifndef UTILS_H_
 #define UTILS_H_
 
-#define LOG_DEBUG_SERIAL 8
-
 #ifndef EXIT_SUCCESS
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0
@@ -29,10 +27,7 @@ void setLoggingPrms(int level, bool deamonized, const char* log_file, const char
 int getLogLevel();
 void daemonise(char* pidFile, void (*main_function)(void));
 void displayLastSystemError(const char* on_what);
-void logMessage(int level, char* format, ...);
 int count_characters(const char* str, char character);
-int text2elevel(char* level);
-char* elevel2text(int level);
 char* cleanwhitespace(char* str);
 char* chopwhitespace(char* str);
 char* trimwhitespace(char* str);
@@ -54,11 +49,6 @@ void stopInlineDebug();
 void cleanInlineDebug();
 char* getInlineLogFName();
 bool islogFileReady();
-
-//#ifndef _UTILS_C_
-extern bool _daemon_;
-extern bool _debuglog_;
-extern bool _debug2file_;
-//#endif
+bool mac(char* buf, int len);
 
 #endif /* UTILS_H_ */

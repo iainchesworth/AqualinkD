@@ -57,7 +57,7 @@ bool _playback_file = false;
 
 void intHandler(int dummy) {
   _keepRunning = false;
-  logMessage(LOG_NOTICE, "Stopping!");
+  NOTICE("Stopping!");
   if (_playback_file)  // If we are reading file, loop is irevelent
     exit(0);
 }
@@ -293,7 +293,7 @@ int main(int argc, char *argv[]) {
   if (_playback_file) {
     rs_fd = open(argv[1], O_RDONLY | O_NOCTTY | O_NONBLOCK | O_NDELAY);
     if (rs_fd < 0)  {
-      logMessage(LOG_ERR, "Unable to open file: %s\n", argv[1]);
+      ERROR("Unable to open file: %s\n", argv[1]);
       displayLastSystemError(argv[1]);
       return -1;
     }
@@ -304,13 +304,13 @@ int main(int argc, char *argv[]) {
   signal(SIGINT, intHandler);
   signal(SIGTERM, intHandler);
 
-  logMessage(LOG_NOTICE, "Logging serial information!\n");
+  NOTICE("Logging serial information!\n");
   if (logLevel < LOG_DEBUG)
     printf("Please wait.");
 
   while (_keepRunning == true) {
     if (rs_fd < 0) {
-      logMessage(LOG_ERR, "ERROR, serial port disconnect\n");
+      ERROR("ERROR, serial port disconnect\n");
     }
 
     //packet_length = get_packet(rs_fd, packet_buffer);
@@ -318,13 +318,13 @@ int main(int argc, char *argv[]) {
 
     if (packet_length == -1) {
       // Unrecoverable read error. Force an attempt to reconnect.
-      logMessage(LOG_ERR, "ERROR, on serial port\n");
+      ERROR("ERROR, on serial port\n");
       _keepRunning = false;
     } else if (packet_length == 0) {
       // Nothing read
     } else if (packet_length > 0) {
 
-        //logMessage(LOG_DEBUG_SERIAL, "Received Packet for ID 0x%02hhx of type %s\n", packet_buffer[PKT_DEST], get_packet_type(packet_buffer, packet_length));
+        //TRACE("Received Packet for ID 0x%02hhx of type %s\n", packet_buffer[PKT_DEST], get_packet_type(packet_buffer, packet_length));
         if (logLevel > LOG_NOTICE)
           printPacket(lastID, packet_buffer, packet_length);
 
@@ -358,7 +358,7 @@ int main(int argc, char *argv[]) {
          }
 
          if (packet_buffer[PKT_DEST] == DEV_MASTER /*&& packet_buffer[PKT_CMD] == CMD_ACK*/) {
-          //logMessage(LOG_NOTICE, "ID is in use 0x%02hhx %x\n", lastID, lastID);
+          //NOTICE("ID is in use 0x%02hhx %x\n", lastID, lastID);
           for (i = 0; i <= sindex; i++) {
             if (slog[i].ID == lastID) {
               slog[i].inuse = true;
@@ -370,19 +370,6 @@ int main(int argc, char *argv[]) {
         lastID = packet_buffer[PKT_DEST];
       }
       received_packets++;
-
-      // NSF TESTING
-      /*
-        if (packet_buffer[PKT_DEST] == 0x40) {
-          static int hex = 0;
-          //printf("Sent ack\n");
-          //printf("Sent ack hex 0x%02hhx\n",(unsigned char)hex);
-          //send_extended_ack (rs_fd, 0x8b, (unsigned char)hex);
-          send_extended_ack (rs_fd, 0x8b, 0x00);
-          hex++;
-         
-        }*/
-// NSF
     }
 
     if (logPackets != 0 && received_packets >= logPackets) {
@@ -394,32 +381,32 @@ int main(int argc, char *argv[]) {
     //sleep(1);
   }
 
-  logMessage(LOG_DEBUG, "\n\n");
+  DEBUG("\n\n");
   if (logLevel < LOG_DEBUG)
     printf("\n\n");
 
   if (sindex >= SLOG_MAX)
-    logMessage(LOG_ERR, "Ran out of storage, some ID's were not captured, please increase SLOG_MAX and recompile\n");
-  logMessage(LOG_NOTICE, "Jandy ID's found\n");
+    ERROR("Ran out of storage, some ID's were not captured, please increase SLOG_MAX and recompile\n");
+  NOTICE("Jandy ID's found\n");
   for (i = 0; i < sindex; i++) {
-    //logMessage(LOG_NOTICE, "ID 0x%02hhx is %s %s\n", slog[i].ID, (slog[i].inuse == true) ? "in use" : "not used",
+    //NOTICE("ID 0x%02hhx is %s %s\n", slog[i].ID, (slog[i].inuse == true) ? "in use" : "not used",
     //           (slog[i].inuse == false && canUse(slog[i].ID) == true)? " <-- can use for Aqualinkd" : "");
     if (logLevel >= LOG_DEBUG || slog[i].inuse == true || canUse(slog[i].ID) == true) {
-      logMessage(LOG_NOTICE, "ID 0x%02hhx is %s %s\n", slog[i].ID, (slog[i].inuse == true) ? "in use" : "not used",
+      NOTICE("ID 0x%02hhx is %s %s\n", slog[i].ID, (slog[i].inuse == true) ? "in use" : "not used",
                (slog[i].inuse == false)?canUseExtended(slog[i].ID):getDevice(slog[i].ID));
     }
   }
 
   if (pent_sindex > 0) {
-    logMessage(LOG_NOTICE, "\n\n");
-    logMessage(LOG_NOTICE, "Pentair ID's found\n");
+    NOTICE("\n\n");
+    NOTICE("Pentair ID's found\n");
   }
   for (i=0; i < pent_sindex; i++) {
-    logMessage(LOG_NOTICE, "ID 0x%02hhx is %s %s\n", pent_slog[i].ID, (pent_slog[i].inuse == true) ? "in use" : "not used",
+    NOTICE("ID 0x%02hhx is %s %s\n", pent_slog[i].ID, (pent_slog[i].inuse == true) ? "in use" : "not used",
                (pent_slog[i].inuse == false)?canUseExtended(pent_slog[i].ID):getPentairDevice(pent_slog[i].ID));
   }
 
-  logMessage(LOG_NOTICE, "\n\n");
+  NOTICE("\n\n");
 
   return 0;
 }

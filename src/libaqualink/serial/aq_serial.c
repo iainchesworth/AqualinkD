@@ -27,11 +27,14 @@
 #include <assert.h>
 
 #include "config/config.h"
+#include "config/config_helpers.h"
+#include "logging/logging.h"
 #include "aq_serial.h"
+#include "aq_serial_checksums.h"
+#include "aq_serial_data_logger.h"
 #include "aq_serial_statemachine.h"
 #include "aq_serial_types.h"
 #include "utils.h"
-#include "packetLogger.h"
 
 static struct termios _oldtio;
 
@@ -42,7 +45,7 @@ bool _pda_mode = false;
 void set_pda_mode(bool mode)
 {
 	if (mode) {
-		logMessage(LOG_NOTICE, "AqualinkD is using PDA mode\n");
+		NOTICE("AqualinkD is using PDA mode");
 	}
 
 	_pda_mode = mode;
@@ -117,71 +120,6 @@ const char* get_packet_type(unsigned char* packet, int length)
 	}
 }
 
-// Generate and return checksum of packet.
-int generate_checksum(const unsigned char* packet, int length)
-{
-	int i, sum, n;
-
-	n = length - 3;
-	sum = 0;
-	for (i = 0; i < n; i++)
-	{
-		sum += (int)packet[i];
-	}
-
-	return(sum & 0x0ff);
-}
-
-bool check_jandy_checksum(const unsigned char* packet, int length)
-{
-	if (generate_checksum(packet, length) == packet[length - 3])
-	{
-		return true;
-	}
-
-	return false;
-}
-
-bool check_pentair_checksum(const unsigned char* packet, int length)
-{
-	int i, sum, n;
-	n = packet[8] + 9;
-	sum = 0;
-	for (i = 3; i < n; i++) {
-		sum += (int)packet[i];
-	}
-
-	// Check against calculated length
-	if (sum == (packet[length - 2] * 256 + packet[length - 1]))
-	{
-		return true;
-	}
-
-	// Check against actual # length
-	if (sum == (packet[n] * 256 + packet[n + 1])) {
-		logMessage(LOG_ERR, "Pentair checksum is accurate but length is not\n");
-		return true;
-	}
-
-	return false;
-}
-
-void generate_pentair_checksum(unsigned char* packet, int length)
-{
-	int i, sum, n;
-	n = packet[8] + 9;
-	sum = 0;
-
-	for (i = 3; i < n; i++) 
-	{
-		sum += (int)packet[i];
-	}
-
-	packet[n + 1] = (unsigned char)(sum & 0xFF);        // Low Byte
-	packet[n] = (unsigned char)((sum >> 8) & 0xFF);		// High Byte
-
-}
-
 protocolType getProtocolType(const unsigned char* packet) 
 {
 	if (packet[0] == DLE)
@@ -232,7 +170,7 @@ void print_hex(char* pk, int length)
  <-------  headder ----> <-- type to from type-> <len> <------------------------------ data ----------------------------------------> <checksum>
 */
 
-void send_pentair_command(int fd, unsigned char* packet_buffer, int size)
+void send_pentair_command(int fd, const unsigned char* packet_buffer, int size)
 {
 	unsigned char packet[AQ_MAXPKTLEN];
 	int i = 0;
@@ -263,7 +201,7 @@ void send_pentair_command(int fd, unsigned char* packet_buffer, int size)
 	send_packet(fd, packet, i);
 }
 
-void send_jandy_command(int fd, unsigned char* packet_buffer, int size)
+void send_jandy_command(int fd, const unsigned char* packet_buffer, int size)
 {
 	unsigned char packet[AQ_MAXPKTLEN];
 	int i = 0;
@@ -280,12 +218,12 @@ void send_jandy_command(int fd, unsigned char* packet_buffer, int size)
 	packet[++i] = ETX;
 	packet[++i] = NUL;
 
-	packet[i - 3] = generate_checksum(packet, i);
+	packet[i - 3] = generate_jandy_checksum(packet, i);
 
 	send_packet(fd, packet, ++i);
 }
 
-void send_command(int fd, unsigned char* packet_buffer, int size)
+void send_command(int fd, const unsigned char* packet_buffer, int size)
 {
 	if (packet_buffer[0] == PCOL_JANDY) {
 		send_jandy_command(fd, &packet_buffer[1], size - 1);
@@ -303,12 +241,15 @@ void send_packet(int fd, unsigned char* packet, int length)
 	for (i = 0; i < length; i += nwrite) {
 		nwrite = write(fd, packet + i, length - i);
 		if (nwrite < 0)
-			logMessage(LOG_ERR, "write to serial port failed\n");
+		{
+			ERROR("write to serial port failed");
+		}
 	}
 
-	if (getLogLevel() >= LOG_DEBUG_SERIAL) {
-		logMessage(LOG_DEBUG_SERIAL, "Serial send %d bytes\n", length - 2);
-		logPacket(&packet[1], length - 2);
+	if (CFG_LogLevel() > Debug) 
+	{
+		TRACE("Serial send %d bytes", length - 2);
+		log_serial_packet(&packet[1], length - 2, false);
 	}
 }
 
@@ -323,7 +264,7 @@ void _send_ack(int fd, unsigned char ack_type, unsigned char command)
 		//ackPacket[5] = 0x00 normal, 0x03 some pause, 0x01 some pause ending  (0x01 = Screen Busy (also return from logn message))
 		ackPacket[5] = ack_type;
 		ackPacket[6] = command;
-		ackPacket[7] = generate_checksum(ackPacket, length - 1);
+		ackPacket[7] = generate_jandy_checksum(ackPacket, length - 1);
 	}
 
 	send_packet(fd, ackPacket, length);

@@ -6,19 +6,31 @@
 #include <stdlib.h>
 #include <syslog.h>
 #include "config/config_helpers.h"
+#include "logging/logging.h"
+#include "version/version.h"
 #include "utils.h"
-#include "version.h"
 
 void printHelp()
 {
-	printf("%s %s\n", AQUALINKD_NAME, AQUALINKD_VERSION);
-	printf("\t-h         (this message)\n");
-	printf("\t-d         (do not deamonize)\n");
-	printf("\t-c <file>  (Configuration file)\n");
-	printf("\t-v         (Debug logging)\n");
-	printf("\t-vv        (Serial Debug logging)\n");
-	printf("\t-rsd       (RS485 debug)\n");
-	printf("\t-rsrd      (RS485 raw debug)\n");
+	printf("Usage: %s [options]\n", AQUALINKD_NAME);
+	printf("\n");
+	printf("A daemon to control Jandy Aqualink RS pool equipment from any home automation hub or web browser.");
+	printf("\n");
+	printf("Options:\n");
+	printf("\n");
+	printf("\t-c, --config-file <file>                    Daemon configuration file (default: %s)\n");
+	printf("\t-D, --debug                                 Enable debug level logging\n");
+	printf("\t-h, --help                                  Print usage information\n");
+	printf("\t    --log-file <file>                       Daemon log file (default: %s)\n");
+	printf("\t    --log-raw-serial                        Log all received serial bytes as-received without decoding\n");
+	printf("\t    --log-raw-serial-file <file>            Raw serial log file (default: %s)\n");
+	printf("\t    --log-serial                            Log decoded serial payloads\n");
+	printf("\t    --log-serial-file <file>                Serial log file (default: %s)\n");
+	printf("\t-n, --no-daemonise                          Prevent %s from running as a daemon\n");
+	printf("\t-p, --pid-file <file>                       ath to use for daemon PID file (default: %s)");
+	printf("\t-s, --serial-port <file>                    Serial port/device to connect with (default: %s)\n");
+	printf("\t    --trace                                 Enable trace level logging\n");
+	printf("\t-v, --version                               Print version information and quit\n");
 }
 
 // For long options that don't have a corresponding short option, the flag should 
@@ -28,32 +40,45 @@ void printHelp()
 
 enum aqualink_option_flags
 {
-	OPTION_FLAG_HELP = 'h',
-	OPTION_FLAG_NO_DAEMONIZE = 'd',
 	OPTION_FLAG_CONFIG_FILE = 'c',
-	OPTION_FLAG_DEBUG = 'v',
-
+	OPTION_FLAG_DEBUG = 'D',
+	OPTION_FLAG_HELP = 'h',
+	OPTION_FLAG_NO_DAEMONIZE = 'n',
+	OPTION_FLAG_PID_FILE = 'p',
+	OPTION_FLAG_SERIAL_DEVICE = 's',
+	OPTION_FLAG_VERSION = 'v',
+	
 	// Long options without a corresponding short option.
-	OPTION_FLAG_RSD = 0x100,
-	OPTION_FLAG_RSRD = 0x101
+	OPTION_FLAG_LOG_FILE = 0x100,
+	OPTION_FLAG_LOG_RAW_SERIAL = 0x101,
+	OPTION_FLAG_LOG_RAW_SERIAL_FILE = 0x102,
+	OPTION_FLAG_LOG_SERIAL = 0x103,
+	OPTION_FLAG_LOG_SERIAL_FILE = 0x104,
+	OPTION_FLAG_TRACE = 0x105
 };
 
 void handleOptions(int argc, char* argv[])
 {
-	assert(0 == _config_parameters);
-
 	static const struct option aqualink_long_options[] =
 	{
-		{ "help",         no_argument,       0, OPTION_FLAG_HELP},
-		{ "no-daemonize", no_argument,       0, OPTION_FLAG_NO_DAEMONIZE},
-		{ "config-file",  required_argument, 0, OPTION_FLAG_CONFIG_FILE},
-		{ "debug",        no_argument,       0, OPTION_FLAG_DEBUG},
-		{ "rsd",          no_argument,       0, OPTION_FLAG_RSD},
-		{ "rsrd",         no_argument,       0, OPTION_FLAG_RSRD},
+		{ "config-file",			required_argument,	0, OPTION_FLAG_CONFIG_FILE },
+		{ "debug",					no_argument,		0, OPTION_FLAG_DEBUG },
+		{ "help",					no_argument,		0, OPTION_FLAG_HELP },
+		{ "log-file",				required_argument,	0, OPTION_FLAG_LOG_FILE },
+		{ "log-raw-serial",			no_argument,		0, OPTION_FLAG_LOG_RAW_SERIAL },
+		{ "log-raw-serial-file",	required_argument,	0, OPTION_FLAG_LOG_RAW_SERIAL_FILE },
+		{ "log-serial",				no_argument,		0, OPTION_FLAG_LOG_SERIAL },
+		{ "log-serial-file",		required_argument,	0, OPTION_FLAG_LOG_SERIAL_FILE },
+		{ "no-daemonise",			no_argument,		0, OPTION_FLAG_NO_DAEMONIZE },
+		{ "pid-file",				required_argument,	0, OPTION_FLAG_PID_FILE },
+		{ "serial-port",			required_argument,	0, OPTION_FLAG_SERIAL_DEVICE },
+		{ "trace",					no_argument,		0, OPTION_FLAG_TRACE },
+		{ "version",				no_argument,		0, OPTION_FLAG_VERSION },
+
 		{0, 0, 0, 0}
 	};
 
-	static char* aqualink_short_options = "hdc:v";
+	static char* aqualink_short_options = "c:Dhnp:s:v";
 
 	int ch = 0;
 
@@ -62,37 +87,43 @@ void handleOptions(int argc, char* argv[])
 		// check to see if a single character or long option came through
 		switch (ch)
 		{
-		case OPTION_FLAG_NO_DAEMONIZE: // short option 'd' / long option "no-daemonize"
-			CFG_Set_Daemonize(false);
-			break;
-
 		case OPTION_FLAG_CONFIG_FILE: // short option 'c' / long option "config-file"
 			CFG_Set_ConfigFile(optarg);
 			break;
 
-		case OPTION_FLAG_DEBUG: // short option 'v' / long option "debug"
-			if (LOG_DEBUG_SERIAL == CFG_LogLevel())
-			{
-				// Already at the highest level of debug logging...do nothing.
-				logMessage(LOG_DEBUG, "Already at highest level of debugging...don't need to specify more verbosity");
-			}
-			else if (LOG_DEBUG == CFG_LogLevel())
-			{
-				// There has been more than one "-v" option so increment the logging level.
-				CFG_Set_LogLevel(LOG_DEBUG_SERIAL);
-			}
-			else
-			{
-				CFG_Set_LogLevel(LOG_DEBUG);
-			}
+		case OPTION_FLAG_DEBUG: // short option 'D' / long option "debug"
+			CFG_Set_LogLevel(Debug);
 			break;
 
-		case OPTION_FLAG_RSD: // long option "rsd"
+		case OPTION_FLAG_LOG_FILE: // long option "log-file"
+			CFG_Set_LogFile(optarg);
+			break;
+
+		case OPTION_FLAG_LOG_RAW_SERIAL: // long option "log-raw-serial"
+			CFG_Set_LogRawRsBytes(true);
+			break;
+
+		case OPTION_FLAG_LOG_RAW_SERIAL_FILE: // long option "log-raw-serial-file"
+			break;
+
+		case OPTION_FLAG_LOG_SERIAL: // long option "log-serial"
 			CFG_Set_DebugRsProtocolPackets(true);
 			break;
 
-		case OPTION_FLAG_RSRD: // long option "rsrd"
-			CFG_Set_LogRawRsBytes(true);
+		case OPTION_FLAG_LOG_SERIAL_FILE: // long option "log-serial-file"
+			break;
+
+		case OPTION_FLAG_NO_DAEMONIZE: // short option 'n' / long option "no-daemonize"
+			CFG_Set_Daemonize(false);
+			break;
+
+		case OPTION_FLAG_PID_FILE: // short option 'p' / long option "pid-file"
+		case OPTION_FLAG_SERIAL_DEVICE: // short option 's' / long option "serial-port"
+		case OPTION_FLAG_TRACE: // long option "trace"
+			CFG_Set_LogLevel(Trace);
+			break;
+
+		case OPTION_FLAG_VERSION: // short option 'v' / long option "version"
 			break;
 
 		case OPTION_FLAG_HELP: // short option 'h' / long option "help"

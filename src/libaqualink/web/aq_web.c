@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <syslog.h>
 #include <threads.h>
+
+#include "logging/logging.h"
 #include "threads/thread_utils.h"
 #include "aq_web_authentication.h"
 #include "aq_web_connection_handler.h"
@@ -23,31 +25,31 @@ static int request_started(void* cls, struct MHD_Connection* connection, const c
 	assert(0 != method);
 	assert(0 != version);
 
-	logMessage(LOG_DEBUG, "AQ_Web.c | answer_to_connection | Handling HTTP connection request: %s %s %s\n", version, method, url);
+	DEBUG("Handling HTTP connection request: %s %s %s", version, method, url);
 
 	conn_t* conn = 0;
 	int ret;
 
 	if (0 != *con_cls)
 	{
-		logMessage(LOG_DEBUG, "AQ_Web.c | answer_to_connection | Re-entering processing for existing connection\n", method);
+		DEBUG("Re-entering processing for existing connection", method);
 		conn = (conn_t*)*con_cls;
 		ret = aq_web_connection_handler(connection, conn, url);
 	}
 	else if (0 != strcmp(method, "GET"))
 	{
 		// PUT, POST, DELETE, ...
-		logMessage(LOG_INFO, "AQ_Web.c | answer_to_connection | Bad HTTP request method: %s\n", method);
+		INFO("Bad HTTP request method: %s", method);
 		ret = MHD_NO;
 	}
 	else if (0 == (conn = malloc(sizeof(conn_t))))
 	{
-		logMessage(LOG_INFO, "AQ_Web.c | answer_to_connection | Failed to allocate memory for the connection parameters\n", method);
+		INFO("Failed to allocate memory for the connection parameters", method);
 		ret = MHD_NO;
 	}
 	else
 	{
-		logMessage(LOG_DEBUG, "AQ_Web.c | answer_to_connection | Entering processing for new connection\n", method);
+		DEBUG("Entering processing for new connection", method);
 				
 		conn->method_id = HTTP_GET;
 		
@@ -84,7 +86,7 @@ int webserver_thread(void* termination_handler_ptr)
 {
 	assert(0 != termination_handler_ptr);
 
-	const unsigned int daemon_flags = MHD_USE_THREAD_PER_CONNECTION | MHD_USE_DEBUG | MHD_ALLOW_UPGRADE | MHD_USE_TCP_FASTOPEN | MHD_ALLOW_SUSPEND_RESUME;
+	const unsigned int daemon_flags = MHD_USE_INTERNAL_POLLING_THREAD | MHD_USE_THREAD_PER_CONNECTION | MHD_USE_DEBUG | MHD_ALLOW_UPGRADE | MHD_USE_TCP_FASTOPEN | MHD_ALLOW_SUSPEND_RESUME;
 	const unsigned int daemon_port = 80;
 
 	char* key_pem = 0, * cert_pem = 0;
@@ -102,36 +104,36 @@ int webserver_thread(void* termination_handler_ptr)
 
 		if ((0 == (key_pem = load_pem_file(""))) || (0 == (cert_pem = load_pem_file(""))))
 		{
-			logMessage(LOG_ERR, "AQ_Web.c | webserver_thread() | Failed to load specified PEM certificates\n");
+			ERROR("Failed to load specified PEM certificates");
 			returnCode = -1;
 		}
 		else if (0 == (daemon = MHD_start_daemon(ssl_daemon_flags, ssl_daemon_port, 0, 0, &request_started, 0, MHD_OPTION_NOTIFY_COMPLETED, &request_closed, MHD_OPTION_HTTPS_MEM_KEY, key_pem, MHD_OPTION_HTTPS_MEM_CERT, cert_pem, MHD_OPTION_END)))
 		{
-			logMessage(LOG_ERR, "AQ_Web.c | webserver_thread() | Failed to start web server with TLS support\n");
+			ERROR("Failed to start web server with TLS support");
 			returnCode = -1;
 		} 
 		else
 		{
-			logMessage(LOG_INFO, "AQ_Web.c | webserver_thread() | Running libmicrohttpd (with TLS)...\n");
+			INFO("Running libmicrohttpd (with TLS)...");
 		}
 	}
 	else
 	{
 		if (0 == (daemon = MHD_start_daemon(daemon_flags, daemon_port, 0, 0, &request_started, 0, MHD_OPTION_NOTIFY_COMPLETED, &request_closed, MHD_OPTION_END)))
 		{
-			logMessage(LOG_ERR, "AQ_Web.c | webserver_thread() | Failed to start web server (no TLS support)\n");
+			ERROR("Failed to start web server (no TLS support)");
 			returnCode = -1;
 		}
 		else
 		{
-			logMessage(LOG_INFO, "AQ_Web.c | webserver_thread() | Running libmicrohttpd...\n");
+			INFO("Running libmicrohttpd...");
 		}
 	}
 
 	// Block this thread until the service is terminated.
 	if (!wait_for_termination())
 	{
-		logMessage(LOG_ERR, "AQ_Web.c | webserver_thread() | Failed when attempting to block-wait for termination handler\n");
+		ERROR("Failed when attempting to block-wait for termination handler");
 		returnCode = -1;
 	}
 		

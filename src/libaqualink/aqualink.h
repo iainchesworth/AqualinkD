@@ -4,22 +4,16 @@
 
 #include <threads.h>
 #include <stdbool.h>
+#include "hardware/buttons/buttons.h"
 #include "serial/aq_serial.h"
 #include "aq_programmer.h"
 
 #define TIME_CHECK_INTERVAL  3600
 #define ACCEPTABLE_TIME_DIFF 120
 
-// Use these settings to test time
-//#define TIME_CHECK_INTERVAL  100
-//#define ACCEPTABLE_TIME_DIFF 10
-
 #define MAX_ZERO_READ_BEFORE_RECONNECT 500
 
-#define TOTAL_BUTTONS     12
-
 #define TEMP_UNKNOWN    -999
-//#define UNKNOWN TEMP_UNKNOWN
 #define DATE_STRING_LEN   30
 
 #define MAX_PUMPS 4
@@ -36,8 +30,6 @@ enum {
 
 typedef struct aqualinkkey
 {
-  //int number;
-  //AQ_LED_States *state;
   aqled *led;
   char *label;
   char *name;
@@ -46,15 +38,11 @@ typedef struct aqualinkkey
   int dz_idx;
 } aqkey;
 
-
-//typedef struct ProgramThread ProgramThread;  // Definition is later
-
 struct programmingthread {
   thrd_t *thread_id;
   mtx_t thread_mutex;
   cnd_t thread_cond;
   program_type ptype;
-  //void *thread_args;
 };
 
 typedef enum action_type {
@@ -70,7 +58,6 @@ struct action {
   action_type type;
   time_t requested;
   int value;
-  //char value[10];
 };
 
 typedef struct pumpd
@@ -79,7 +66,6 @@ typedef struct pumpd
   int gph;
   int watts;
   unsigned char pumpID;
-  //int buttonID;
   protocolType ptype;
   aqkey *button;
 } pump_detail;
@@ -93,7 +79,7 @@ struct aqualinkdata
   char last_display_message[AQ_MSGLONGLEN+1];
   unsigned char raw_status[AQ_PSTLEN];
   aqled aqualinkleds[TOTAL_LEDS];
-  aqkey aqbuttons[TOTAL_BUTTONS];
+  aqkey aqbuttons[AqualinkButtonCount];
   int air_temp;
   int pool_temp;
   int spa_temp;

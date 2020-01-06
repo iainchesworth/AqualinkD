@@ -26,6 +26,8 @@
 #include "mongoose.h"
 
 #include "config/config_helpers.h"
+#include "hardware/buttons/buttons.h"
+#include "logging/logging.h"
 #include "json/json_messages.h"
 #include "json/json_string_utils.h"
 #include "serial/aq_serial_types.h"
@@ -152,7 +154,7 @@ void send_mqtt(struct mg_connection* nc, const char* topic, char* message)
 	}
 
 	mg_mqtt_publish(nc, topic, msg_id, MG_MQTT_RETAIN | MG_MQTT_QOS(1), message, strlen(message));
-	logMessage(LOG_INFO, "MQTT: Published id=%d: %s %s\n", msg_id, topic, message);
+	INFO("MQTT: Published id=%d: %s %s", msg_id, topic, message);
 }
 
 void send_domoticz_mqtt_state_msg(struct mg_connection* nc, int idx, int value)
@@ -180,7 +182,7 @@ void send_domoticz_mqtt_temp_msg(struct mg_connection* nc, int idx, int value)
 	char mqtt_msg[JSON_MQTT_MSG_SIZE];
 
 	const char* mqtt_dz_pub_topic = CFG_MqttDzPubTopic();
-	const bool convert_dz_temp = CFG_ConvertDzTemp();
+	const bool convert_dz_temp_to_c = CFG_ConvertDzTemp();
 
 	if (idx <= 0) 
 	{
@@ -188,7 +190,7 @@ void send_domoticz_mqtt_temp_msg(struct mg_connection* nc, int idx, int value)
 	}
 	else
 	{
-		build_mqtt_status_JSON(mqtt_msg, JSON_MQTT_MSG_SIZE, idx, 0, ((FAHRENHEIT == _aqualink_data->temp_units) && (convert_dz_temp)) ? roundf(degFtoC(value)) : value);
+		build_mqtt_status_JSON(mqtt_msg, JSON_MQTT_MSG_SIZE, idx, 0, ((FAHRENHEIT == _aqualink_data->temp_units) && (convert_dz_temp_to_c)) ? roundf(degFtoC(value)) : value);
 		send_mqtt(nc, mqtt_dz_pub_topic, mqtt_msg);
 	}
 }
@@ -301,9 +303,9 @@ void send_mqtt_temp_msg(struct mg_connection* nc, char* dev_name, long value)
 	static char degC[DEGC_LEN];
 
 	const char* mqtt_aq_topic = CFG_MqttAqTopic();
-	const bool convert_mqtt_temp = CFG_ConvertMqttTemp();
+	const bool convert_mqtt_temp_to_c = CFG_ConvertMqttTemp();
 	
-	snprintf(degC, DEGC_LEN, "%.2f", (_aqualink_data->temp_units == FAHRENHEIT && convert_mqtt_temp) ? degFtoC(value) : value);
+	snprintf(degC, DEGC_LEN, "%.2f", (_aqualink_data->temp_units == FAHRENHEIT && convert_mqtt_temp_to_c) ? degFtoC(value) : value);
 	snprintf(mqtt_pub_topic, MQTT_PUB_TOPIC_LEN, "%s/%s", mqtt_aq_topic, dev_name);
 
 	send_mqtt(nc, mqtt_pub_topic, degC);
@@ -320,9 +322,9 @@ void send_mqtt_setpoint_msg(struct mg_connection* nc, char* dev_name, long value
 	static char degC[DEGC_LEN];
 
 	const char* mqtt_aq_topic = CFG_MqttAqTopic();
-	const bool convert_mqtt_temp = CFG_ConvertMqttTemp();
+	const bool convert_mqtt_temp_to_c = CFG_ConvertMqttTemp();
 
-	snprintf(degC, DEGC_LEN, "%.2f", (_aqualink_data->temp_units == FAHRENHEIT && convert_mqtt_temp) ? degFtoC(value) : value);
+	snprintf(degC, DEGC_LEN, "%.2f", (_aqualink_data->temp_units == FAHRENHEIT && convert_mqtt_temp_to_c) ? degFtoC(value) : value);
 	snprintf(mqtt_pub_topic, MQTT_PUB_TOPIC_LEN, "%s/%s/setpoint", mqtt_aq_topic, dev_name);
 	send_mqtt(nc, mqtt_pub_topic, degC);
 }
@@ -388,7 +390,7 @@ void mqtt_broadcast_aqualinkstate(struct mg_connection* nc)
 	const int dzidx_swg_percent = CFG_DzIdxSwgPercent();
 	const int dzidx_swg_ppm = CFG_DzIdxSwgPpm();
 	const int dzidx_swg_status = CFG_DzIdxSwgStatus();
-	const bool convert_mqtt_temp = CFG_ConvertMqttTemp();
+	const bool convert_mqtt_temp_to_c = CFG_ConvertMqttTemp();
 	const bool report_zero_pool_temp = CFG_ReportZeroPoolTemp();
 	const bool report_zero_spa_temp = CFG_ReportZeroSpaTemp();
 
@@ -427,7 +429,7 @@ void mqtt_broadcast_aqualinkstate(struct mg_connection* nc)
 		if (_aqualink_data->pool_temp == TEMP_UNKNOWN && report_zero_pool_temp) 
 		{
 			_last_mqtt_aqualinkdata.pool_temp = TEMP_UNKNOWN;
-			send_mqtt_temp_msg(nc, POOL_TEMP_TOPIC, (convert_mqtt_temp ? -18 : 0));
+			send_mqtt_temp_msg(nc, POOL_TEMP_TOPIC, (convert_mqtt_temp_to_c ? -18 : 0));
 		}
 		else if (_aqualink_data->pool_temp != TEMP_UNKNOWN) 
 		{
@@ -448,7 +450,7 @@ void mqtt_broadcast_aqualinkstate(struct mg_connection* nc)
 		if (_aqualink_data->spa_temp == TEMP_UNKNOWN && report_zero_spa_temp) 
 		{
 			_last_mqtt_aqualinkdata.spa_temp = TEMP_UNKNOWN;
-			send_mqtt_temp_msg(nc, SPA_TEMP_TOPIC, (convert_mqtt_temp ? -18 : 0));
+			send_mqtt_temp_msg(nc, SPA_TEMP_TOPIC, (convert_mqtt_temp_to_c ? -18 : 0));
 		}
 		else if (_aqualink_data->spa_temp != TEMP_UNKNOWN) 
 		{
@@ -549,7 +551,7 @@ void mqtt_broadcast_aqualinkstate(struct mg_connection* nc)
 	}
 
 	// Loop over LED's and send any changes.
-	for (i = 0; i < TOTAL_BUTTONS; i++) 
+	for (i = 0; i < AqualinkButtonCount; i++) 
 	{
 		if (_last_mqtt_aqualinkdata.aqualinkleds[i].state != _aqualink_data->aqbuttons[i].led->state) 
 		{
@@ -632,13 +634,13 @@ void set_light_mode(char* value, int button)
 
 	if (pda_mode == true) 
 	{
-		logMessage(LOG_ERR, "Light mode control not supported in PDA mode\n");
+		ERROR("Light mode control not supported in PDA mode");
 		return;
 	}
 
 	if (light_programming_button_pool != button && light_programming_button_spa != button) 
 	{
-		logMessage(LOG_ERR, "Light mode control not configured for button %d\n", button);
+		ERROR("Light mode control not configured for button %d", button);
 		return;
 	}
 
@@ -671,7 +673,7 @@ void action_web_request(struct mg_connection* nc, struct http_message* http_msg)
 		char* uri = (char*)malloc(http_msg->uri.len + http_msg->query_string.len + 2);
 		strncpy(uri, http_msg->uri.p, http_msg->uri.len + http_msg->query_string.len + 1);
 		uri[http_msg->uri.len + http_msg->query_string.len + 1] = '\0';
-		logMessage(LOG_INFO, "URI request: '%s'\n", uri);
+		INFO("URI request: '%s'", uri);
 		free(uri);
 	}
 
@@ -681,7 +683,7 @@ void action_web_request(struct mg_connection* nc, struct http_message* http_msg)
 		char command[20];
 
 		mg_get_http_var(&http_msg->query_string, "command", command, sizeof(command));
-		logMessage(LOG_INFO, "WEB: Message command='%s'\n", command);
+		INFO("WEB: Message command='%s'", command);
 
 		if (strcmp(command, "status") == 0) 
 		{
@@ -730,7 +732,7 @@ void action_web_request(struct mg_connection* nc, struct http_message* http_msg)
 			char value[20];
 			mg_get_http_var(&http_msg->query_string, "value", value, sizeof(value));
 			aq_programmer(AQ_SET_SWG_PERCENT, value, _aqualink_data);
-			logMessage(LOG_INFO, "Web: request to set SWG to %s\n", value);
+			INFO("Web: request to set SWG to %s", value);
 			mg_send_head(nc, 200, strlen(GET_RTN_OK), "Content-Type: text/plain");
 			mg_send(nc, GET_RTN_OK, strlen(GET_RTN_OK));
 		}
@@ -739,7 +741,7 @@ void action_web_request(struct mg_connection* nc, struct http_message* http_msg)
 			char value[20];
 			mg_get_http_var(&http_msg->query_string, "value", value, sizeof(value));
 			aq_programmer(AQ_SET_POOL_HEATER_TEMP, value, _aqualink_data);
-			logMessage(LOG_INFO, "Web: request to set Pool heater to %s\n", value);
+			INFO("Web: request to set Pool heater to %s", value);
 			mg_send_head(nc, 200, strlen(GET_RTN_OK), "Content-Type: text/plain");
 			mg_send(nc, GET_RTN_OK, strlen(GET_RTN_OK));
 		}
@@ -748,7 +750,7 @@ void action_web_request(struct mg_connection* nc, struct http_message* http_msg)
 			char value[20];
 			mg_get_http_var(&http_msg->query_string, "value", value, sizeof(value));
 			aq_programmer(AQ_SET_SPA_HEATER_TEMP, value, _aqualink_data);
-			logMessage(LOG_INFO, "Web: request to set Spa heater to %s\n", value);
+			INFO("Web: request to set Spa heater to %s", value);
 			mg_send_head(nc, 200, strlen(GET_RTN_OK), "Content-Type: text/plain");
 			mg_send(nc, GET_RTN_OK, strlen(GET_RTN_OK));
 		}
@@ -757,7 +759,7 @@ void action_web_request(struct mg_connection* nc, struct http_message* http_msg)
 			char value[20];
 			mg_get_http_var(&http_msg->query_string, "value", value, sizeof(value));
 			aq_programmer(AQ_SET_FRZ_PROTECTION_TEMP, value, _aqualink_data);
-			logMessage(LOG_INFO, "Web: request to set Freeze protect to %s\n", value);
+			INFO("Web: request to set Freeze protect to %s", value);
 			mg_send_head(nc, 200, strlen(GET_RTN_OK), "Content-Type: text/plain");
 			mg_send(nc, GET_RTN_OK, strlen(GET_RTN_OK));
 		}
@@ -788,12 +790,12 @@ void action_web_request(struct mg_connection* nc, struct http_message* http_msg)
 			if (setConfigValue(_aqualink_config, _aqualink_data, param, value)) 
 			{
 				webrtn = GET_RTN_OK;
-				logMessage(LOG_INFO, "Web: request to config %s to %s\n", param, value);
+				INFO("Web: request to config %s to %s", param, value);
 			}
 			else 
 			{
 				webrtn = GET_RTN_ERROR;
-				logMessage(LOG_ERR, "Web: request to config %s to %s failed\n", param, value);
+				ERROR("Web: request to config %s to %s failed", param, value);
 			}
 			mg_send_head(nc, 200, strlen(webrtn), "Content-Type: text/plain");
 			mg_send(nc, webrtn, strlen(webrtn));
@@ -820,11 +822,11 @@ void action_web_request(struct mg_connection* nc, struct http_message* http_msg)
 			{
 				startInlineDebug();
 				rtn = GET_RTN_OK;
-				logMessage(LOG_DEBUG, "WEB: Started inline debug mode\n");
+				DEBUG("WEB: Started inline debug mode");
 			}
 			else if (strcmp(value, "stop") == 0) 
 			{
-				logMessage(LOG_DEBUG, "WEB: Stoped inline debug mode\n");
+				DEBUG("WEB: Stoped inline debug mode");
 				stopInlineDebug();
 				rtn = GET_RTN_OK;
 			}
@@ -838,7 +840,7 @@ void action_web_request(struct mg_connection* nc, struct http_message* http_msg)
 			}
 			else if (strcmp(value, "status") == 0) 
 			{
-				snprintf(value, 80, "{\"sLevel\":\"%s\", \"iLevel\":%d, \"logReady\":\"%s\"}\n", elevel2text(getLogLevel()), getLogLevel(), islogFileReady() ? "true" : "false");
+				snprintf(value, 80, "{\"sLevel\":\"%s\", \"iLevel\":%d, \"logReady\":\"%s\"}", elevel2text(getLogLevel()), getLogLevel(), islogFileReady() ? "true" : "false");
 				mg_send_head(nc, 200, strlen(value), "Content-Type: text/json");
 				mg_send(nc, value, strlen(value));
 				return;
@@ -864,14 +866,14 @@ void action_web_request(struct mg_connection* nc, struct http_message* http_msg)
 		else 
 {
 			int i;
-			for (i = 0; i < TOTAL_BUTTONS; i++) 
+			for (i = 0; i < AqualinkButtonCount; i++) 
 			{
 				if (strcmp(command, _aqualink_data->aqbuttons[i].name) == 0) 
 				{
 					char value[20];
 					char* rtn;
 					mg_get_http_var(&http_msg->query_string, "value", value, sizeof(value));
-					logMessage(LOG_DEBUG, "WEB: Message request '%s' change state to '%s'\n", command, value);
+					DEBUG("WEB: Message request '%s' change state to '%s'", command, value);
 
 					if (pda_mode == true) 
 					{
@@ -886,12 +888,12 @@ void action_web_request(struct mg_connection* nc, struct http_message* http_msg)
 						{
 							aq_send_cmd(_aqualink_data->aqbuttons[i].code);
 							rtn = GET_RTN_OK;
-							logMessage(LOG_INFO, "WEB: turn ON '%s' changed state to '%s'\n", command, value);
+							INFO("WEB: turn ON '%s' changed state to '%s'", command, value);
 						}
 						else 
 						{
 							rtn = GET_RTN_NOT_CHANGED;
-							logMessage(LOG_INFO, "WEB: '%s' is already on '%s', current state %d\n", command, value, _aqualink_data->aqbuttons[i].led->state);
+							INFO("WEB: '%s' is already on '%s', current state %d", command, value, _aqualink_data->aqbuttons[i].led->state);
 						}
 					}
 					else if (strcmp(value, "off") == 0) 
@@ -902,12 +904,12 @@ void action_web_request(struct mg_connection* nc, struct http_message* http_msg)
 						{
 							aq_send_cmd(_aqualink_data->aqbuttons[i].code);
 							rtn = GET_RTN_OK;
-							logMessage(LOG_INFO, "WEB: turn Off '%s' changed state to '%s'\n", command, value);
+							INFO("WEB: turn Off '%s' changed state to '%s'", command, value);
 						}
 						else 
 						{
 							rtn = GET_RTN_NOT_CHANGED;
-							logMessage(LOG_INFO, "WEB: '%s' is already off '%s', current state %d\n", command, value, _aqualink_data->aqbuttons[i].led->state);
+							INFO("WEB: '%s' is already off '%s', current state %d", command, value, _aqualink_data->aqbuttons[i].led->state);
 						}
 					}
 					else 
@@ -915,10 +917,10 @@ void action_web_request(struct mg_connection* nc, struct http_message* http_msg)
 						// Blind switch
 						aq_send_cmd(_aqualink_data->aqbuttons[i].code);
 						rtn = GET_RTN_OK;
-						logMessage(LOG_INFO, "WEB: '%s' blindly changed state\n", command, value);
+						INFO("WEB: '%s' blindly changed state", command, value);
 					}
 
-					logMessage(LOG_DEBUG, "WEB: On=%d, Off=%d, Enable=%d, Flash=%d\n", ON, OFF, ENABLE, FLASH);
+					DEBUG("WEB: On=%d, Off=%d, Enable=%d, Flash=%d", ON, OFF, ENABLE, FLASH);
 
 					// NSF change OK and 2 below to a constant
 					mg_send_head(nc, 200, strlen(rtn), "Content-Type: text/plain");
@@ -966,12 +968,12 @@ void action_websocket_request(struct mg_connection* nc, struct websocket_message
 	buffer[wm->size] = '\0';
 
 	parseJSONwebrequest(buffer, &request);
-	logMessage(LOG_INFO, "WS: Message - Key '%s' Value '%s' | Key2 '%s' Value2 '%s'\n", request.first.key, request.first.value, request.second.key, request.second.value);
+	INFO("WS: Message - Key '%s' Value '%s' | Key2 '%s' Value2 '%s'", request.first.key, request.first.value, request.second.key, request.second.value);
 
 	if (strcmp(request.first.key, "raw") == 0) 
 	{
 		_aqualink_data->simulate_panel = true;
-		logMessage(LOG_NOTICE, "WS: Send raw command to controller %s\n", request.first.value);
+		NOTICE("WS: Send raw command to controller %s", request.first.value);
 		unsigned int n;
 		sscanf(request.first.value, "0x%2x", &n);
 		aq_send_cmd((unsigned char)n);
@@ -994,7 +996,7 @@ void action_websocket_request(struct mg_connection* nc, struct websocket_message
 		else if (strcmp(request.first.value, "simulator") == 0) 
 		{
 			_aqualink_data->simulate_panel = true;
-			logMessage(LOG_INFO, "WS: Set Simulator mode");
+			INFO("WS: Set Simulator mode");
 			char labels[JSON_LABEL_SIZE];
 			build_aux_labels_JSON(_aqualink_data, labels, JSON_LABEL_SIZE);
 			ws_send(nc, labels);
@@ -1017,11 +1019,11 @@ void action_websocket_request(struct mg_connection* nc, struct websocket_message
 			// Search for value in command list
 			int i;
 
-			for (i = 0; i < TOTAL_BUTTONS; i++) 
+			for (i = 0; i < AqualinkButtonCount; i++) 
 			{
 				if (strcmp(request.first.value, _aqualink_data->aqbuttons[i].name) == 0) 
 				{
-					logMessage(LOG_INFO, "WS: button '%s' pressed\n", _aqualink_data->aqbuttons[i].name);
+					INFO("WS: button '%s' pressed", _aqualink_data->aqbuttons[i].name);
 					if (pda_mode == false) 
 					{
 						aq_send_cmd(_aqualink_data->aqbuttons[i].code);
@@ -1074,7 +1076,7 @@ void action_websocket_request(struct mg_connection* nc, struct websocket_message
 		else if (strcmp(request.first.value, "LIGHT_MODE") == 0) 
 		{
 			int i;
-			for (i = 0; i < TOTAL_BUTTONS; i++) 
+			for (i = 0; i < AqualinkButtonCount; i++) 
 			{
 				if (strcmp(request.third.value, _aqualink_data->aqbuttons[i].name) == 0) 
 				{
@@ -1085,7 +1087,7 @@ void action_websocket_request(struct mg_connection* nc, struct websocket_message
 		}
 		else 
 		{
-			logMessage(LOG_DEBUG, "WS: Unknown parameter %s\n", request.first.value);
+			DEBUG("WS: Unknown parameter %s", request.first.value);
 		}
 	}
 }
@@ -1096,18 +1098,18 @@ void action_mqtt_message(struct mg_connection* nc, struct mg_mqtt_message* msg)
 	assert(0 != msg);
 
 	const char* mqtt_aq_topic = CFG_MqttAqTopic();
-	const bool convert_mqtt_temp = CFG_ConvertMqttTemp();
+	const bool convert_mqtt_temp_to_c = CFG_ConvertMqttTemp();
 
 	unsigned int i;
 
 	// If message doesn't end in set we don't care about it.
 	if (strncmp(&msg->topic.p[msg->topic.len - 4], "/set", 4) != 0) 
 	{
-		logMessage(LOG_DEBUG, "MQTT: Ignore %.*s %.*s\n", msg->topic.len, msg->topic.p, msg->payload.len, msg->payload.p);
+		DEBUG("MQTT: Ignore %.*s %.*s", msg->topic.len, msg->topic.p, msg->payload.len, msg->payload.p);
 		return;
 	}
 
-	logMessage(LOG_DEBUG, "MQTT: topic %.*s %.*s\n", msg->topic.len, msg->topic.p, msg->payload.len, msg->payload.p);
+	DEBUG("MQTT: topic %.*s %.*s", msg->topic.len, msg->topic.p, msg->payload.len, msg->payload.p);
 
 	//Need to do this in a better manor, but for present it's ok.
 	static char tmp[20];
@@ -1146,7 +1148,7 @@ void action_mqtt_message(struct mg_connection* nc, struct mg_mqtt_message* msg)
 
 	if (pt3 != NULL && (strncmp(pt2, "setpoint", 8) == 0) && (strncmp(pt3, "set", 3) == 0)) 
 	{
-		int val = _aqualink_data->unactioned.value = (_aqualink_data->temp_units != CELSIUS && convert_mqtt_temp) ? round(degCtoF(value)) : round(value);
+		int val = _aqualink_data->unactioned.value = (_aqualink_data->temp_units != CELSIUS && convert_mqtt_temp_to_c) ? round(degCtoF(value)) : round(value);
 		if (strncmp(pt1, BTN_POOL_HTR, strlen(BTN_POOL_HTR)) == 0) 
 		{
 			_aqualink_data->unactioned.value = setpoint_check(POOL_HTR_SETOINT, val, _aqualink_data);
@@ -1172,7 +1174,7 @@ void action_mqtt_message(struct mg_connection* nc, struct mg_mqtt_message* msg)
 		else 
 		{
 			// Not sure what the setpoint is, ignore.
-			logMessage(LOG_DEBUG, "MQTT: ignoring %.*s don't recognise button setpoint\n", msg->topic.len, msg->topic.p);
+			DEBUG("MQTT: ignoring %.*s don't recognise button setpoint", msg->topic.len, msg->topic.p);
 			return;
 		}
 
@@ -1202,24 +1204,24 @@ void action_mqtt_message(struct mg_connection* nc, struct mg_mqtt_message* msg)
 	else if (pt2 != NULL && (strncmp(pt2, "set", 3) == 0) && (strncmp(pt2, "setpoint", 8) != 0)) 
 	{
 		// Must be a switch on / off
-		for (i = 0; i < TOTAL_BUTTONS; i++) 
+		for (i = 0; i < AqualinkButtonCount; i++) 
 		{
 			if (strncmp(pt1, _aqualink_data->aqbuttons[i].name, strlen(_aqualink_data->aqbuttons[i].name)) == 0) 
 			{
-				logMessage(LOG_INFO, "MQTT: MATCH %s to topic %.*s\n", _aqualink_data->aqbuttons[i].name, msg->topic.len, msg->topic.p);
+				INFO("MQTT: MATCH %s to topic %.*s", _aqualink_data->aqbuttons[i].name, msg->topic.len, msg->topic.p);
 				// Message is either a 1 or 0 for on or off
 				if (value > 1 || value < 0) 
 				{
-					logMessage(LOG_ERR, "MQTT: topic %.*s %.2f\n", msg->topic.len, msg->topic.p, value);
-					logMessage(LOG_ERR, "MQTT: received unknown status of '%.*s' for '%s', Ignoring!\n", msg->payload.len, msg->payload.p, _aqualink_data->aqbuttons[i].name);
+					ERROR("MQTT: topic %.*s %.2f", msg->topic.len, msg->topic.p, value);
+					ERROR("MQTT: received unknown status of '%.*s' for '%s', Ignoring!", msg->payload.len, msg->payload.p, _aqualink_data->aqbuttons[i].name);
 				}
 				else if ((_aqualink_data->aqbuttons[i].led->state == OFF && value == 0) || (value == 1 && (_aqualink_data->aqbuttons[i].led->state == ON || _aqualink_data->aqbuttons[i].led->state == FLASH || _aqualink_data->aqbuttons[i].led->state == ENABLE))) 
 				{
-					logMessage(LOG_INFO, "MQTT: received '%s' for '%s', already '%s', Ignoring\n", (value == 0 ? "OFF" : "ON"), _aqualink_data->aqbuttons[i].name, (value == 0 ? "OFF" : "ON"));
+					INFO("MQTT: received '%s' for '%s', already '%s', Ignoring", (value == 0 ? "OFF" : "ON"), _aqualink_data->aqbuttons[i].name, (value == 0 ? "OFF" : "ON"));
 				}
 				else 
 				{
-					logMessage(LOG_INFO, "MQTT: received '%s' for '%s', turning '%s'\n", (value == 0 ? "OFF" : "ON"), _aqualink_data->aqbuttons[i].name, (value == 0 ? "OFF" : "ON"));
+					INFO("MQTT: received '%s' for '%s', turning '%s'", (value == 0 ? "OFF" : "ON"), _aqualink_data->aqbuttons[i].name, (value == 0 ? "OFF" : "ON"));
 					if (CFG_PdaMode() == false) 
 					{
 						aq_send_cmd(_aqualink_data->aqbuttons[i].code);
@@ -1242,7 +1244,7 @@ void action_mqtt_message(struct mg_connection* nc, struct mg_mqtt_message* msg)
 	else 
 	{
 		// We don's care
-		logMessage(LOG_DEBUG, "MQTT: ignoring topic %.*s\n", msg->topic.len, msg->topic.p);
+		DEBUG("MQTT: ignoring topic %.*s", msg->topic.len, msg->topic.p);
 	}
 }
 
@@ -1255,26 +1257,26 @@ void action_domoticz_mqtt_message(struct mg_connection* nc, struct mg_mqtt_messa
 
 	if (parseJSONmqttrequest(msg->payload.p, msg->payload.len, &idx, &nvalue, svalue)) 
 	{
-		logMessage(LOG_DEBUG, "MQTT: DZ: Received message IDX=%d nValue=%d sValue=%s\n", idx, nvalue, svalue);
-		for (i = 0; i < TOTAL_BUTTONS; i++) 
+		DEBUG("MQTT: DZ: Received message IDX=%d nValue=%d sValue=%s", idx, nvalue, svalue);
+		for (i = 0; i < AqualinkButtonCount; i++) 
 		{
 			if (_aqualink_data->aqbuttons[i].dz_idx == idx) 
 			{
 				//NSF, should try to simplify this if statment, but not easy since AQ ON and DZ ON are different, and AQ has other states.
 				if ((_aqualink_data->aqbuttons[i].led->state == OFF && nvalue == DZ_OFF) || (nvalue == DZ_ON && (_aqualink_data->aqbuttons[i].led->state == ON || _aqualink_data->aqbuttons[i].led->state == FLASH || _aqualink_data->aqbuttons[i].led->state == ENABLE))) 
 				{
-					logMessage(LOG_INFO, "MQTT: DZ: received '%s' for '%s', already '%s', Ignoring\n", (nvalue == DZ_OFF ? "OFF" : "ON"), _aqualink_data->aqbuttons[i].name, (nvalue == DZ_OFF ? "OFF" : "ON"));
+					INFO("MQTT: DZ: received '%s' for '%s', already '%s', Ignoring", (nvalue == DZ_OFF ? "OFF" : "ON"), _aqualink_data->aqbuttons[i].name, (nvalue == DZ_OFF ? "OFF" : "ON"));
 				}
 				else 
 				{
 					// NSF Below if needs to check that the button pressed is actually a light. Add this later
 					if (_aqualink_data->active_thread.ptype == AQ_SET_COLORMODE) 
 					{
-						logMessage(LOG_NOTICE, "MQTT: DZ: received '%s' for '%s', IGNORING as we are programming light mode\n", (nvalue == DZ_OFF ? "OFF" : "ON"), _aqualink_data->aqbuttons[i].name);
+						NOTICE("MQTT: DZ: received '%s' for '%s', IGNORING as we are programming light mode", (nvalue == DZ_OFF ? "OFF" : "ON"), _aqualink_data->aqbuttons[i].name);
 					}
 					else 
 					{
-						logMessage(LOG_INFO, "MQTT: DZ: received '%s' for '%s', turning '%s'\n", (nvalue == DZ_OFF ? "OFF" : "ON"), _aqualink_data->aqbuttons[i].name, (nvalue == DZ_OFF ? "OFF" : "ON"));
+						INFO("MQTT: DZ: received '%s' for '%s', turning '%s'", (nvalue == DZ_OFF ? "OFF" : "ON"), _aqualink_data->aqbuttons[i].name, (nvalue == DZ_OFF ? "OFF" : "ON"));
 						if (CFG_PdaMode() == false) 
 						{
 							aq_send_cmd(_aqualink_data->aqbuttons[i].code);
@@ -1318,12 +1320,12 @@ static void ev_handler(struct mg_connection* nc, int ev, void* ev_data)
 		///FIXME
 		//action_web_request(nc, http_msg);
 		
-		logMessage(LOG_DEBUG, "Served WEB request\n");
+		DEBUG("Served WEB request");
 		break;
 
 	case MG_EV_WEBSOCKET_HANDSHAKE_DONE:
 		_aqualink_data->open_websockets++;
-		logMessage(LOG_DEBUG, "++ Websocket joined\n");
+		DEBUG("++ Websocket joined");
 		break;
 
 	case MG_EV_WEBSOCKET_FRAME:
@@ -1335,11 +1337,11 @@ static void ev_handler(struct mg_connection* nc, int ev, void* ev_data)
 		if (is_websocket(nc)) 
 		{
 			_aqualink_data->open_websockets--;
-			logMessage(LOG_DEBUG, "-- Websocket left\n");
+			DEBUG("-- Websocket left");
 		}
 		else if (is_mqtt(nc)) 
 		{
-			logMessage(LOG_WARNING, "MQTT Connection closed\n");
+			WARN("MQTT Connection closed");
 			_mqtt_exit_flag = true;
 		}
 		break;
@@ -1361,7 +1363,7 @@ static void ev_handler(struct mg_connection* nc, int ev, void* ev_data)
 
 		mg_set_protocol_mqtt(nc);
 		mg_send_mqtt_handshake_opt(nc, mqtt_id, opts);
-		logMessage(LOG_INFO, "MQTT: Subscribing mqtt with id of: %s\n", mqtt_id);
+		INFO("MQTT: Subscribing mqtt with id of: %s", mqtt_id);
 	} 
 	break;
 
@@ -1371,11 +1373,11 @@ static void ev_handler(struct mg_connection* nc, int ev, void* ev_data)
 
 		int qos = 0;// can't be bothered with ack, so set to 0
 
-		logMessage(LOG_INFO, "MQTT: Connection acknowledged\n");
+		INFO("MQTT: Connection acknowledged");
 		mqtt_msg = (struct mg_mqtt_message*)ev_data;
 		if (mqtt_msg->connack_ret_code != MG_EV_MQTT_CONNACK_ACCEPTED) 
 		{
-			logMessage(LOG_WARNING, "Got mqtt connection error: %d\n", mqtt_msg->connack_ret_code);
+			WARN("Got mqtt connection error: %d", mqtt_msg->connack_ret_code);
 			_mqtt_exit_flag = true;
 		}
 
@@ -1387,33 +1389,33 @@ static void ev_handler(struct mg_connection* nc, int ev, void* ev_data)
 			topics[1].topic = mqtt_dz_sub_topic;
 			topics[1].qos = qos;
 			mg_mqtt_subscribe(nc, topics, 2, 42);
-			logMessage(LOG_INFO, "MQTT: Subscribing to '%s'\n", aq_topic);
-			logMessage(LOG_INFO, "MQTT: Subscribing to '%s'\n", mqtt_dz_sub_topic);
+			INFO("MQTT: Subscribing to '%s'", aq_topic);
+			INFO("MQTT: Subscribing to '%s'", mqtt_dz_sub_topic);
 		}
 		else if (mqtt_aq_topic != NULL) 
 		{
 			topics[0].topic = aq_topic;
 			topics[0].qos = qos;
 			mg_mqtt_subscribe(nc, topics, 1, 42);
-			logMessage(LOG_INFO, "MQTT: Subscribing to '%s'\n", aq_topic);
+			INFO("MQTT: Subscribing to '%s'", aq_topic);
 		}
 		else if (mqtt_dz_sub_topic != NULL) 
 		{
 			topics[0].topic = mqtt_dz_sub_topic;;
 			topics[0].qos = qos;
 			mg_mqtt_subscribe(nc, topics, 1, 42);
-			logMessage(LOG_INFO, "MQTT: Subscribing to '%s'\n", mqtt_dz_sub_topic);
+			INFO("MQTT: Subscribing to '%s'", mqtt_dz_sub_topic);
 		}
 	}
 	break;
 
 	case MG_EV_MQTT_PUBACK:
 		mqtt_msg = (struct mg_mqtt_message*)ev_data;
-		logMessage(LOG_INFO, "MQTT: Message publishing acknowledged (msg_id: %d)\n", mqtt_msg->message_id);
+		INFO("MQTT: Message publishing acknowledged (msg_id: %d)", mqtt_msg->message_id);
 		break;
 
 	case MG_EV_MQTT_SUBACK:
-		logMessage(LOG_INFO, "MQTT: Subscription(s) acknowledged\n");
+		INFO("MQTT: Subscription(s) acknowledged");
 		snprintf(aq_topic, 24, "%s/%s", mqtt_aq_topic, MQTT_LWM_TOPIC);
 		send_mqtt(nc, aq_topic, MQTT_ON);
 		break;
@@ -1423,7 +1425,7 @@ static void ev_handler(struct mg_connection* nc, int ev, void* ev_data)
 
 		if (mqtt_msg->message_id != 0) 
 		{
-			logMessage(LOG_INFO, "MQTT: received (msg_id: %d), looks like my own message, ignoring\n", mqtt_msg->message_id);
+			INFO("MQTT: received (msg_id: %d), looks like my own message, ignoring", mqtt_msg->message_id);
 		}
 		// NSF Need to change strlen to a global so it's not executed every time we check a topic
 		if (mqtt_aq_topic != NULL && strncmp(mqtt_msg->topic.p, mqtt_aq_topic, strlen(mqtt_aq_topic)) == 0) 
@@ -1447,7 +1449,7 @@ void start_mqtt(struct mg_mgr* mgr)
 	const char* mqtt_aq_topic = CFG_MqttAqTopic();
 	const char* mqtt_server = CFG_MqttServer();
 
-	logMessage(LOG_NOTICE, "Starting MQTT client to %s\n", mqtt_server);
+	NOTICE("Starting MQTT client to %s", mqtt_server);
 	
 	if (mqtt_server == NULL || (mqtt_aq_topic == NULL && mqtt_dz_pub_topic == NULL && mqtt_dz_sub_topic == NULL)) {
 		return;
@@ -1455,13 +1457,13 @@ void start_mqtt(struct mg_mgr* mgr)
 
 	if (mg_connect(mgr, mqtt_server, ev_handler) == NULL) 
 	{
-		logMessage(LOG_ERR, "Failed to create MQTT listener to %s\n", mqtt_server);
+		ERROR("Failed to create MQTT listener to %s", mqtt_server);
 	}
 	else 
 	{
 		int i;
 	
-		for (i = 0; i < TOTAL_BUTTONS; i++) 
+		for (i = 0; i < AqualinkButtonCount; i++) 
 		{
 			_last_mqtt_aqualinkdata.aqualinkleds[i].state = LED_S_UNKNOWN;
 		}
@@ -1492,11 +1494,11 @@ bool start_net_services(struct mg_mgr* mgr, struct aqualinkdata* aqdata)
 	setvbuf(stderr, NULL, _IOLBF, 0);
 
 	mg_mgr_init(mgr, NULL);
-	logMessage(LOG_NOTICE, "Starting web server on port %s\n", socket_port);
+	NOTICE("Starting web server on port %s", socket_port);
 	nc = mg_bind(mgr, socket_port, ev_handler);
 	if (nc == NULL) 
 	{
-		logMessage(LOG_ERR, "Failed to create listener\n");
+		ERROR("Failed to create listener");
 		return false;
 	}
 

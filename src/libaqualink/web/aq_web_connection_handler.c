@@ -7,6 +7,8 @@
 #include <string.h>
 #include <microhttpd.h>
 #include <syslog.h>
+
+#include "logging/logging.h"
 #include "aq_web.h"
 #include "aq_web_error_methodnotallowed.h"
 #include "aq_web_error_notfound.h"
@@ -29,21 +31,21 @@ int aq_web_connection_handler(struct MHD_Connection* connection, conn_t* conn, c
 	switch (conn->method_id)
 	{
 	case WEBSOCKET:
-		logMessage(LOG_DEBUG, "AQ_Web.c | answer_to_connection | WEBSOCKET\n");
+		DEBUG("WEBSOCKET");
 		{
 		}
 		break;
 
 	case HTTP_GET:
-		logMessage(LOG_DEBUG, "AQ_Web.c | answer_to_connection | HTTP_GET\n");
+		DEBUG("HTTP_GET");
 		{
 			if (0 == url)
 			{
-				logMessage(LOG_WARNING, "AQ_Web.c | answer_to_connection | No URL string provided...cannot return sensible response\n");
+				WARN("No URL string provided...cannot return sensible response");
 			}
 			else if (0 != (upgrade_header_value = MHD_lookup_connection_value(connection, MHD_HEADER_KIND, UPGRADE_HEADER_KEY)))
 			{
-				logMessage(LOG_INFO, "AQ_Web.c | answer_to_connection | Upgrading connection to websockets\n");
+				INFO("Upgrading connection to websockets");
 				ret = handle_websocket_upgrade(connection);
 			}
 			else if (0 == strcmp(url, AQ_WEB_PAGE_SIMPLE_URL))
@@ -57,7 +59,7 @@ int aq_web_connection_handler(struct MHD_Connection* connection, conn_t* conn, c
 			else
 			{
 				// The client requested a url that we don't support, return the NOT FOUND error page.
-				logMessage(LOG_DEBUG, "AQ_Web.c | answer_to_connection | NOT FOUND (404) - Client requested a URL that does not exist\n");
+				DEBUG("NOT FOUND (404) - Client requested a URL that does not exist");
 				ret = aq_web_error_notfound(connection);
 			}
 		}
@@ -67,7 +69,7 @@ int aq_web_connection_handler(struct MHD_Connection* connection, conn_t* conn, c
 	case HTTP_DELETE:
 	case HTTP_POST:
 	default:
-		logMessage(LOG_DEBUG, "AQ_Web.c | answer_to_connection | METHOD NOT ALLOWED (405) - Client requested a HTTP method that is not supported\n");
+		DEBUG("METHOD NOT ALLOWED (405) - Client requested a HTTP method that is not supported");
 		{
 			// The client requested a method that we don't support, return the METHOD NOT ALLOWED error page.
 			ret = aq_web_error_methodnotallowed(connection);

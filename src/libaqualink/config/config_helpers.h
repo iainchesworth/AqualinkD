@@ -50,6 +50,7 @@ const bool CFG_ReadPentairPackets();
 const bool CFG_DisplayWarningsWeb();
 const bool CFG_DebugRsProtocolPackets();
 const bool CFG_LogRawRsBytes();
+const char* CFG_LogRawRsBytes_LogFile();
 
 // Setters
 
@@ -58,5 +59,6 @@ void CFG_Set_LogLevel(int logLevel);
 void CFG_Set_Daemonize(bool daemonize);
 void CFG_Set_DebugRsProtocolPackets(bool debugRsProtocolPackets);
 void CFG_Set_LogRawRsBytes(bool logRawRsBytes);
+void CFG_Set_LogRawRsBytes_LogFile(const char* logRawRsBytes_LogFile);
 
 #endif // AQ_CONFIG_HELPERS_H_

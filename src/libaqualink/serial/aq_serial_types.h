@@ -1,8 +1,23 @@
 #ifndef AQ_SERIAL_TYPES_H_
 #define AQ_SERIAL_TYPES_H_
 
-/* DESTINATIONS */
+/*
+// PACKET DEFINES Jandy
+#define NUL  0x00
+#define DLE  0x10
+#define STX  0x02
+#define ETX  0x03
+*/
+typedef enum tagSerialData_JandyKeyBytes
+{
+	NUL = 0x00,
+	DLE = 0x10,
+	STX = 0x02,
+	ETX = 0x03
+}
+SerialData_JandyKeyBytes;
 
+/* DESTINATIONS */
 typedef enum tagSerialData_Destinations
 {
 	Master_0 = 0x00,
@@ -14,6 +29,8 @@ typedef enum tagSerialData_Destinations
 	Keypad_1 = 0x09,
 	Keypad_2 = 0x0A,
 	Keypad_3 = 0x0B,
+
+	DualSpaSideSwitch_InterfaceBoard = 0x10,
 
 	SPA_Remote_0 = 0x20,
 	SPA_Remote_1 = 0x21,
@@ -60,6 +77,11 @@ typedef enum tagSerialData_Destinations
 	ChemLink_2 = 0x82,
 	ChemLink_3 = 0x83,
 
+	iAqualink_0 = 0xA0,
+	iAqualink_1 = 0xA1,
+	iAqualink_2 = 0xA2,
+	iAqualink_3 = 0xA3,
+
 	Unknown_Device
 }
 SerialData_Destinations;
@@ -94,14 +116,15 @@ typedef enum tagSerialData_Commands
 SerialData_Commands;
 
 /* ACK RETURN COMMANDS */
-typedef enum tagSerialData_AckReturns
+typedef enum tagSerialData_AckTypes
 {
 	ACK_NORMAL = 0x00,
-	ACK_SCREEN_BUSY = 0x01, // Seems to be busy but can cache a message,
-	ACK_SCREEN_BUSY_BLOCK = 0x03, // Seems to be don't send me shit.
-	ACK_PDA = 0x40
+	ACK_SCREEN_BUSY = 0x01,			// Seems to be busy but can cache a message,
+	ACK_SCREEN_BUSY_BLOCK = 0x03,	// Seems to be don't send me shit.
+	ACK_PDA = 0x40,
+	ACK_UNKNOWN_TYPE_1 = 0x80		// Unknown ACK type - found in serial traffic from a OneTouch
 }
-SerialData_AckReturns;
+SerialData_AckTypes;
 
 typedef enum tagAQ_LED_States
 {

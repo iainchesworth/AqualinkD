@@ -8,7 +8,11 @@
 #include <termios.h>
 #include <threads.h>
 #include <unistd.h>
+#include "config/config_helpers.h"
+#include "logging/logging.h"
+#include "threads/thread_utils.h"
 #include "aq_serial.h"
+#include "aq_serial_data_logger.h"
 #include "aq_serial_messages.h"
 #include "aq_serial_statemachine.h"
 #include "utils.h"
@@ -21,8 +25,8 @@ bool set_interface_attributes(int serial_device)
 
 	if (0 > tcgetattr(serial_device, &original_serial_config))
 	{
-		logMessage(LOG_WARNING, "AQ_Serial_Threaded.c | serial_thread | Failed to get serial port attributes\n");
-		logMessage(LOG_WARNING, "tcgetattr() error: %d - %s\n", errno, strerror(errno));
+		WARN("Failed to get serial port attributes");
+		WARN("tcgetattr() error: %d - %s", errno, strerror(errno));
 	}
 	else
 	{
@@ -45,17 +49,17 @@ bool set_interface_attributes(int serial_device)
 
 		if ((0 > cfsetispeed(&aqualink_serial_config, B9600)) || (0 > cfsetospeed(&aqualink_serial_config, B9600)))
 		{
-			logMessage(LOG_ERR, "AQ_Serial_Threaded.c | serial_thread | Failed to set serial port baud rate\n");
-			logMessage(LOG_ERR, "cfset[i|o]speed() error: %d - %s\n", errno, strerror(errno));
+			ERROR("Failed to set serial port baud rate");
+			ERROR("cfset[i|o]speed() error: %d - %s", errno, strerror(errno));
 		}
 		else if (0 > tcsetattr(serial_device, TCSAFLUSH, &aqualink_serial_config))
 		{
-			logMessage(LOG_ERR, "AQ_Serial_Threaded.c | serial_thread | Failed to set serial port baud attributes\n");
-			logMessage(LOG_ERR, "tcsetattr() error: %d - %s\n", errno, strerror(errno));
+			ERROR("Failed to set serial port baud attributes");
+			ERROR("tcsetattr() error: %d - %s", errno, strerror(errno));
 		}
 		else
 		{
-			logMessage(LOG_DEBUG, "AQ_Serial_Threaded.c | serial_thread | Serial port configured successfully\n");
+			DEBUG("Serial port configured successfully");
 			returnCode = true;
 		}
 	}
@@ -65,10 +69,8 @@ bool set_interface_attributes(int serial_device)
 
 int serial_thread(void* termination_handler_ptr)
 {
-	logMessage(LOG_DEBUG_SERIAL, "AQ_Serial_Threaded.c | serial_thread | Serial worker thread is starting\n");
-
-	static const char* serial_device_tty = "/dev/ttyS8";
-
+	TRACE("Serial worker thread is starting");
+	
 	int serial_device = -1, returnCode = 0;
 
 	SerialThread_States state = ST_INIT;
@@ -78,37 +80,53 @@ int serial_thread(void* termination_handler_ptr)
 		switch (state)
 		{
 		case ST_INIT:
-			logMessage(LOG_DEBUG_SERIAL, "AQ_Serial_Threaded.c | serial_thread | ST_INIT\n");
+			TRACE("ST_INIT");
 			{
 				// Initialise the serial device tty config structures!
 				memset(&original_serial_config, 0, sizeof(original_serial_config));
 				memset(&aqualink_serial_config, 0, sizeof(aqualink_serial_config));
 
-				if (-1 == (serial_device = open(serial_device_tty, O_RDWR | O_NOCTTY | O_SYNC)))
+				if (-1 == (serial_device = open(CFG_SerialPort(), O_RDWR | O_NOCTTY | O_SYNC)))
 				{
-					logMessage(LOG_ERR, "AQ_Serial_Threaded.c | serial_thread | Failed to open serial port\n");
-					logMessage(LOG_ERR, "open() error: %d - %s\n", errno, strerror(errno));
+					ERROR("Failed to open serial port: %s", CFG_SerialPort());
+					ERROR("    open() error: %d - %s", errno, strerror(errno));
+
+					// There is literally nothing that can be done now
+					TRACE("Transition: ST_INIT --> ST_TERMINATE");
+					trigger_application_termination();
+					state = ST_TERMINATE;
 				}
 				else if (!isatty(serial_device))
 				{
-					logMessage(LOG_ERR, "AQ_Serial_Threaded.c | serial_thread | Serial device is not a TTY\n");
-					logMessage(LOG_ERR, "isatty() error: %d - %s\n", errno, strerror(errno));
+					ERROR("Serial device is not a TTY");
+					ERROR("    isatty() error: %d - %s", errno, strerror(errno));
+
+					// There is literally nothing that can be done now
+					TRACE("Transition: ST_INIT --> ST_TERMINATE");
+					trigger_application_termination();
+					state = ST_TERMINATE;
 				}
 				else if (!set_interface_attributes(serial_device))
 				{
-					logMessage(LOG_ERR, "AQ_Serial_Threaded.c | serial_thread | Failed configuring serial port for communications\n");
+					ERROR("Failed configuring serial port for communications");
 				}
 				else
 				{
+					// Initialise the serial data logger, if required.
+					if (CFG_LogRawRsBytes())
+					{
+						aq_serial_logger_initialise();
+					}
+
 					// Everything is ready to go...start reading data
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_thread | Transition: ST_INIT --> ST_READPACKET\n");
+					TRACE("Transition: ST_INIT --> ST_READPACKET");
 					state = ST_READPACKET;
 				}
 			}
 			break;
 
 		case ST_READPACKET:
-			logMessage(LOG_DEBUG_SERIAL, "AQ_Serial_Threaded.c | serial_thread | ST_READPACKET\n");
+			TRACE("ST_READPACKET");
 			{
 				unsigned char packet[AQ_MAXPKTLEN];
 				memset(&packet, 0, AQ_MAXPKTLEN);
@@ -118,20 +136,20 @@ int serial_thread(void* termination_handler_ptr)
 				if (0 > packet_length)
 				{
 					// There was an error while reading data from the serial port (resulting in a -1 error code).
-					logMessage(LOG_WARNING, "AQ_Serial.c | serial_thread | There was an error while reading data from the serial port...attempting recovery\n");
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_thread | Transition: ST_READPACKET --> ST_RECOVERY\n");
+					WARN("There was an error while reading data from the serial port...attempting recovery");
+					TRACE("Transition: ST_READPACKET --> ST_RECOVERY");
 					state = ST_RECOVERY;
 				}
 				else if (0 == packet_length)
 				{
 					// There was no data returned by the serial port.  This is weird because we specifcally block while waiting for data.
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_thread | Weird...had a read() return 0 bytes\n");
+					TRACE("Weird...had a read() return 0 bytes");
 				}
 				else if (!process_aqualink_packet(packet, packet_length))
 				{
 					// Failed to process the packet.
-					logMessage(LOG_WARNING, "AQ_Serial.c | serial_thread | There was an error while processing the packet data...attempting recovery\n");
-					logMessage(LOG_DEBUG_SERIAL, "AQ_Serial.c | serial_thread | Transition: ST_READPACKET --> ST_RECOVERY\n");
+					WARN("There was an error while processing the packet data...attempting recovery");
+					TRACE("Transition: ST_READPACKET --> ST_RECOVERY");
 					state = ST_RECOVERY;
 				}
 				else
@@ -142,25 +160,32 @@ int serial_thread(void* termination_handler_ptr)
 			break;
 
 		case ST_WRITEPACKET:
-			logMessage(LOG_DEBUG_SERIAL, "AQ_Serial_Threaded.c | serial_thread | ST_WRITEPACKET\n");
+			TRACE("ST_WRITEPACKET");
 			{
 			}
 			break;
 
 		case ST_RECOVERY:
-			logMessage(LOG_DEBUG_SERIAL, "AQ_Serial_Threaded.c | serial_thread | ST_RECOVERY\n");
+			TRACE("ST_RECOVERY");
 			{
 			}
 			break;
 
 		case ST_TERMINATE:
-			logMessage(LOG_DEBUG_SERIAL, "AQ_Serial_Threaded.c | serial_thread | ST_TERMINATE\n");
+			TRACE("ST_TERMINATE");
 			{
 			}
 			break;
 		}
 	} 
 	while (ST_TERMINATE != state);
+
+
+	// Terminate the serial data logger if it was running.
+	if (CFG_LogRawRsBytes())
+	{
+		shutdown_logging(&aq_serial_data_logger);
+	}
 
 	// Make sure that we close the serial device file descriptor.
 	tcsetattr(serial_device, TCSANOW, &original_serial_config);
