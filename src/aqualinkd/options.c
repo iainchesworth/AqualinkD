@@ -12,25 +12,35 @@
 
 void printHelp()
 {
+	printf("\n");
 	printf("Usage: %s [options]\n", AQUALINKD_NAME);
 	printf("\n");
-	printf("A daemon to control Jandy Aqualink RS pool equipment from any home automation hub or web browser.");
+	printf("A daemon to control Jandy Aqualink RS pool equipment from any home automation hub or web browser.\n");
 	printf("\n");
 	printf("Options:\n");
 	printf("\n");
-	printf("\t-c, --config-file <file>                    Daemon configuration file (default: %s)\n");
+	printf("\t-c, --config-file <file>                    Daemon configuration file (default: %s)\n", CFG_ConfigFile());
 	printf("\t-D, --debug                                 Enable debug level logging\n");
 	printf("\t-h, --help                                  Print usage information\n");
-	printf("\t    --log-file <file>                       Daemon log file (default: %s)\n");
+	printf("\t    --log-file <file>                       Daemon log file (default: %s)\n", CFG_LogFile());
 	printf("\t    --log-raw-serial                        Log all received serial bytes as-received without decoding\n");
-	printf("\t    --log-raw-serial-file <file>            Raw serial log file (default: %s)\n");
+	printf("\t    --log-raw-serial-file <file>            Raw serial log file (default: %s)\n", CFG_LogRawRsBytes_LogFile());
 	printf("\t    --log-serial                            Log decoded serial payloads\n");
-	printf("\t    --log-serial-file <file>                Serial log file (default: %s)\n");
-	printf("\t-n, --no-daemonise                          Prevent %s from running as a daemon\n");
-	printf("\t-p, --pid-file <file>                       ath to use for daemon PID file (default: %s)");
-	printf("\t-s, --serial-port <file>                    Serial port/device to connect with (default: %s)\n");
+	printf("\t    --log-serial-file <file>                Serial log file (default: %s)\n", CFG_LogRawRsBytes_LogFile());
+	printf("\t-n, --no-daemonise                          Prevent %s from running as a daemon\n", AQUALINKD_NAME);
+	printf("\t-p, --pid-file <file>                       ath to use for daemon PID file (default: %s)\n", CFG_PidFile());
+	printf("\t-s, --serial-port <file>                    Serial port/device to connect with (default: %s)\n", CFG_SerialPort());
 	printf("\t    --trace                                 Enable trace level logging\n");
 	printf("\t-v, --version                               Print version information and quit\n");
+	printf("\n");
+}
+
+void printVersion()
+{
+	printf("\n");
+	printf("Version: %s\n", AQUALINKD_VERSION);
+	printf("Built: %s\n", __TIMESTAMP__);
+	printf("\n");
 }
 
 // For long options that don't have a corresponding short option, the flag should 
@@ -118,13 +128,20 @@ void handleOptions(int argc, char* argv[])
 			break;
 
 		case OPTION_FLAG_PID_FILE: // short option 'p' / long option "pid-file"
+			CFG_Set_PidFile(optarg);
+			break;
+
 		case OPTION_FLAG_SERIAL_DEVICE: // short option 's' / long option "serial-port"
+			CFG_Set_SerialPort(optarg);
+			break;
+
 		case OPTION_FLAG_TRACE: // long option "trace"
 			CFG_Set_LogLevel(Trace);
 			break;
 
 		case OPTION_FLAG_VERSION: // short option 'v' / long option "version"
-			break;
+			printVersion();
+			exit(EXIT_SUCCESS);
 
 		case OPTION_FLAG_HELP: // short option 'h' / long option "help"
 		default:  // any unknown options

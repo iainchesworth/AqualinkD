@@ -13,6 +13,11 @@ const char* CFG_ConfigFile()
 	return cfg_getstr(_config_parameters, CONFIG_STR_CONFIG_FILE);
 }
 
+const char* CFG_PidFile()
+{
+	return cfg_getstr(_config_parameters, CONFIG_STR_PID_FILE);
+}
+
 const char* CFG_SerialPort()
 {
 	return cfg_getstr(_config_parameters, CONFIG_STR_SERIAL_PORT);
@@ -229,6 +234,16 @@ void CFG_Set_ConfigFile(const char* configFile)
 	cfg_setstr(_config_parameters, CONFIG_STR_CONFIG_FILE, configFile);
 }
 
+void CFG_Set_PidFile(const char* pidFile)
+{
+	cfg_setstr(_config_parameters, CONFIG_STR_PID_FILE, pidFile);
+}
+
+void CFG_Set_SerialPort(const char* serialPort)
+{
+	cfg_setstr(_config_parameters, CONFIG_STR_SERIAL_PORT, serialPort);
+}
+
 void CFG_Set_LogLevel(int logLevel)
 {
 	cfg_setint(_config_parameters, CONFIG_INT_LOG_LEVEL, logLevel);
@@ -237,6 +252,11 @@ void CFG_Set_LogLevel(int logLevel)
 void CFG_Set_Daemonize(bool daemonize)
 {
 	cfg_setbool(_config_parameters, CONFIG_BOOL_DAEMONIZE, daemonize);
+}
+
+void CFG_Set_LogFile(const char* logFile)
+{
+	cfg_setstr(_config_parameters, CONFIG_STR_LOG_FILE, logFile);
 }
 
 void CFG_Set_DebugRsProtocolPackets(bool debugRsProtocolPackets)

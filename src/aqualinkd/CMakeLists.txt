@@ -29,5 +29,3 @@ target_link_libraries(aqualinkd
     ${LIBM_LIBRARIES}
 	Threads::Threads
 )
-
-install(TARGETS aqualinkd DESTINATION ${AQUALINKD_INSTALL_BIN_DIR})

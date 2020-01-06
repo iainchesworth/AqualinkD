@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 const char* CFG_ConfigFile();
+const char* CFG_PidFile();
 const char* CFG_SerialPort();
 const int CFG_LogLevel();
 const char* CFG_SocketPort();
@@ -55,8 +56,11 @@ const char* CFG_LogRawRsBytes_LogFile();
 // Setters
 
 void CFG_Set_ConfigFile(const char* configFile);
+void CFG_Set_PidFile(const char* pidFile);
+void CFG_Set_SerialPort(const char* serialPort);
 void CFG_Set_LogLevel(int logLevel);
 void CFG_Set_Daemonize(bool daemonize);
+void CFG_Set_LogFile(const char* logFile);
 void CFG_Set_DebugRsProtocolPackets(bool debugRsProtocolPackets);
 void CFG_Set_LogRawRsBytes(bool logRawRsBytes);
 void CFG_Set_LogRawRsBytes_LogFile(const char* logRawRsBytes_LogFile);

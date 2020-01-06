@@ -1,6 +1,7 @@
 #include "config_private.h"
 
 const char CONFIG_STR_CONFIG_FILE[] = "config_file";
+const char CONFIG_STR_PID_FILE[] = "pid_file";
 const char CONFIG_STR_SERIAL_PORT[] = "serial_port";
 const char CONFIG_INT_LOG_LEVEL[] = "log_level";
 const char CONFIG_STR_SOCKET_PORT[] = "socket_port";

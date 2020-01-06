@@ -108,6 +108,3 @@ target_link_libraries(aqualink
   PUBLIC 
     # Nothing here
 )
-
-install(TARGETS aqualink DESTINATION ${AQUALINKD_INSTALL_LIB_DIR})
-install(FILES aqualinkd.h DESTINATION ${AQUALINKD_INSTALL_INCLUDE_DIR})

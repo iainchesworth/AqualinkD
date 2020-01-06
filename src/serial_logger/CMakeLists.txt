@@ -28,5 +28,3 @@ target_link_libraries(serial_logger
 	${LIBM_LIBRARIES}
     Threads::Threads
 )
-
-install(TARGETS serial_logger DESTINATION ${AQUALINKD_INSTALL_BIN_DIR})

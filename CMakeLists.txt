@@ -1,4 +1,5 @@
 ﻿cmake_minimum_required(VERSION 3.12)
+cmake_policy(SET CMP0048 NEW) # Enables the PROJECT_VERSION_XXXX variables
 
 if(WIN32)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -9,11 +10,11 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
-project(aqualinkd)
-
-set(VERSION_MAJOR 1)  # MAJOR version when you make incompatible API changes
-set(VERSION_MINOR 4)  # MINOR version when you add functionality in a backwards-compatible manner
-set(VERSION_PATCH 0)  # PATCH version when you make backwards-compatible bug fixes
+project(aqualinkd
+  VERSION 1.4.0		  # Note this sets the CMAKE_PROJECT_VERSION_XXXXX variables as a by-product
+  DESCRIPTION "A daemon to control Jandy Aqualink RS pool equipment from any home automation hub or web browser."
+  HOMEPAGE_URL "https://github.com/sfeakes/AqualinkD/wiki"
+)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_CLANG_TIDY clang-tidy -checks=-*,readability-*,warnings-as-errors=*)

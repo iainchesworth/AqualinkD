@@ -28,4 +28,3 @@ target_link_libraries(log_reader
     Threads::Threads
 )
 
-install(TARGETS log_reader DESTINATION ${AQUALINKD_INSTALL_BIN_DIR})

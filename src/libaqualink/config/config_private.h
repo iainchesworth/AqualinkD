@@ -5,6 +5,7 @@
 #define DEFAULT_WEBPORT			"6580"
 #define DEFAULT_WEBROOT			"./"
 #define DEFAULT_CONFIG_FILE		"./aqualinkd.conf"
+#define DEFAULT_PID_FILE		"/var/run/aqualinkd.pid"
 #define DEFAULT_SERIALPORT		"/dev/ttyUSB0"
 #define DEFAULT_DEVICE_ID		"0x0a"
 #define DEFAULT_LOG_FILE		0
@@ -22,6 +23,7 @@
 #define MQTT_ID_LEN 18 // 20 seems to kill mosquitto 1.6
 
 extern const char CONFIG_STR_CONFIG_FILE[];
+extern const char CONFIG_STR_PID_FILE[];
 extern const char CONFIG_STR_SERIAL_PORT[];
 extern const char CONFIG_INT_LOG_LEVEL[];
 extern const char CONFIG_STR_SOCKET_PORT[];

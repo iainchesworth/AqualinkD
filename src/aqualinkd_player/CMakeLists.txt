@@ -26,4 +26,3 @@ target_link_libraries(aqualinkd_player
     Threads::Threads
 )
 
-install(TARGETS aqualinkd_player DESTINATION ${AQUALINKD_INSTALL_BIN_DIR})
