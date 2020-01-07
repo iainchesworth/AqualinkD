@@ -361,3 +361,6 @@ _deps
 
 # Build Directories
 out/
+
+# Version Headers
+src/libaqualink/version/version.h

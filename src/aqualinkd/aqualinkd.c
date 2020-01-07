@@ -34,6 +34,7 @@
 #include "utils.h"
 #include "config/config.h"
 #include "config/config_helpers.h"
+#include "daemon/daemon_utils.h"
 #include "logging/logging.h"
 #include "logging/logging_sink_basic_file.h"
 #include "logging/logging_utils.h"
@@ -52,8 +53,6 @@
 
 static volatile bool _keepRunning = true;
 static struct aqualinkdata _aqualink_data;
-
-void main_loop();
 
 void intHandler(int dummy)
 {
@@ -671,124 +670,6 @@ void action_delayed_request()
 	_aqualink_data.unactioned.requested = 0;
 }
 
-int main(int argc, char* argv[])
-{
-  	int i, j;
-
-	// Log only NOTICE messages and above. Debug and info messages
-	// will not be logged to syslog.
-	initialize_logging(&aqualink_default_logger);
-	set_verbosity(&aqualink_default_logger, Notice);
-
-	// Initialize the daemon's parameters.
-	initialise_config_parameters();
-	init_buttons(&_aqualink_data);
-
-	// Process any options on the command line.
-	handleOptions(argc, argv);
-
-	// Finally, process any settings from the configuration file.
-	handle_configuration_file_options();
-
-	if (0 != getuid())
-	{
-		// ERROR("%s Can only be run as root", argv[0]);
-		ERROR("%s Can only be run as root", argv[0]);
-		return EXIT_FAILURE;
-	}
-
-	// Do all the configuration goodness...
-	{
-		set_verbosity(&aqualink_default_logger, CFG_LogLevel());
-
-		if (0 == CFG_LogFile())
-		{
-			LoggingSinkBasicFileUserData* aqualink_basic_file_user_data = (LoggingSinkBasicFileUserData*)malloc(sizeof(LoggingSinkBasicFileUserData));
-			aqualink_basic_file_user_data->Filename = CFG_ConfigFile();
-
-			aqualink_default_logger_sink_file.Initialise(&aqualink_default_logger_sink_file);
-			register_logging_sink(&aqualink_default_logger.Sinks, &aqualink_default_logger_sink_file);
-		}
-	}
-
-	NOTICE("%s v%s", AQUALINKD_NAME, AQUALINKD_VERSION);
-
-	NOTICE("Config level             = %s", logging_level_to_string(CFG_LogLevel()));
-	NOTICE("Config socket_port       = %s", CFG_SocketPort());
-	NOTICE("Config serial_port       = %s", CFG_SerialPort());
-	NOTICE("Config web_directory     = %s", CFG_WebDirectory());
-	NOTICE("Config device_id         = 0x%02hhx", CFG_DeviceId());
-	NOTICE("Config read_all_devices  = %s", bool2text(CFG_ReadAllDevices()));
-	NOTICE("Config use_aux_labels    = %s", bool2text(CFG_UsePanelAuxLabels()));
-	NOTICE("Config override frz prot = %s", bool2text(CFG_OverrideFreezeProtect()));
-
-#ifndef MG_DISABLE_MQTT
-	NOTICE("Config mqtt_server       = %s", CFG_MqttServer());
-	NOTICE("Config mqtt_dz_sub_topic = %s", CFG_MqttDzSubTopic());
-	NOTICE("Config mqtt_dz_pub_topic = %s", CFG_MqttDzPubTopic());
-	NOTICE("Config mqtt_aq_topic     = %s", CFG_MqttAqTopic());
-	NOTICE("Config mqtt_user         = %s", CFG_MqttUser());
-	NOTICE("Config mqtt_passwd       = %s", CFG_MqttPassword());
-	NOTICE("Config mqtt_ID           = %s", CFG_MqttId());
-	NOTICE("Config idx water temp    = %d", CFG_DzIdxAirTemp());
-	NOTICE("Config idx pool temp     = %d", CFG_DzIdxPoolWaterTemp());
-	NOTICE("Config idx spa temp      = %d", CFG_DzIdxSpaWaterTemp());
-	NOTICE("Config idx SWG Percent   = %d", CFG_DzIdxSwgPercent());
-	NOTICE("Config idx SWG PPM       = %d", CFG_DzIdxSwgPpm());
-	NOTICE("Config PDA Mode          = %s", bool2text(CFG_PdaMode()));
-	NOTICE("Config PDA Sleep Mode    = %s", bool2text(CFG_PdaSleepMode()));
-	NOTICE("Config force SWG         = %s", bool2text(CFG_ForceSwg()));
-#endif // MG_DISABLE_MQTT
-
-	NOTICE("Config deamonize         = %s", bool2text(CFG_Daemonize()));
-	NOTICE("Config file              = %s", CFG_ConfigFile());
-	NOTICE("Config light_pgm_mode    = %.2f", CFG_LightProgrammingMode());
-	NOTICE("Log file                 = %s", CFG_LogFile());
-	NOTICE("Debug RS485 protocol     = %s", bool2text(CFG_DebugRsProtocolPackets()));
-	NOTICE("Read Pentair Packets     = %s", bool2text(CFG_ReadPentairPackets()));
-	NOTICE("Display warnings in web  = %s", bool2text(CFG_DisplayWarningsWeb()));
-
-	if (CFG_SwgZeroIgnore() > 0) 
-	{
-		NOTICE("Ignore SWG 0 msg count   = %d", CFG_SwgZeroIgnore());
-	}
-
-	for (i = 0; i < AqualinkButtonCount; i++)
-	{
-		char vsp[] = "None";
-		for (j = 0; j < MAX_PUMPS; j++) {
-			if (_aqualink_data.pumps[j].button == &_aqualink_data.aqbuttons[i]) {
-				sprintf(vsp, "0x%02hhx", _aqualink_data.pumps[j].pumpID);
-			}
-		}
-		if (!CFG_PdaMode()) {
-			NOTICE("Config BTN %-13s = label %-15s | VSP ID %-4s  | dzidx %d | %s",
-				_aqualink_data.aqbuttons[i].name, _aqualink_data.aqbuttons[i].label, vsp, _aqualink_data.aqbuttons[i].dz_idx,
-				(i > 0 && (i == CFG_LightProgrammingButtonPool() || i == CFG_LightProgrammingButtonSpa()) ? "Programable" : ""));
-		}
-		else {
-			NOTICE("Config BTN %-13s = label %-15s | VSP ID %-4s  | PDAlabel %-15s | dzidx %d",
-				_aqualink_data.aqbuttons[i].name, _aqualink_data.aqbuttons[i].label, vsp,
-				_aqualink_data.aqbuttons[i].pda_label, _aqualink_data.aqbuttons[i].dz_idx);
-		}
-	}
-
-	if (CFG_Daemonize() == true)
-	{
-		char pidfile[256];
-		sprintf(pidfile, "%s/%s.pid", "/run", basename(argv[0]));
-		daemonise(pidfile, main_loop);
-	}
-	else
-	{
-		main_loop();
-	}
-
-	shutdown_logging(&aqualink_default_logger);
-
-	return EXIT_SUCCESS;
-}
-
 #define MAX_BLOCK_ACK 12
 #define MAX_BUSY_ACK  (50 + MAX_BLOCK_ACK)
 
@@ -887,55 +768,185 @@ unsigned char find_unused_address(const unsigned char* packet)
 #include "threads/thread_utils.h"
 #include "web/aq_web.h"
 
-void main_loop()
+bool main_loop()
 {
 	thrd_t serial_worker_thread, webserver_worker_thread, mqtt_worker_thread;
 	struct sigaction new_action, old_action;
+	bool ran_successfully = false;
 
 	// 1. Initialise configuration parameters and global data sets.
 	if (!initialise_termination_handler())
 	{
-		ERROR("Aqualink.c | main_loop() | Failed to create worker synchronisation primitives");
-		exit(EXIT_FAILURE);
+		ERROR("Failed to create worker synchronisation primitives");
 	}
 
 	// 2. Create various "server" threads.
 	else if (thrd_success != thrd_create(&serial_worker_thread, &serial_thread, (void*)&wait_for_termination))
 	{
-		ERROR("Aqualink.c | main_loop() | Failed to start serial worker thread");
-		exit(EXIT_FAILURE);
+		ERROR("Failed to start serial worker thread");
 	}
 	else if (thrd_success != thrd_create(&webserver_worker_thread, &webserver_thread, (void*)&wait_for_termination))
 	{
-		ERROR("Aqualink.c | main_loop() | Failed to start web worker thread");
-		exit(EXIT_FAILURE);
+		ERROR("Failed to start web worker thread");
 	}
 	else
 	{
-		INFO("Aqualink.c | main_loop() | Serial worker thread is running");
+		INFO("Serial worker thread is running");
+
+		// 3. Go!
+		new_action.sa_handler = termination_handler;
+		sigemptyset(&new_action.sa_mask);
+		new_action.sa_flags = 0;
+
+		sigaction(SIGINT, NULL, &old_action);
+		if (SIG_IGN != old_action.sa_handler) { sigaction(SIGINT, &new_action, NULL); }
+		sigaction(SIGHUP, NULL, &old_action);
+		if (SIG_IGN != old_action.sa_handler) { sigaction(SIGHUP, &new_action, NULL); }
+		sigaction(SIGTERM, NULL, &old_action);
+		if (SIG_IGN != old_action.sa_handler) { sigaction(SIGTERM, &new_action, NULL); }
+
+		INFO("Running AqualinkD...");
+		if (!wait_for_termination())
+		{
+			ERROR("Failed when attempting to block-wait for termination handler");
+		}
+		else
+		{
+			// 4. Clean up shop and terminate worker threads.
+			INFO("Cleaning up and closing down");
+			cleanup_termination_handler();
+
+			ran_successfully = true;
+		}
 	}
 
-	// 3. Go!
-	new_action.sa_handler = termination_handler;
-	sigemptyset(&new_action.sa_mask);
-	new_action.sa_flags = 0;
+	return ran_successfully;
+}
 
-	sigaction(SIGINT, NULL, &old_action);
-	if (SIG_IGN != old_action.sa_handler) { sigaction(SIGINT, &new_action, NULL); }
-	sigaction(SIGHUP, NULL, &old_action);
-	if (SIG_IGN != old_action.sa_handler) { sigaction(SIGHUP, &new_action, NULL); }
-	sigaction(SIGTERM, NULL, &old_action);
-	if (SIG_IGN != old_action.sa_handler) { sigaction(SIGTERM, &new_action, NULL); }
+int main(int argc, char* argv[])
+{
+	int i, j;
 
-	INFO("Aqualink.c | main_loop() | Running AqualinkD...");
-	if (!wait_for_termination())
+	// Log only NOTICE messages and above. Debug and info messages
+	// will not be logged to syslog.
+	initialize_logging(&aqualink_default_logger);
+	set_verbosity(&aqualink_default_logger, Notice);
+
+	// Initialize the daemon's parameters.
+	initialise_config_parameters();
+	init_buttons(&_aqualink_data);
+
+	// Process any options on the command line.
+	handleOptions(argc, argv);
+
+	// Finally, process any settings from the configuration file.
+	handle_configuration_file_options();
+
+	// Do all the configuration goodness...
 	{
-		ERROR("Aqualink.c | main_loop() | Failed when attempting to block-wait for termination handler");
+		set_verbosity(&aqualink_default_logger, CFG_LogLevel());
+
+		if (0 == CFG_LogFile())
+		{
+			// Configure the output file logger by configuring the userdata and registering the sink.  Note that this
+			// will implicitly initialise the sink.
+
+			LoggingSinkBasicFileUserData* aqualink_basic_file_user_data = (LoggingSinkBasicFileUserData*)malloc(sizeof(LoggingSinkBasicFileUserData));
+			aqualink_basic_file_user_data->Filename = CFG_ConfigFile();
+
+			aqualink_default_logger_sink_file.UserData = aqualink_basic_file_user_data;
+			register_logging_sink(&aqualink_default_logger.Sinks, &aqualink_default_logger_sink_file);
+		}
 	}
 
-	// 4. Clean up shop and terminate worker threads.
-	INFO("Aqualink.c | main_loop() | Cleaning up and closing down");
-	cleanup_termination_handler();
+	INFO("%s %s", AQUALINKD_NAME, AQUALINKD_VERSION);
+
+	NOTICE("Config level             = %s", logging_level_to_string(CFG_LogLevel()));
+	NOTICE("Config socket_port       = %s", CFG_SocketPort());
+	NOTICE("Config serial_port       = %s", CFG_SerialPort());
+	NOTICE("Config web_directory     = %s", CFG_WebDirectory());
+	NOTICE("Config device_id         = 0x%02hhx", CFG_DeviceId());
+	NOTICE("Config read_all_devices  = %s", bool2text(CFG_ReadAllDevices()));
+	NOTICE("Config use_aux_labels    = %s", bool2text(CFG_UsePanelAuxLabels()));
+	NOTICE("Config override frz prot = %s", bool2text(CFG_OverrideFreezeProtect()));
+
+#ifndef MG_DISABLE_MQTT
+	NOTICE("Config mqtt_server       = %s", CFG_MqttServer());
+	NOTICE("Config mqtt_dz_sub_topic = %s", CFG_MqttDzSubTopic());
+	NOTICE("Config mqtt_dz_pub_topic = %s", CFG_MqttDzPubTopic());
+	NOTICE("Config mqtt_aq_topic     = %s", CFG_MqttAqTopic());
+	NOTICE("Config mqtt_user         = %s", CFG_MqttUser());
+	NOTICE("Config mqtt_passwd       = %s", CFG_MqttPassword());
+	NOTICE("Config mqtt_ID           = %s", CFG_MqttId());
+	NOTICE("Config idx water temp    = %d", CFG_DzIdxAirTemp());
+	NOTICE("Config idx pool temp     = %d", CFG_DzIdxPoolWaterTemp());
+	NOTICE("Config idx spa temp      = %d", CFG_DzIdxSpaWaterTemp());
+	NOTICE("Config idx SWG Percent   = %d", CFG_DzIdxSwgPercent());
+	NOTICE("Config idx SWG PPM       = %d", CFG_DzIdxSwgPpm());
+	NOTICE("Config PDA Mode          = %s", bool2text(CFG_PdaMode()));
+	NOTICE("Config PDA Sleep Mode    = %s", bool2text(CFG_PdaSleepMode()));
+	NOTICE("Config force SWG         = %s", bool2text(CFG_ForceSwg()));
+#endif // MG_DISABLE_MQTT
+
+	NOTICE("Config no_daemonize      = %s", bool2text(CFG_NoDaemonize()));
+	NOTICE("Config file              = %s", CFG_ConfigFile());
+	NOTICE("Config light_pgm_mode    = %.2f", CFG_LightProgrammingMode());
+	NOTICE("Log file                 = %s", CFG_LogFile());
+	NOTICE("Debug RS485 protocol     = %s", bool2text(CFG_DebugRsProtocolPackets()));
+	NOTICE("Read Pentair Packets     = %s", bool2text(CFG_ReadPentairPackets()));
+	NOTICE("Display warnings in web  = %s", bool2text(CFG_DisplayWarningsWeb()));
+
+	if (CFG_SwgZeroIgnore() > 0)
+	{
+		NOTICE("Ignore SWG 0 msg count   = %d", CFG_SwgZeroIgnore());
+	}
+
+	for (i = 0; i < AqualinkButtonCount; i++)
+	{
+		char vsp[] = "None";
+
+		for (j = 0; j < MAX_PUMPS; j++)
+		{
+			if (_aqualink_data.pumps[j].button == &_aqualink_data.aqbuttons[i])
+			{
+				sprintf(vsp, "0x%02hhx", _aqualink_data.pumps[j].pumpID);
+			}
+		}
+
+		if (!CFG_PdaMode())
+		{
+			NOTICE("Config BTN %-13s = label %-15s | VSP ID %-4s  | dzidx %d | %s", _aqualink_data.aqbuttons[i].name, _aqualink_data.aqbuttons[i].label, vsp, _aqualink_data.aqbuttons[i].dz_idx, (i > 0 && (i == CFG_LightProgrammingButtonPool() || i == CFG_LightProgrammingButtonSpa()) ? "Programable" : ""));
+		}
+		else
+		{
+			NOTICE("Config BTN %-13s = label %-15s | VSP ID %-4s  | PDAlabel %-15s | dzidx %d", _aqualink_data.aqbuttons[i].name, _aqualink_data.aqbuttons[i].label, vsp, _aqualink_data.aqbuttons[i].pda_label, _aqualink_data.aqbuttons[i].dz_idx);
+		}
+	}
+
+	if (CFG_NoDaemonize() == true)
+	{
+		NOTICE("Running %s interactively...", AQUALINKD_NAME);
+
+		if (!main_loop())
+		{
+			ERROR("Failed to start %s interactively...exiting", AQUALINKD_NAME);
+			return EXIT_FAILURE;
+		}
+	}
+	else
+	{
+		NOTICE("Running %s as a daemon...", AQUALINKD_NAME);
+
+		if (!daemonize(main_loop))
+		{
+			ERROR("Failed to start %s as a daemon...exiting", AQUALINKD_NAME);
+			return EXIT_FAILURE;
+		}
+	}
+
+	shutdown_logging(&aqualink_default_logger);
+
+	return EXIT_SUCCESS;
 }
 
 /*void main_loop()

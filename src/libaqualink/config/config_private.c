@@ -31,7 +31,7 @@ const char CONFIG_INT_LIGHT_PROGRAMMING_INITIAL_OFF[] = "light_programming_initi
 const char CONFIG_INT_LIGHT_PROGRAMMING_BUTTON_POOL[] = "light_programming_button_pool";
 const char CONFIG_INT_LIGHT_PROGRAMMING_BUTTON_SPA[] = "light_programming_button_spa";
 
-const char CONFIG_BOOL_DAEMONIZE[] = "deamonize";
+const char CONFIG_BOOL_NO_DAEMONIZE[] = "no_daemonize";
 const char CONFIG_STR_LOG_FILE[] = "log_file";
 
 const char CONFIG_BOOL_PDA_MODE[] = "pda_mode";

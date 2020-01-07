@@ -53,7 +53,7 @@ extern const char CONFIG_INT_LIGHT_PROGRAMMING_INITIAL_OFF[];
 extern const char CONFIG_INT_LIGHT_PROGRAMMING_BUTTON_POOL[];
 extern const char CONFIG_INT_LIGHT_PROGRAMMING_BUTTON_SPA[];
 
-extern const char CONFIG_BOOL_DAEMONIZE[];
+extern const char CONFIG_BOOL_NO_DAEMONIZE[];
 extern const char CONFIG_STR_LOG_FILE[];
 
 extern const char CONFIG_BOOL_PDA_MODE[];

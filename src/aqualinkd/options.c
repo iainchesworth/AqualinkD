@@ -27,7 +27,7 @@ void printHelp()
 	printf("\t    --log-raw-serial-file <file>            Raw serial log file (default: %s)\n", CFG_LogRawRsBytes_LogFile());
 	printf("\t    --log-serial                            Log decoded serial payloads\n");
 	printf("\t    --log-serial-file <file>                Serial log file (default: %s)\n", CFG_LogRawRsBytes_LogFile());
-	printf("\t-n, --no-daemonise                          Prevent %s from running as a daemon\n", AQUALINKD_NAME);
+	printf("\t-n, --no-daemonize                          Prevent %s from running as a daemon\n", AQUALINKD_NAME);
 	printf("\t-p, --pid-file <file>                       ath to use for daemon PID file (default: %s)\n", CFG_PidFile());
 	printf("\t-s, --serial-port <file>                    Serial port/device to connect with (default: %s)\n", CFG_SerialPort());
 	printf("\t    --trace                                 Enable trace level logging\n");
@@ -79,7 +79,7 @@ void handleOptions(int argc, char* argv[])
 		{ "log-raw-serial-file",	required_argument,	0, OPTION_FLAG_LOG_RAW_SERIAL_FILE },
 		{ "log-serial",				no_argument,		0, OPTION_FLAG_LOG_SERIAL },
 		{ "log-serial-file",		required_argument,	0, OPTION_FLAG_LOG_SERIAL_FILE },
-		{ "no-daemonise",			no_argument,		0, OPTION_FLAG_NO_DAEMONIZE },
+		{ "no-daemonize",			no_argument,		0, OPTION_FLAG_NO_DAEMONIZE },
 		{ "pid-file",				required_argument,	0, OPTION_FLAG_PID_FILE },
 		{ "serial-port",			required_argument,	0, OPTION_FLAG_SERIAL_DEVICE },
 		{ "trace",					no_argument,		0, OPTION_FLAG_TRACE },
@@ -124,7 +124,7 @@ void handleOptions(int argc, char* argv[])
 			break;
 
 		case OPTION_FLAG_NO_DAEMONIZE: // short option 'n' / long option "no-daemonize"
-			CFG_Set_Daemonize(false);
+			CFG_Set_NoDaemonize(true);
 			break;
 
 		case OPTION_FLAG_PID_FILE: // short option 'p' / long option "pid-file"

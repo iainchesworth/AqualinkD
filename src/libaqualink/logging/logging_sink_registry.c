@@ -32,7 +32,7 @@ bool register_logging_sink(LoggingSinkRegistry* registry, LoggingSink* sink)
 	assert(0 != sink);
 
 	bool retSuccess;
-
+	
 	if (0 != registry->head)
 	{
 		// The list already exists, add the sink to the end of the list
@@ -45,6 +45,12 @@ bool register_logging_sink(LoggingSinkRegistry* registry, LoggingSink* sink)
 	}
 	else
 	{
+		// Trigger the sink's initialisation process (if it has one).
+		if (0 != sink->Initialise)
+		{
+			sink->Initialise(sink);
+		}
+
 		// Add the sink as the first node of the list.
 		registry->head->sink = sink;
 		registry->head->next = 0;

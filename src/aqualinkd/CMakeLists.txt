@@ -29,3 +29,5 @@ target_link_libraries(aqualinkd
     ${LIBM_LIBRARIES}
 	Threads::Threads
 )
+
+include(${CMAKE_SOURCE_DIR}/cmake/valgrind/valgrind.cmake)

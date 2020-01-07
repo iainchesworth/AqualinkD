@@ -13,6 +13,7 @@ set(SOURCE_FILES
   config/config_parsers.c
   config/config_private.c
   config/config_validators.c
+  daemon/daemon_utils.c
   hardware/buttons/buttons.c
   json/json_messages.c
   json/json_serializer.c

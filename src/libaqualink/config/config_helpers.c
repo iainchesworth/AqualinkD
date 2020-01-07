@@ -138,9 +138,9 @@ const int CFG_LightProgrammingButtonSpa()
 	return cfg_getint(_config_parameters, CONFIG_INT_LIGHT_PROGRAMMING_BUTTON_SPA);
 }
 
-const bool CFG_Daemonize()
+const bool CFG_NoDaemonize()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_DAEMONIZE);
+	return cfg_getbool(_config_parameters, CONFIG_BOOL_NO_DAEMONIZE);
 }
 
 const char* CFG_LogFile()
@@ -249,9 +249,9 @@ void CFG_Set_LogLevel(int logLevel)
 	cfg_setint(_config_parameters, CONFIG_INT_LOG_LEVEL, logLevel);
 }
 
-void CFG_Set_Daemonize(bool daemonize)
+void CFG_Set_NoDaemonize(bool daemonize)
 {
-	cfg_setbool(_config_parameters, CONFIG_BOOL_DAEMONIZE, daemonize);
+	cfg_setbool(_config_parameters, CONFIG_BOOL_NO_DAEMONIZE, daemonize);
 }
 
 void CFG_Set_LogFile(const char* logFile)

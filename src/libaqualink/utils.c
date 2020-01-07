@@ -54,24 +54,6 @@
 #define DEFAULT_LOG_FILE "/tmp/aqualinkd-inline.log"
 #define TIMESTAMP_LENGTH 30
 
-/*
- * This function reports the error and
- * exits back to the shell:
- */
-void displayLastSystemError(const char* on_what)
-{
-	fputs(strerror(errno), stderr);
-	fputs(": ", stderr);
-	fputs(on_what, stderr);
-	fputc('\n', stderr);
-
-	if (CFG_Daemonize() == TRUE)
-	{
-		ERROR("%d : %s", errno, on_what);
-		closelog();
-	}
-}
-
 void timestamp(char* time_string)
 {
 	time_t now;
@@ -188,79 +170,6 @@ int cleanint(char* str)
 
 	str = cleanwhitespace(str);
 	return atoi(str);
-}
-			
-void daemonise(char* pidFile, void (*main_function) (void))
-{
-	FILE* fp = NULL;
-	pid_t process_id = 0;
-	pid_t sid = 0;
-
-	CFG_Set_Daemonize(true);
-
-	/* Check we are root */
-	if (getuid() != 0)
-	{
-		ERROR("Can only be run as root");
-		exit(EXIT_FAILURE);
-	}
-
-	int pid_file = open(pidFile, O_CREAT | O_RDWR, 0666);
-	int rc = flock(pid_file, LOCK_EX | LOCK_NB);
-	if (rc)
-	{
-		ERROR("\nAnother instance is already running");
-		exit(EXIT_FAILURE);
-	}
-
-	process_id = fork();
-	// Indication of fork() failure
-	if (process_id < 0)
-	{
-		displayLastSystemError("fork failed!");
-		// Return failure in exit status
-		exit(EXIT_FAILURE);
-	}
-	// PARENT PROCESS. Need to kill it.
-	if (process_id > 0)
-	{
-		fp = fopen(pidFile, "w");
-
-		if (fp == NULL)
-		{
-			ERROR("can't write to PID file %s", pidFile);
-		}
-		else
-		{
-			fprintf(fp, "%d", process_id);
-		}
-
-		fclose(fp);
-		DEBUG("process_id of child process %d ", process_id);
-		// return success in exit status
-		exit(EXIT_SUCCESS);
-	}
-
-	//unmask the file mode
-	umask(0);
-	//set new session
-	sid = setsid();
-	if (sid < 0)
-	{
-		// Return failure
-		displayLastSystemError("Failed to fork process");
-		exit(EXIT_FAILURE);
-	}
-
-	// Change the current working directory to root.
-	chdir("/");
-	// Close stdin. stdout and stderr
-	close(STDIN_FILENO);
-	close(STDOUT_FILENO);
-	close(STDERR_FILENO);
-
-	// this is the first instance
-	(*main_function) ();
 }
 
 int count_characters(const char* str, char character)
