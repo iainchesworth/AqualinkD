@@ -14,20 +14,13 @@
  *  https://github.com/sfeakes/aqualinkd
  */
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <termios.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <stdbool.h>
 #include <assert.h>
+#include <stdbool.h>
+#include <stdio.h>
 
 #include "config/config.h"
 #include "config/config_helpers.h"
+#include "cross-platform/serial.h"
 #include "logging/logging.h"
 #include "aq_serial.h"
 #include "aq_serial_checksums.h"
@@ -36,9 +29,7 @@
 #include "aq_serial_types.h"
 #include "utils.h"
 
-static struct termios _oldtio;
-
-void send_packet(int fd, unsigned char* packet, int length);
+void send_packet(SerialDevice serial_device, unsigned char* packet, int length);
 
 bool _pda_mode = false;
 
@@ -138,7 +129,7 @@ protocolType getProtocolType(const unsigned char* packet)
 #ifndef PLAYBACK_MODE
 
 // Send an ack packet to the Aqualink RS8 master device.
-// fd: the file descriptor of the serial port connected to the device
+// serial_device: the file descriptor of the serial port connected to the device
 // command: the command byte to send to the master device, NUL if no command
 // 
 // NUL = '\x00'
@@ -170,7 +161,7 @@ void print_hex(char* pk, int length)
  <-------  headder ----> <-- type to from type-> <len> <------------------------------ data ----------------------------------------> <checksum>
 */
 
-void send_pentair_command(int fd, const unsigned char* packet_buffer, int size)
+void send_pentair_command(SerialDevice serial_device, const unsigned char* packet_buffer, int size)
 {
 	unsigned char packet[AQ_MAXPKTLEN];
 	int i = 0;
@@ -198,10 +189,10 @@ void send_pentair_command(int fd, const unsigned char* packet_buffer, int size)
 	generate_pentair_checksum(&packet[1], i);
 	packet[++i] = NUL;
 
-	send_packet(fd, packet, i);
+	send_packet(serial_device, packet, i);
 }
 
-void send_jandy_command(int fd, const unsigned char* packet_buffer, int size)
+void send_jandy_command(SerialDevice serial_device, const unsigned char* packet_buffer, int size)
 {
 	unsigned char packet[AQ_MAXPKTLEN];
 	int i = 0;
@@ -220,26 +211,26 @@ void send_jandy_command(int fd, const unsigned char* packet_buffer, int size)
 
 	packet[i - 3] = generate_jandy_checksum(packet, i);
 
-	send_packet(fd, packet, ++i);
+	send_packet(serial_device, packet, ++i);
 }
 
-void send_command(int fd, const unsigned char* packet_buffer, int size)
+void send_command(SerialDevice serial_device, const unsigned char* packet_buffer, int size)
 {
 	if (packet_buffer[0] == PCOL_JANDY) {
-		send_jandy_command(fd, &packet_buffer[1], size - 1);
+		send_jandy_command(serial_device, &packet_buffer[1], size - 1);
 		return;
 	}
 	if (packet_buffer[0] == PCOL_PENTAIR) {
-		send_pentair_command(fd, &packet_buffer[1], size - 1);
+		send_pentair_command(serial_device, &packet_buffer[1], size - 1);
 		return;
 	}
 }
 
-void send_packet(int fd, unsigned char* packet, int length)
+void send_packet(SerialDevice serial_device, unsigned char* packet, int length)
 {
 	int nwrite, i;
 	for (i = 0; i < length; i += nwrite) {
-		nwrite = write(fd, packet + i, length - i);
+		nwrite = write_to_serial_device(serial_device, packet + i, length - i);
 		if (nwrite < 0)
 		{
 			ERROR("write to serial port failed");
@@ -253,7 +244,7 @@ void send_packet(int fd, unsigned char* packet, int length)
 	}
 }
 
-void _send_ack(int fd, unsigned char ack_type, unsigned char command)
+void _send_ack(SerialDevice serial_device, unsigned char ack_type, unsigned char command)
 {
 	const int length = 11;
 	// Default null ack with checksum generated, don't mess with it, just over right                    
@@ -267,29 +258,27 @@ void _send_ack(int fd, unsigned char ack_type, unsigned char command)
 		ackPacket[7] = generate_jandy_checksum(ackPacket, length - 1);
 	}
 
-	send_packet(fd, ackPacket, length);
+	send_packet(serial_device, ackPacket, length);
 }
 
-void send_ack(int fd, unsigned char command)
+void send_ack(SerialDevice serial_device, unsigned char command)
 {
-	_send_ack(fd, ACK_NORMAL, command);
+	_send_ack(serial_device, ACK_NORMAL, command);
 }
 
 // ack_typ should only be ACK_PDA, ACK_NORMAL, ACK_SCREEN_BUSY, ACK_SCREEN_BUSY_DISPLAY
-void send_extended_ack(int fd, unsigned char ack_type, unsigned char command)
+void send_extended_ack(SerialDevice serial_device, unsigned char ack_type, unsigned char command)
 {
-	_send_ack(fd, ack_type, command);
+	_send_ack(serial_device, ack_type, command);
 }
 
-int _get_packet(int fd, unsigned char* packet, bool rawlog);
-
-int get_packet(int fd, unsigned char* packet)
+int get_packet(SerialDevice serial_device, unsigned char* packet)
 {
-	return serial_getnextpacket(fd, packet);
+	return serial_getnextpacket(serial_device, packet);
 }
-int get_packet_lograw(int fd, unsigned char* packet)
+int get_packet_lograw(SerialDevice serial_device, unsigned char* packet)
 {
-	return serial_getnextpacket(fd, packet);
+	return serial_getnextpacket(serial_device, packet);
 }
 
 #else // PLAYBACKMODE

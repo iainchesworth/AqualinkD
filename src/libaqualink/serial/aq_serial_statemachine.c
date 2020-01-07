@@ -4,22 +4,22 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <string.h>
-#include <unistd.h>
+#include "cross-platform/serial.h"
 #include "logging/logging.h"
 #include "aq_serial.h"
 #include "aq_serial_checksums.h"
 #include "aq_serial_data_logger.h"
+#include "aq_serial_types.h"
 #include "utils.h"
 
-int serial_getnextpacket(int fd, unsigned char* packet)
+int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 {
-	assert((0 <= fd));			// Look for a "valid" file descriptor
-	assert((0 != packet));	// Ensure the destination packet buffer is not NULL
+	assert((SERIALDEVICE_INVALID != serial_device));	// Look for a "valid" file descriptor
+	assert((0 != packet));								// Ensure the destination packet buffer is not NULL
 
 	static const int MAXIMUM_PAYLOAD_LENGTH = AQ_MAXPKTLEN - 4;  // 64 bytes minus DLE+STX / DLE+ETX
 	static const int MINIMUM_PAYLOAD_LENGTH = 3;				 // Ignore DLE+STX | DEST + CMD + CSUM | Ignore DLE+ETX
 	static const int ERROR_WHILE_RECEIVING_PACKET = 0;
-	static const int ERROR_INVALID_PARAMETERS = 0;
 	static const int MAXIMUM_RETRY_COUNT = 20;
 
 	SerialThread_ReadStates state = ST_WAITFOR_PACKETSTART;
@@ -43,7 +43,7 @@ int serial_getnextpacket(int fd, unsigned char* packet)
 				unsigned char byte = 0;
 
 				// Get the next byte....note that this is non-blocking and will fall through.
-				bytesRead = read(fd, &byte, 1);
+				bytesRead = read_from_serial_device(serial_device, &byte, 1);
 
 				if ((bytesRead < 0) && ((EAGAIN == errno) || (EWOULDBLOCK == errno)))
 				{
@@ -111,7 +111,7 @@ int serial_getnextpacket(int fd, unsigned char* packet)
 				unsigned char byte = 0;
 
 				// Get the next byte....note that this is non-blocking and will fall through.
-				bytesRead = read(fd, &byte, 1);
+				bytesRead = read_from_serial_device(serial_device, &byte, 1);
 
 				if ((bytesRead < 0) && ((EAGAIN == errno) || (EWOULDBLOCK == errno)))
 				{

@@ -3,7 +3,7 @@
 #include <ctype.h>
 #include <string.h>
 
-int strcmpi(const char* first, const char* second)
+int aq_stricmp(const char* first, const char* second)
 {
 	while (*first && *second)
 	{
@@ -17,7 +17,7 @@ int strcmpi(const char* first, const char* second)
 	return toupper(*first) == toupper(*second);
 }
 
-int strcmpni(const char* first, const char* second, size_t max)
+int aq_strnicmp(const char* first, const char* second, size_t max)
 {
 	while (*first && *second && max)
 	{
@@ -37,4 +37,24 @@ int strcmpni(const char* first, const char* second, size_t max)
 	}
 
 	return toupper(*first) == toupper(*second); /* depends on the maxth character is equality */
+}
+
+char* aq_stristr(const char* haystack, const char* needle)
+{
+	do
+	{
+		const char* h = haystack;
+		const char* n = needle;
+		while (tolower((unsigned char)*h) == tolower((unsigned char)*n) && *n)
+		{
+			h++;
+			n++;
+		}
+		if (*n == 0)
+		{
+			return (char*)haystack;
+		}
+	} while (*haystack++);
+
+	return 0;
 }

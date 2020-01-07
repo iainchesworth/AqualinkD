@@ -1,8 +1,7 @@
-#include <syslog.h>
-#include <stdbool.h>
-
 #ifndef UTILS_H_
 #define UTILS_H_
+
+#include <stdbool.h>
 
 #ifndef EXIT_SUCCESS
 #define EXIT_FAILURE 1
@@ -39,7 +38,6 @@ void delayMilliseconds(unsigned int howLong);
 void delayMicroseconds(unsigned int howLong);
 float degFtoC(float degF);
 float degCtoF(float degC);
-char* stristr(const char* haystack, const char* needle);
 int ascii(char* destination, const char* source);
 char* prettyString(char* str);
 void startInlineDebug();
@@ -47,6 +45,5 @@ void stopInlineDebug();
 void cleanInlineDebug();
 char* getInlineLogFName();
 bool islogFileReady();
-bool mac(char* buf, int len);
 
 #endif /* UTILS_H_ */

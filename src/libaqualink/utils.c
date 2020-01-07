@@ -14,44 +14,19 @@
  *  https://github.com/sfeakes/aqualinkd
  */
 
-#include <sys/ioctl.h>
-#include <netinet/ip.h>
-#include <net/if.h>
-#include <net/if_arp.h>
-
-#include <stdio.h>
-#include <stdarg.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
-#include <signal.h>
-#include <syslog.h>
-#include <sys/file.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <time.h>
-#include <ctype.h>
-#include <fcntl.h>
 #include <assert.h>
+#include <ctype.h>
 #include <stdbool.h>
-#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "config/config_helpers.h"
+#include "cross-platform/time.h"
 #include "logging/logging.h"
 #include "logging/logging_utils.h"
+#include "string/string_utils.h"
 
-#ifdef AD_DEBUG
-#include <sys/time.h>
-#endif
-
-#ifndef _UTILS_C_
-#define _UTILS_C_
-#endif
-
-#include "utils.h"
-
-#define DEFAULT_LOG_FILE "/tmp/aqualinkd-inline.log"
 #define TIMESTAMP_LENGTH 30
 
 void timestamp(char* time_string)
@@ -216,7 +191,7 @@ bool text2bool(const char* str)
 	// Create a temporary string that starts where the non-whitespace characters start...
 	const char* tmpStr = &str[firstCharPos];
 
-	return ((0 == strncasecmp(tmpStr, YES_STRING, 3)) || (0 == strncasecmp(tmpStr, ON_STRING, 2))) ? TRUE : FALSE;
+	return ((0 == aq_strnicmp(tmpStr, YES_STRING, 3)) || (0 == aq_strnicmp(tmpStr, ON_STRING, 2))) ? true : false;
 }
 
 bool request2bool(const char* str)
@@ -242,12 +217,12 @@ bool request2bool(const char* str)
 	// Create a temporary string that starts where the non-whitespace characters start...
 	const char* tmpStr = &str[firstCharPos];
 
-	return ((0 == strncasecmp(tmpStr, YES_STRING, 3)) || (0 == strncasecmp(tmpStr, ON_STRING, 2)) || (1 == atoi(str))) ? TRUE : FALSE;
+	return ((0 == aq_strnicmp(tmpStr, YES_STRING, 3)) || (0 == aq_strnicmp(tmpStr, ON_STRING, 2)) || (1 == atoi(str))) ? true : false;
 }
 
 const char* bool2text(bool val)
 {
-	return (TRUE == val) ? YES_STRING : NO_STRING;
+	return (true == val) ? YES_STRING : NO_STRING;
 }
 
 // (50°F - 32) x .5556 = 10°C
@@ -261,8 +236,6 @@ float degCtoF(float degC)
 	return (degC * 1.8 + 32);
 }
 
-#include <time.h>
-
 static const unsigned int MICROSECONDS_PER_SECOND = 1000000;
 static const unsigned int MICROSECONDS_PER_MILLISECOND = 1000;
 
@@ -274,7 +247,7 @@ void delay(struct timespec* const sleeper)
 
 void delayMicroseconds(unsigned int howLong) // Microseconds (1000000 = 1 second)
 {
-    struct timespec sleepFor, dummy;
+    struct timespec sleepFor;
 
     sleepFor.tv_sec = (time_t)(howLong / 1000);
     sleepFor.tv_nsec = (long)(howLong % 1000) * 1000000;
@@ -290,27 +263,6 @@ void delayMilliseconds(unsigned int howLong)
 void delaySeconds(unsigned int howLong)
 {
 	delayMicroseconds(howLong * MICROSECONDS_PER_SECOND);
-}
-
-char* stristr(const char* haystack, const char* needle) 
-{
-	do 
-	{
-		const char* h = haystack;
-		const char* n = needle;
-		while (tolower((unsigned char)*h) == tolower((unsigned char)*n) && *n) 
-		{
-			h++;
-			n++;
-		}
-		if (*n == 0) 
-		{
-			return (char*)haystack;
-		}
-	} 
-	while (*haystack++);
-	
-	return 0;
 }
 
 int ascii(char* destination, const char* source) 
@@ -368,40 +320,4 @@ char* prettyString(char* str)
 	}
 
 	return str;
-}
-
-// Find the first network interface with valid MAC and put mac address into buffer upto length
-bool mac(char* buf, int len)
-{
-	struct ifreq s;
-	int fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
-	struct if_nameindex* if_nidxs, * intf;
-
-	if_nidxs = if_nameindex();
-	if (if_nidxs != NULL)
-	{
-		for (intf = if_nidxs; intf->if_index != 0 || intf->if_name != NULL; intf++)
-		{
-			strcpy(s.ifr_name, intf->if_name);
-			if (0 == ioctl(fd, SIOCGIFHWADDR, &s))
-			{
-				int i;
-				if (s.ifr_addr.sa_data[0] == 0 &&
-					s.ifr_addr.sa_data[1] == 0 &&
-					s.ifr_addr.sa_data[2] == 0 &&
-					s.ifr_addr.sa_data[3] == 0 &&
-					s.ifr_addr.sa_data[4] == 0 &&
-					s.ifr_addr.sa_data[5] == 0) {
-					continue;
-				}
-				for (i = 0; i < 6 && i * 2 < len; ++i)
-				{
-					sprintf(&buf[i * 2], "%02x", (unsigned char)s.ifr_addr.sa_data[i]);
-				}
-				return true;
-			}
-		}
-	}
-
-	return false;
 }

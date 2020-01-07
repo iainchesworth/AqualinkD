@@ -1881,7 +1881,7 @@ struct mg_str mg_mk_str_n(const char *s, size_t len);
 int mg_vcmp(const struct mg_str *str2, const char *str1);
 
 /*
- * Cross-platform version of `strncasecmp()` where first string is
+ * Cross-platform version of `aq_strnicmp()` where first string is
  * specified by `struct mg_str`.
  */
 int mg_vcasecmp(const struct mg_str *str2, const char *str1);
@@ -2122,7 +2122,7 @@ int64_t cs_to64(const char *s);
 #endif
 
 /*
- * Cross-platform version of `strncasecmp()`.
+ * Cross-platform version of `aq_strnicmp()`.
  */
 int mg_ncasecmp(const char *s1, const char *s2, size_t len);
 

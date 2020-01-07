@@ -1,10 +1,6 @@
 #ifndef AQ_WEB_CONNECTION_HANDLER_H_
 #define AQ_WEB_CONNECTION_HANDLER_H_
 
-#include <sys/types.h>
-#include <sys/select.h>
-#include <sys/socket.h>
-#include <string.h>
 #include <microhttpd.h>
 #include "aq_web.h"
 

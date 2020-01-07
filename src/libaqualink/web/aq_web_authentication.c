@@ -1,11 +1,8 @@
 #include "aq_web_authentication.h"
 
-#include <sys/types.h>
-#include <sys/select.h>
-#include <sys/socket.h>
-#include <string.h>
 #include <microhttpd.h>
 #include <stdlib.h>
+#include <string.h>
 
 static char* string_to_base64(const char* expected)
 {
@@ -26,7 +23,7 @@ int ask_for_authentication(struct MHD_Connection* connection, const char* realm)
 		return MHD_NO;
 	}
 
-	headervalue = malloc(strlen(strbase) + strlen(realm) + 1);
+	headervalue = (char*)malloc(strlen(strbase) + strlen(realm) + 1);
 	if (!headervalue)
 	{
 		return MHD_NO;
@@ -67,7 +64,7 @@ int is_authenticated(struct MHD_Connection* connection, const char* username, co
 		return 0;
 	}
 
-	expected = malloc(strlen(username) + 1 + strlen(password) + 1);
+	expected = (char*)malloc(strlen(username) + 1 + strlen(password) + 1);
 	if (NULL == expected)
 	{
 		return 0;

@@ -2,8 +2,9 @@
 #ifndef AQUALINK_H_
 #define AQUALINK_H_
 
-#include <threads.h>
 #include <stdbool.h>
+
+#include "cross-platform/threads.h"
 #include "hardware/buttons/buttons.h"
 #include "serial/aq_serial.h"
 #include "aq_programmer.h"

@@ -18,25 +18,22 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <threads.h>
-#include <unistd.h>
 #include <string.h>
 
-
-#include "aqualink.h"
-#include "utils.h"
-#include "aq_programmer.h"
+#include "cross-platform/time.h"
+#include "cross-platform/threads.h"
+#include "hardware/buttons/buttons.h"
 #include "logging/logging.h"
 #include "serial/aq_serial.h"
+#include "string/string_utils.h"
+#include "aqualink.h"
+#include "aq_programmer.h"
 #include "pda.h"
-#include "pda_menu.h"
 #include "pda_aq_programmer.h"
-
-#include "hardware/buttons/buttons.h"
-
+#include "pda_menu.h"
+#include "utils.h"
 
 #ifdef AQ_DEBUG
-#include <time.h>
 #include "timespec_subtract.h"
 #endif
 
@@ -122,7 +119,7 @@ bool find_pda_menu_item(struct aqualinkdata* aq_data, char* menuText, int charli
 
 
 	if (index < 0) { // No menu, is there a page down.  "PDA Line 9 =    ^^ MORE __"
-		if (strncasecmp(pda_m_line(9), "   ^^ MORE", 10) == 0) {
+		if (aq_strnicmp(pda_m_line(9), "   ^^ MORE", 10) == 0) {
 			int j;
 			for (j = 0; j < 20; j++) {
 				send_cmd(KEY_PDA_DOWN);
@@ -144,7 +141,7 @@ bool find_pda_menu_item(struct aqualinkdata* aq_data, char* menuText, int charli
 		}
 	}
 
-	if (strncasecmp(pda_m_line(9), "   ^^ MORE", 10) != 0) {
+	if (aq_strnicmp(pda_m_line(9), "   ^^ MORE", 10) != 0) {
 		if (pda_m_type() == PM_HOME) {
 			min_index = 4;
 			max_index = 9;
@@ -177,7 +174,7 @@ bool find_pda_menu_item(struct aqualinkdata* aq_data, char* menuText, int charli
 			// Line 9 =      BOOST
 
 			// "SET AquaPure" and "BOOST" are only present when filter pump is running
-			if (strncasecmp(pda_m_line(9), "     BOOST      ", 16) == 0) {
+			if (aq_strnicmp(pda_m_line(9), "     BOOST      ", 16) == 0) {
 				min_index = 1;
 				max_index = 8; // to account for 8 missing
 				if (index == 9) { // looking for boost
@@ -715,7 +712,7 @@ bool waitForPDAMessageTypesOrMenu(struct aqualinkdata* aq_data, unsigned char mt
 	while (++i <= numMessageReceived)
 	{
 		if (gotmenu == false && line > 0 && text != NULL) {
-			if (stristr(pda_m_line(line), text) != NULL) {
+			if (aq_stristr(pda_m_line(line), text) != NULL) {
 				send_cmd(KEY_PDA_SELECT);
 				gotmenu = true;
 				DEBUG("waitForPDAMessageTypesOrMenu saw '%s' and line %d", text, line);
@@ -757,8 +754,7 @@ bool set_PDA_numeric_field_value(struct aqualinkdata* aq_data, int val, const in
 	if (select_label != NULL) {
 		// :TODO: Should probably change below to call find_pda_menu_item(), rather than doing it here
 		// If we lease this, need to limit on the number of loops
-		//while ( strncasecmp(pda_m_hlight(), select_label, 8) != 0 ) {
-		while (strncasecmp(pda_m_hlight(), select_label, strlen(select_label)) != 0) {
+		while (aq_strnicmp(pda_m_hlight(), select_label, strlen(select_label)) != 0) {
 			send_cmd(KEY_PDA_DOWN);
 			delayMicroseconds(500);  // Last message probably was CMD_PDA_HIGHLIGHT, so wait before checking.
 			waitForPDAMessageType(aq_data, CMD_PDA_HIGHLIGHT, 2);

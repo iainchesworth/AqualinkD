@@ -2,7 +2,6 @@
 
 #include <assert.h>
 #include <stdbool.h>
-#include <syslog.h>
 
 #include "logging/logging.h"
 #include "utils.h"

@@ -3,7 +3,8 @@
 
 #include <assert.h>
 #include <stdio.h>
-#include <time.h>
+
+#include "cross-platform/time.h"
 
 void default_logger_formatter(char buffer[], unsigned int buffer_length, LoggingMessage logMessage)
 {

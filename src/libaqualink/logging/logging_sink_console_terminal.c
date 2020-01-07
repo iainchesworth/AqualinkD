@@ -1,56 +1,6 @@
 #include "logging_sink_console_terminal.h"
 
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
-
-static bool terminal_supports_colour()
-{
-#ifdef _WIN32
-
-	#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
-	#define ENABLE_VIRTUAL_TERMINAL_PROCESSING  0x0004
-	#endif
-
-	HANDLE hOut = ::GetStdHandle(STD_OUTPUT_HANDLE);
-	if (hOut != INVALID_HANDLE_VALUE) 
-	{
-		DWORD dwMode = 0;
-		::GetConsoleMode(hOut, &dwMode);
-		dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-		return ::SetConsoleMode(hOut, dwMode) != 0;
-	}
-	return false;
-
-#else // _WIN32
-	
-	const char* term;
-
-	if (0 == (term = getenv("TERM")))
-	{
-		return 0 == strcmp(term, "cygwin")
-			|| 0 == strcmp(term, "linux")
-			|| 0 == strcmp(term, "rxvt-unicode-256color")
-			|| 0 == strcmp(term, "screen")
-			|| 0 == strcmp(term, "screen-256color")
-			|| 0 == strcmp(term, "screen.xterm-256color")
-			|| 0 == strcmp(term, "tmux-256color")
-			|| 0 == strcmp(term, "xterm")
-			|| 0 == strcmp(term, "xterm-256color")
-			|| 0 == strcmp(term, "xterm-termite")
-			|| 0 == strcmp(term, "xterm-color");
-	}
-
-	return false;
-
-#endif
-}
-
-#ifdef _WIN32
-#define VTSEQ(ID) ("\x1b[1;" #ID "m")
-#else // _WIN32
-#define VTSEQ(ID) ("\x1b[" #ID "m")
-#endif
+#include "cross-platform/terminal.h"
 
 const char* terminal_black()
 {

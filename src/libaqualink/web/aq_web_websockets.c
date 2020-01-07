@@ -1,8 +1,5 @@
 #include "aq_web_websockets.h"
 
-#include <sys/types.h>
-#include <sys/select.h>
-#include <sys/socket.h>
 #include <microhttpd.h>
 
 static void upgrade_cb(void* cls, struct MHD_Connection* connection, void* con_cls, const char* extra_in, size_t extra_in_size, MHD_socket sock, struct MHD_UpgradeResponseHandle* urh)

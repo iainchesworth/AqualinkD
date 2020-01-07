@@ -19,18 +19,8 @@
 #include "config_parsers.h"
 #include "config_private.h"
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <string.h>
-#include <ctype.h>
-
-#include <libgen.h>
-
-#include <sys/ioctl.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <net/if.h>
 #include <confuse.h>
 
 #include "logging/logging.h"
@@ -173,21 +163,21 @@ bool setConfigValue(struct aqconfig* config_parameters, struct aqualinkdata* aqd
 
 	///SNIP SNIP SNIP
 
-  else if (strncasecmp(param, "button_", 7) == 0) {
+  else if (aq_strnicmp(param, "button_", 7) == 0) {
   int num = strtoul(param + 7, NULL, 10) - 1;
-  if (strncasecmp(param + 9, "_label", 6) == 0) {
+  if (aq_strnicmp(param + 9, "_label", 6) == 0) {
 	  aqdata->aqbuttons[num].label = cleanalloc(value);
 	  rtn = true;
   }
-  else if (strncasecmp(param + 9, "_dzidx", 6) == 0) {
+  else if (aq_strnicmp(param + 9, "_dzidx", 6) == 0) {
 	  aqdata->aqbuttons[num].dz_idx = strtoul(value, NULL, 10);
 	  rtn = true;
   }
-  else if (strncasecmp(param + 9, "_PDA_label", 10) == 0) {
+  else if (aq_strnicmp(param + 9, "_PDA_label", 10) == 0) {
 	  aqdata->aqbuttons[num].pda_label = cleanalloc(value);
 	  rtn = true;
   }
-  else if (strncasecmp(param + 9, "_pumpID", 7) == 0) {
+  else if (aq_strnicmp(param + 9, "_pumpID", 7) == 0) {
 	  //96 to 111 = Pentair, 120 to 123 = Jandy
 	  if (pi < MAX_PUMPS) {
 		  aqdata->pumps[pi].button = &aqdata->aqbuttons[num];

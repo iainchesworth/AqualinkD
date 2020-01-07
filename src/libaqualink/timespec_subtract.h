@@ -16,10 +16,8 @@
 #ifndef TIMESPEC_SUBTRACT_H
 #define TIMESPEC_SUBTRACT_H
 
-#include <time.h>
+#include "cross-platform/time.h"
 
-int timespec_subtract (struct timespec *result, const struct timespec *x,
-                       const struct timespec *y);
-
+int timespec_subtract (struct timespec *result, const struct timespec *x, const struct timespec *y);
 
 #endif

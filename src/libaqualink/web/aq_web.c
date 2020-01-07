@@ -1,17 +1,13 @@
 #include "aq_web.h"
 
 #include <assert.h>
-#include <sys/types.h>
-#include <sys/select.h>
-#include <sys/socket.h>
-#include <string.h>
 #include <microhttpd.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <syslog.h>
-#include <threads.h>
+#include <string.h>
 
+#include "cross-platform/threads.h"
 #include "logging/logging.h"
 #include "threads/thread_utils.h"
 #include "aq_web_authentication.h"
@@ -42,7 +38,7 @@ static int request_started(void* cls, struct MHD_Connection* connection, const c
 		INFO("Bad HTTP request method: %s", method);
 		ret = MHD_NO;
 	}
-	else if (0 == (conn = malloc(sizeof(conn_t))))
+	else if (0 == (conn = (conn_t*)malloc(sizeof(conn_t))))
 	{
 		INFO("Failed to allocate memory for the connection parameters", method);
 		ret = MHD_NO;

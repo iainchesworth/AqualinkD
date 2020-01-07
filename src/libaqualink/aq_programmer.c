@@ -14,27 +14,26 @@
  *  https://github.com/sfeakes/aqualinkd
  */
 
-#include <stdio.h>
 #include <stdarg.h>
-#include <stdlib.h>
-#include <threads.h>
-#include <unistd.h>
+#include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
-
-#include "aqualink.h"
-#include "utils.h"
-#include "aq_programmer.h"
+#include "cross-platform/time.h"
+#include "cross-platform/threads.h"
+#include "hardware/buttons/buttons.h"
 #include "logging/logging.h"
 #include "serial/aq_serial.h"
 #include "serial/aq_serial_types.h"
+#include "string/string_utils.h"
+#include "aqualink.h"
+#include "aq_programmer.h"
 #include "pda.h"
-#include "pda_menu.h"
-#include "hardware/buttons/buttons.h"
 #include "pda_aq_programmer.h"
+#include "pda_menu.h"
+#include "utils.h"
 
 #ifdef AQ_DEBUG
-#include <time.h>
 #include "timespec_subtract.h"
 #endif
 
@@ -477,9 +476,10 @@ void waitForSingleThreadOrTerminate(struct programmingThreadCtrl* threadCtrl, pr
 	int i = 0;
 
 	i = 0;
-	while (get_aq_cmd_length() > 0 && (i++ <= tries)) {
+	while (get_aq_cmd_length() > 0 && (i++ <= tries)) 
+	{
 		DEBUG("Thread %p (%s) sleeping, waiting command queue to empty", &threadCtrl->thread_id, ptypeName(type));
-		sleep(waitTime);
+		delaySeconds(waitTime);
 	}
 	if (i >= tries) {
 		ERROR("Thread %p (%s) timeout waiting, ending", &threadCtrl->thread_id, ptypeName(type));
@@ -489,16 +489,15 @@ void waitForSingleThreadOrTerminate(struct programmingThreadCtrl* threadCtrl, pr
 
 	while ((threadCtrl->aq_data->active_thread.thread_id != 0) && (i++ <= tries))
 	{
-		//DEBUG("Thread %d sleeping, waiting for thread %d to finish", threadCtrl->thread_id, threadCtrl->aq_data->active_thread.thread_id);
 		DEBUG("Thread %p (%s) sleeping, waiting for thread %p (%s) to finish",
 			&threadCtrl->thread_id, ptypeName(type),
 			threadCtrl->aq_data->active_thread.thread_id, ptypeName(threadCtrl->aq_data->active_thread.ptype));
-		sleep(waitTime);
+
+		delaySeconds(waitTime);
 	}
 
 	if (i >= tries)
 	{
-		//ERROR("Thread %d timeout waiting, ending",threadCtrl->thread_id);
 		ERROR("Thread %d,%p timeout waiting for thread %d,%p to finish",
 			type, &threadCtrl->thread_id, threadCtrl->aq_data->active_thread.ptype,
 			threadCtrl->aq_data->active_thread.thread_id);
@@ -515,7 +514,6 @@ void waitForSingleThreadOrTerminate(struct programmingThreadCtrl* threadCtrl, pr
 	clock_gettime(CLOCK_REALTIME, &threadCtrl->aq_data->start_active_time);
 #endif
 
-	//DEBUG("Thread %d is active", threadCtrl->aq_data->active_thread.thread_id);
 	DEBUG("Thread %d,%p is active (%s)",
 		threadCtrl->aq_data->active_thread.ptype,
 		threadCtrl->aq_data->active_thread.thread_id,
@@ -556,9 +554,7 @@ bool setAqualinkNumericField(struct aqualinkdata* aq_data, char* value_label, in
 bool setAqualinkNumericField_new(struct aqualinkdata* aq_data, char* value_label, int value, int increment)
 {
 	DEBUG("Setting menu item '%s' to %d", value_label, value);
-	//char leading[10];  // description of the field (POOL, SPA, FRZ)
 	int current_val = -1;        // integer value of the current set point
-	//char trailing[10];      // the degrees and scale
 	char searchBuf[20];
 
 	sprintf(searchBuf, "^%s", value_label);
@@ -698,7 +694,7 @@ int set_aqualink_boost(void* ptr)
 		while (i++ < wait_messages)
 		{
 			waitForMessage(aq_data, "STOP BOOST POOL", 1);
-			if (stristr(aq_data->last_message, "STOP BOOST POOL") != NULL) {
+			if (aq_stristr(aq_data->last_message, "STOP BOOST POOL") != NULL) {
 				// This is a really bad hack, message sequence is out for boost for some reason, so as soon as we see stop message, force enter key.
 				_pgm_command = KEY_ENTER;
 				DEBUG("**** FOUND STOP BOOST POOL ****");
@@ -707,7 +703,7 @@ int set_aqualink_boost(void* ptr)
 			
 			DEBUG("Find item in Menu: loop %d of %d looking for 'STOP BOOST POOL' received message '%s'", i, wait_messages, aq_data->last_message);
 			delayMicroseconds(200);
-			if (stristr(aq_data->last_message, "STOP BOOST POOL") != NULL) {
+			if (aq_stristr(aq_data->last_message, "STOP BOOST POOL") != NULL) {
 				_pgm_command = KEY_ENTER;
 				DEBUG("**** FOUND STOP BOOST POOL ****");
 				break;
@@ -717,7 +713,7 @@ int set_aqualink_boost(void* ptr)
 		}
 
 		waitForMessage(aq_data, "STOP BOOST POOL", 1);
-		if (stristr(aq_data->last_message, "STOP BOOST POOL") != NULL) {
+		if (aq_stristr(aq_data->last_message, "STOP BOOST POOL") != NULL) {
 			send_cmd(KEY_ENTER);
 		}
 		else {
@@ -964,7 +960,7 @@ int set_aqualink_pool_heater_temps(void* ptr)
 		// Before going to numeric field.
 		waitForMessage(threadCtrl->aq_data, "MUST BE SET", 5);
 		send_cmd(KEY_LEFT);
-		while (stristr(aq_data->last_message, "MUST BE SET") != NULL) {
+		while (aq_stristr(aq_data->last_message, "MUST BE SET") != NULL) {
 			delayMicroseconds(500);
 		}
 	}
@@ -1031,7 +1027,7 @@ int set_aqualink_spa_heater_temps(void* ptr)
 		// Before going to numeric field.
 		waitForMessage(threadCtrl->aq_data, "MUST BE SET", 5);
 		send_cmd(KEY_LEFT);
-		while (stristr(aq_data->last_message, "MUST BE SET") != NULL) {
+		while (aq_stristr(aq_data->last_message, "MUST BE SET") != NULL) {
 			delayMicroseconds(500);
 		}
 	}
@@ -1386,7 +1382,7 @@ bool waitForEitherMessage(struct aqualinkdata* aq_data, char* message1, char* me
 		DEBUG("Programming mode: loop %d of %d looking for '%s' OR '%s' received message1 '%s'", i, numMessageReceived, message1, message2, aq_data->last_message);
 
 		if (message1 != NULL) {
-			ptr = stristr(aq_data->last_message, msgS1);
+			ptr = aq_stristr(aq_data->last_message, msgS1);
 			if (ptr != NULL) { // match
 				DEBUG("Programming mode: String MATCH '%s'", msgS1);
 				if ((msgS1 == message1) || (ptr == aq_data->last_message))
@@ -1398,7 +1394,7 @@ bool waitForEitherMessage(struct aqualinkdata* aq_data, char* message1, char* me
 			}
 		}
 		if (message2 != NULL) {
-			ptr = stristr(aq_data->last_message, msgS2);
+			ptr = aq_stristr(aq_data->last_message, msgS2);
 			if (ptr != NULL) { // match
 				DEBUG("Programming mode: String MATCH '%s'", msgS2);
 				if (msgS2 == message2) // match & don't care if first char
@@ -1463,7 +1459,7 @@ bool waitForMessage(struct aqualinkdata* aq_data, char* message, int numMessageR
 		}
 
 		if (message != NULL) {
-			ptr = stristr(aq_data->last_message, msgS);
+			ptr = aq_stristr(aq_data->last_message, msgS);
 			if (ptr != NULL) { // match
 				DEBUG("Programming mode: String MATCH");
 				if (msgS == message) // match & don't care if first char
@@ -1530,14 +1526,14 @@ bool select_sub_menu_item(struct aqualinkdata* aq_data, char* item_string)
 	int wait_messages = 25;
 	int i = 0;
 
-	while ((stristr(aq_data->last_message, item_string) == NULL) && (i++ < wait_messages))
+	while ((aq_stristr(aq_data->last_message, item_string) == NULL) && (i++ < wait_messages))
 	{
 		DEBUG("Find item in Menu: loop %d of %d looking for '%s' received message '%s'", i, wait_messages, item_string, aq_data->last_message);
 		send_cmd(KEY_RIGHT);
 		waitForMessage(aq_data, NULL, 1);
 	}
 
-	if (stristr(aq_data->last_message, item_string) == NULL) {
+	if (aq_stristr(aq_data->last_message, item_string) == NULL) {
 		return false;
 	}
 

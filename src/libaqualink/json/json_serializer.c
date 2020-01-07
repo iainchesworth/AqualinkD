@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-int double_to_json_string(struct json_object* jso, struct printbuf* pb, int level, int flags)
+int double_to_json_string(json_object* jso, struct printbuf* pb, int level, int flags)
 {
 	static const char* DEFAULT_FORMAT_STRING = "%.01f";
 

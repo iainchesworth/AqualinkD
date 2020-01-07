@@ -1,4 +1,6 @@
-#include "daemon_utils.h"
+#include "../daemon.h"
+
+#if !defined (WIN32)
 
 #include <sys/file.h>
 #include <sys/types.h>
@@ -85,3 +87,5 @@ bool daemonize(main_function_t main_function)
 
 	return daemonised;
 }
+
+#endif // !defined (WIN32)

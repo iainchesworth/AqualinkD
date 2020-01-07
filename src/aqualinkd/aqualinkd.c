@@ -13,43 +13,35 @@
  *
  *  https://github.com/sfeakes/aqualinkd
  */
+#include "aqualink.h"
 
-#define _GNU_SOURCE 1 // for strcasestr & strptime
-#define __USE_XOPEN 1
-
-#include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <sys/types.h>
-#include <unistd.h>
+#include <stdio.h>
 #include <string.h>
-#include <libgen.h>
-#include <termios.h>
-#include <signal.h>
 
-#include <time.h> // Need GNU_SOURCE & XOPEN defined for strptime
-
-#include "mongoose.h"
-#include "aqualink.h"
-#include "utils.h"
 #include "config/config.h"
 #include "config/config_helpers.h"
-#include "daemon/daemon_utils.h"
+#include "cross-platform/daemon.h"
+#include "cross-platform/time.h"
 #include "logging/logging.h"
 #include "logging/logging_sink_basic_file.h"
 #include "logging/logging_utils.h"
 #include "hardware/buttons/buttons.h"
 #include "serial/aq_serial.h"
+#include "string/string_utils.h"
 #include "version/version.h"
 #include "web/aq_web.h"
+
+#include "aquapure.h"
 #include "aq_programmer.h"
 #include "net_services.h"
-#include "pda_menu.h"
-#include "pda.h"
-#include "pentair_messages.h"
-#include "pda_aq_programmer.h"
-#include "aquapure.h"
 #include "options.h"
+#include "pda.h"
+#include "pda_aq_programmer.h"
+#include "pda_menu.h"
+#include "pentair_messages.h"
+#include "utils.h"
 
 static volatile bool _keepRunning = true;
 static struct aqualinkdata _aqualink_data;
@@ -60,7 +52,6 @@ void intHandler(int dummy)
 
 	_keepRunning = false;
 	NOTICE("Stopping!");
-
 }
 
 void processLEDstate()
@@ -129,7 +120,7 @@ bool checkAqualinkTime()
 	strcpy(&datestr[12], " ");
 	strcpy(&datestr[13], _aqualink_data.time);
 
-	if (strptime(datestr, "%m/%d/%y %a %I:%M %p", &aq_tm) == NULL)
+	if (0 == strptime(datestr, "%m/%d/%y %a %I:%M %p", &aq_tm))
 	{
 		ERROR("Could not convert RS time string '%s'", datestr);
 		last_checked = (time_t)NULL;
@@ -201,7 +192,7 @@ void processMessage(char* message)
 	// ie "POOL TEMP" and "POOL TEMP IS SET TO"  so want correct match first.
 	//
 
-	if (stristr(msg, "JANDY AquaLinkRS") != NULL)
+	if (aq_stristr(msg, "JANDY AquaLinkRS") != NULL)
 	{
 		_aqualink_data.last_display_message[0] = '\0';
 	}
@@ -241,12 +232,12 @@ void processMessage(char* message)
 		}
 	}
 
-	if (stristr(msg, LNG_MSG_BATTERY_LOW) != NULL)
+	if (aq_stristr(msg, LNG_MSG_BATTERY_LOW) != NULL)
 	{
 		_aqualink_data.battery = LOW;
 		strcpy(_aqualink_data.last_display_message, msg); // Also display the message on web UI
 	}
-	else if (stristr(msg, LNG_MSG_POOL_TEMP_SET) != NULL)
+	else if (aq_stristr(msg, LNG_MSG_POOL_TEMP_SET) != NULL)
 	{
 		_aqualink_data.pool_htr_set_point = atoi(message + 20);
 
@@ -254,7 +245,7 @@ void processMessage(char* message)
 			setUnits(msg);
 		}
 	}
-	else if (stristr(msg, LNG_MSG_SPA_TEMP_SET) != NULL)
+	else if (aq_stristr(msg, LNG_MSG_SPA_TEMP_SET) != NULL)
 	{
 		_aqualink_data.spa_htr_set_point = atoi(message + 19);
 
@@ -262,7 +253,7 @@ void processMessage(char* message)
 			setUnits(msg);
 		}
 	}
-	else if (stristr(msg, LNG_MSG_FREEZE_PROTECTION_SET) != NULL)
+	else if (aq_stristr(msg, LNG_MSG_FREEZE_PROTECTION_SET) != NULL)
 	{
 		_aqualink_data.frz_protect_set_point = atoi(message + 28);
 		_aqualink_data.frz_protect_state = ENABLE;
@@ -271,7 +262,7 @@ void processMessage(char* message)
 			setUnits(msg);
 		}
 	}
-	else if (strncasecmp(msg, MSG_AIR_TEMP, MSG_AIR_TEMP_LEN) == 0)
+	else if (aq_strnicmp(msg, MSG_AIR_TEMP, MSG_AIR_TEMP_LEN) == 0)
 	{
 		_aqualink_data.air_temp = atoi(msg + MSG_AIR_TEMP_LEN);
 
@@ -279,7 +270,7 @@ void processMessage(char* message)
 			setUnits(msg);
 		}
 	}
-	else if (strncasecmp(msg, MSG_POOL_TEMP, MSG_POOL_TEMP_LEN) == 0)
+	else if (aq_strnicmp(msg, MSG_POOL_TEMP, MSG_POOL_TEMP_LEN) == 0)
 	{
 		_aqualink_data.pool_temp = atoi(msg + MSG_POOL_TEMP_LEN);
 
@@ -287,7 +278,7 @@ void processMessage(char* message)
 			setUnits(msg);
 		}
 	}
-	else if (strncasecmp(msg, MSG_SPA_TEMP, MSG_SPA_TEMP_LEN) == 0)
+	else if (aq_strnicmp(msg, MSG_SPA_TEMP, MSG_SPA_TEMP_LEN) == 0)
 	{
 		_aqualink_data.spa_temp = atoi(msg + MSG_SPA_TEMP_LEN);
 
@@ -296,7 +287,7 @@ void processMessage(char* message)
 		}
 	}
 	// NSF If get water temp rather than pool or spa in some cases, then we are in Pool OR Spa ONLY mode
-	else if (strncasecmp(msg, MSG_WATER_TEMP, MSG_WATER_TEMP_LEN) == 0)
+	else if (aq_strnicmp(msg, MSG_WATER_TEMP, MSG_WATER_TEMP_LEN) == 0)
 	{
 		_aqualink_data.pool_temp = atoi(msg + MSG_WATER_TEMP_LEN);
 		_aqualink_data.spa_temp = atoi(msg + MSG_WATER_TEMP_LEN);
@@ -310,7 +301,7 @@ void processMessage(char* message)
 			NOTICE("AqualinkD set to 'Pool OR Spa Only' mode");
 		}
 	}
-	else if (stristr(msg, LNG_MSG_WATER_TEMP1_SET) != NULL)
+	else if (aq_stristr(msg, LNG_MSG_WATER_TEMP1_SET) != NULL)
 	{
 		_aqualink_data.pool_htr_set_point = atoi(message + 28);
 
@@ -324,7 +315,7 @@ void processMessage(char* message)
 			NOTICE("AqualinkD set to 'Pool OR Spa Only' mode");
 		}
 	}
-	else if (stristr(msg, LNG_MSG_WATER_TEMP2_SET) != NULL)
+	else if (aq_stristr(msg, LNG_MSG_WATER_TEMP2_SET) != NULL)
 	{
 		_aqualink_data.spa_htr_set_point = atoi(message + 27);
 
@@ -338,7 +329,7 @@ void processMessage(char* message)
 			NOTICE("AqualinkD set to 'Pool OR Spa Only' mode");
 		}
 	}
-	else if (stristr(msg, LNG_MSG_SERVICE_ACTIVE) != NULL)
+	else if (aq_stristr(msg, LNG_MSG_SERVICE_ACTIVE) != NULL)
 	{
 		if (_aqualink_data.service_mode_state == OFF) {
 			NOTICE("AqualinkD set to Service Mode");
@@ -346,7 +337,7 @@ void processMessage(char* message)
 		_aqualink_data.service_mode_state = ON;
 		service_msg_count = 0;
 	}
-	else if (stristr(msg, LNG_MSG_TIMEOUT_ACTIVE) != NULL)
+	else if (aq_stristr(msg, LNG_MSG_TIMEOUT_ACTIVE) != NULL)
 	{
 		if (_aqualink_data.service_mode_state == OFF) {
 			NOTICE("AqualinkD set to Timeout Mode");
@@ -354,7 +345,7 @@ void processMessage(char* message)
 		_aqualink_data.service_mode_state = FLASH;
 		service_msg_count = 0;
 	}
-	else if (stristr(msg, LNG_MSG_FREEZE_PROTECTION_ACTIVATED) != NULL)
+	else if (aq_stristr(msg, LNG_MSG_FREEZE_PROTECTION_ACTIVATED) != NULL)
 	{
 		_aqualink_data.frz_protect_state = ON;
 		freeze_msg_count = 0;
@@ -365,7 +356,7 @@ void processMessage(char* message)
 		// date in format '08/29/16 MON'
 		strcpy(_aqualink_data.date, msg);
 	}
-	else if (strncasecmp(msg, MSG_SWG_PCT, MSG_SWG_PCT_LEN) == 0)
+	else if (aq_strnicmp(msg, MSG_SWG_PCT, MSG_SWG_PCT_LEN) == 0)
 	{
 		_aqualink_data.swg_percent = atoi(msg + MSG_SWG_PCT_LEN);
 		if (_aqualink_data.ar_swg_status == SWG_STATUS_OFF)
@@ -375,7 +366,7 @@ void processMessage(char* message)
 
 		swg_msg_count = 0;
 	}
-	else if (strncasecmp(msg, MSG_SWG_PPM, MSG_SWG_PPM_LEN) == 0)
+	else if (aq_strnicmp(msg, MSG_SWG_PPM, MSG_SWG_PPM_LEN) == 0)
 	{
 		_aqualink_data.swg_ppm = atoi(msg + MSG_SWG_PPM_LEN);
 		if (_aqualink_data.ar_swg_status == SWG_STATUS_OFF)
@@ -421,15 +412,15 @@ void processMessage(char* message)
 			_initWithRS = true;
 		}
 	}
-	else if (stristr(msg, " TURNS ON") != NULL)
+	else if (aq_stristr(msg, " TURNS ON") != NULL)
 	{
 		NOTICE("Program data '%s'", msg);
 	}
-	else if (CFG_OverrideFreezeProtect() == TRUE && strncasecmp(msg, "Press Enter* to override Freeze Protection with", 47) == 0)
+	else if (CFG_OverrideFreezeProtect() == TRUE && aq_strnicmp(msg, "Press Enter* to override Freeze Protection with", 47) == 0)
 	{
 		aq_send_cmd(KEY_ENTER);
 	}
-	else if ((msg[4] == ':') && (strncasecmp(msg, "AUX", 3) == 0))
+	else if ((msg[4] == ':') && (aq_strnicmp(msg, "AUX", 3) == 0))
 	{ // AUX label "AUX1:"
 		int labelid = atoi(msg + 3);
 		if (labelid > 0 && CFG_UsePanelAuxLabels() == true)
@@ -440,7 +431,7 @@ void processMessage(char* message)
 		}
 	}
 	// BOOST POOL 23:59 REMAINING
-	else if ((strncasecmp(msg, "BOOST POOL", 10) == 0) && (strstr(msg, "REMAINING") != NULL)) {
+	else if ((aq_strnicmp(msg, "BOOST POOL", 10) == 0) && (strstr(msg, "REMAINING") != NULL)) {
 		// Ignore messages if in programming mode.  We get one of these turning off for some strange reason.
 		if (_aqualink_data.active_thread.thread_id == 0) {
 			memcpy(_aqualink_data.boost_msg, &msg[11], 6);
@@ -454,12 +445,12 @@ void processMessage(char* message)
 		TRACE("Ignoring '%s'", msg);
 
 		if (_aqualink_data.active_thread.thread_id == 0 &&
-			stristr(msg, "JANDY AquaLinkRS") == NULL &&
-			stristr(msg, "PUMP O") == NULL &&// Catch 'PUMP ON' and 'PUMP OFF' but not 'PUMP WILL TURN ON'
-			stristr(msg, "MAINTAIN") == NULL /* && // Catch 'MAINTAIN TEMP IS OFF'
-			stristr(msg, "CLEANER O") == NULL &&
-			stristr(msg, "SPA O") == NULL &&
-			stristr(msg, "AUX") == NULL*/
+			aq_stristr(msg, "JANDY AquaLinkRS") == NULL &&
+			aq_stristr(msg, "PUMP O") == NULL &&// Catch 'PUMP ON' and 'PUMP OFF' but not 'PUMP WILL TURN ON'
+			aq_stristr(msg, "MAINTAIN") == NULL /* && // Catch 'MAINTAIN TEMP IS OFF'
+			aq_stristr(msg, "CLEANER O") == NULL &&
+			aq_stristr(msg, "SPA O") == NULL &&
+			aq_stristr(msg, "AUX") == NULL*/
 			)
 		{ // Catch all AUX1 AUX5 messages
 			strcpy(_aqualink_data.last_display_message, msg);
@@ -673,7 +664,7 @@ void action_delayed_request()
 #define MAX_BLOCK_ACK 12
 #define MAX_BUSY_ACK  (50 + MAX_BLOCK_ACK)
 
-void caculate_ack_packet(int rs_fd, unsigned char* packet_buffer)
+void caculate_ack_packet(SerialDevice rs_serialDevice, unsigned char* packet_buffer)
 {
 	static int delayAckCnt = 0;
 
@@ -684,7 +675,7 @@ void caculate_ack_packet(int rs_fd, unsigned char* packet_buffer)
 			return;
 		}
 
-		send_extended_ack(rs_fd, ACK_PDA, pop_aq_cmd(&_aqualink_data));
+		send_extended_ack(rs_serialDevice, ACK_PDA, pop_aq_cmd(&_aqualink_data));
 
 
 	}
@@ -695,16 +686,16 @@ void caculate_ack_packet(int rs_fd, unsigned char* packet_buffer)
 		// pause ack strarts with around 12 ACK_SCREEN_BUSY_DISPLAY acks, then 50  ACK_SCREEN_BUSY acks
 		// if we send a command (ie keypress), the whole count needs to end and go back to sending normal ack.
 		// In code below, it jumps to sending ACK_SCREEN_BUSY, which still seems to work ok.
-		if (strncasecmp(_aqualink_data.last_display_message, "SELECT", 6) != 0) 
+		if (aq_strnicmp(_aqualink_data.last_display_message, "SELECT", 6) != 0) 
 		{ 
 			// Nothing to wait for, send normal ack.
-			send_ack(rs_fd, pop_aq_cmd(&_aqualink_data));
+			send_ack(rs_serialDevice, pop_aq_cmd(&_aqualink_data));
 			delayAckCnt = 0;
 		}
 		else if (get_aq_cmd_length() > 0) 
 		{
 			// Send command and jump directly "busy but can receive message"
-			send_ack(rs_fd, pop_aq_cmd(&_aqualink_data));
+			send_ack(rs_serialDevice, pop_aq_cmd(&_aqualink_data));
 			delayAckCnt = MAX_BUSY_ACK; // need to test jumping to MAX_BUSY_ACK here
 		}
 		else 
@@ -714,17 +705,17 @@ void caculate_ack_packet(int rs_fd, unsigned char* packet_buffer)
 			if (delayAckCnt < MAX_BLOCK_ACK) 
 			{
 				// block all incomming messages
-				send_extended_ack(rs_fd, ACK_SCREEN_BUSY_BLOCK, pop_aq_cmd(&_aqualink_data));
+				send_extended_ack(rs_serialDevice, ACK_SCREEN_BUSY_BLOCK, pop_aq_cmd(&_aqualink_data));
 			}
 			else if (delayAckCnt < MAX_BUSY_ACK) 
 			{
 				// say we are pausing
-				send_extended_ack(rs_fd, ACK_SCREEN_BUSY, pop_aq_cmd(&_aqualink_data));
+				send_extended_ack(rs_serialDevice, ACK_SCREEN_BUSY, pop_aq_cmd(&_aqualink_data));
 			}
 			else 
 			{
 				// We timed out pause, send normal ack (This should also reset the display message on next message received)
-				send_ack(rs_fd, pop_aq_cmd(&_aqualink_data));
+				send_ack(rs_serialDevice, pop_aq_cmd(&_aqualink_data));
 			}
 
 			delayAckCnt++;
@@ -732,7 +723,7 @@ void caculate_ack_packet(int rs_fd, unsigned char* packet_buffer)
 	}
 	else {
 		// We are in simulate panel mode, but a thread is active, so ignore simulate panel
-		send_ack(rs_fd, pop_aq_cmd(&_aqualink_data));
+		send_ack(rs_serialDevice, pop_aq_cmd(&_aqualink_data));
 	}
 }
 
@@ -762,16 +753,15 @@ unsigned char find_unused_address(const unsigned char* packet)
 	return 0x00;
 }
 
-#include <threads.h>
-
+#include "cross-platform/signals.h"
+#include "cross-platform/threads.h"
 #include "serial/aq_serial_threaded.h"
 #include "threads/thread_utils.h"
 #include "web/aq_web.h"
 
 bool main_loop()
 {
-	thrd_t serial_worker_thread, webserver_worker_thread, mqtt_worker_thread;
-	struct sigaction new_action, old_action;
+	thrd_t serial_worker_thread, webserver_worker_thread;
 	bool ran_successfully = false;
 
 	// 1. Initialise configuration parameters and global data sets.
@@ -794,16 +784,7 @@ bool main_loop()
 		INFO("Serial worker thread is running");
 
 		// 3. Go!
-		new_action.sa_handler = termination_handler;
-		sigemptyset(&new_action.sa_mask);
-		new_action.sa_flags = 0;
-
-		sigaction(SIGINT, NULL, &old_action);
-		if (SIG_IGN != old_action.sa_handler) { sigaction(SIGINT, &new_action, NULL); }
-		sigaction(SIGHUP, NULL, &old_action);
-		if (SIG_IGN != old_action.sa_handler) { sigaction(SIGHUP, &new_action, NULL); }
-		sigaction(SIGTERM, NULL, &old_action);
-		if (SIG_IGN != old_action.sa_handler) { sigaction(SIGTERM, &new_action, NULL); }
+		configure_termination_signals();
 
 		INFO("Running AqualinkD...");
 		if (!wait_for_termination())
@@ -952,7 +933,7 @@ int main(int argc, char* argv[])
 /*void main_loop()
 {
 	struct mg_mgr mgr;
-	int rs_fd;
+	SerialDevice rs_serialDevice;
 	int packet_length;
 	unsigned char packet_buffer[AQ_MAXPKTLEN + 1];
 	bool interestedInNextAck = false;
@@ -1007,7 +988,7 @@ int main(int argc, char* argv[])
 	signal(SIGTERM, intHandler);
 
 	int blank_read = 0;
-	rs_fd = init_serial_port(serial_port);
+	rs_serialDevice = init_serial_port(serial_port);
 	NOTICE("Listening to Aqualink RS8 on serial port: %s", serial_port);
 
 	if (pda_mode == true)
@@ -1027,9 +1008,9 @@ int main(int argc, char* argv[])
 
 	while (_keepRunning == true)
 	{
-		while ((rs_fd < 0 || blank_read >= MAX_ZERO_READ_BEFORE_RECONNECT) && _keepRunning == true)
+		while ((rs_serialDevice < 0 || blank_read >= MAX_ZERO_READ_BEFORE_RECONNECT) && _keepRunning == true)
 		{
-			if (rs_fd < 0)
+			if (rs_serialDevice < 0)
 			{
 				sprintf(_aqualink_data.last_display_message, CONNECTION_ERROR);
 				ERROR("Aqualink daemon attempting to connect to master device...");
@@ -1040,17 +1021,17 @@ int main(int argc, char* argv[])
 			else
 			{
 				ERROR("Aqualink daemon looks like serial error, resetting.");
-				close_serial_port(rs_fd);
+				close_serial_port(rs_serialDevice);
 			}
-			rs_fd = init_serial_port(serial_port);
+			rs_serialDevice = init_serial_port(serial_port);
 			blank_read = 0;
 		}
 
 		if (raw_RS_bytes) {
-			packet_length = get_packet_lograw(rs_fd, packet_buffer);
+			packet_length = get_packet_lograw(rs_serialDevice, packet_buffer);
 		}
 		else {
-			packet_length = get_packet(rs_fd, packet_buffer);
+			packet_length = get_packet(rs_serialDevice, packet_buffer);
 		}
 
 		if (packet_length == -1)
@@ -1099,10 +1080,10 @@ int main(int argc, char* argv[])
 				// If we are not in PDA or Simulator mode, just sent ACK & any CMD, else caculate the ACK.
 				if (!_aqualink_data.simulate_panel && !pda_mode) 
 				{
-					send_ack(rs_fd, pop_aq_cmd(&_aqualink_data));
+					send_ack(rs_serialDevice, pop_aq_cmd(&_aqualink_data));
 				}
 				else {
-					caculate_ack_packet(rs_fd, packet_buffer);
+					caculate_ack_packet(rs_serialDevice, packet_buffer);
 				}
 			}
 			else if (packet_length > 0 && read_all_devices == true)
@@ -1159,7 +1140,7 @@ int main(int argc, char* argv[])
 #ifdef BLOCKING_MODE
 		// NOTHING HERE
 #else
-		tcdrain(rs_fd); // Make sure buffer has been sent.
+		tcdrain(rs_serialDevice); // Make sure buffer has been sent.
 		delayMicroseconds(10);
 #endif
 
@@ -1167,7 +1148,7 @@ int main(int argc, char* argv[])
 
 	stopPacketLogger();
 	// Reset and close the port.
-	close_serial_port(rs_fd);
+	close_serial_port(rs_serialDevice);
 	// Clear webbrowser
 	mg_mgr_free(&mgr);
 

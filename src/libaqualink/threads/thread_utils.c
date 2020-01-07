@@ -2,7 +2,7 @@
 
 #include <signal.h>
 #include <stdbool.h>
-#include <threads.h>
+#include "cross-platform/threads.h"
 #include "logging/logging.h"
 #include "utils.h"
 

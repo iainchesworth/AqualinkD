@@ -4,7 +4,6 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <syslog.h>
 #include "config/config_helpers.h"
 #include "logging/logging.h"
 #include "version/version.h"

@@ -2,7 +2,7 @@
 #ifndef AQ_PROGRAMMER_H_
 #define AQ_PROGRAMMER_H_
 
-#include <threads.h>
+#include "cross-platform/threads.h"
 
 // need to get the C values from aqualink manual and add those just incase
 // someone has the controller set to C.

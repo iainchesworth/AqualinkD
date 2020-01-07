@@ -1,12 +1,7 @@
 #include "aq_web_connection_handler.h"
 
 #include <assert.h>
-#include <sys/types.h>
-#include <sys/select.h>
-#include <sys/socket.h>
-#include <string.h>
 #include <microhttpd.h>
-#include <syslog.h>
 
 #include "logging/logging.h"
 #include "aq_web.h"

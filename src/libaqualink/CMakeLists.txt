@@ -1,11 +1,21 @@
 cmake_minimum_required(VERSION 3.12)
 project(aqualink C)
 
-find_package(Threads REQUIRED)
-find_package(libconfuse REQUIRED)
-find_package(libjson-c REQUIRED)
-find_package(libm REQUIRED)
+if(WIN32)
+
+  find_package(json-c CONFIG REQUIRED)
+  find_package(unofficial-libconfuse CONFIG REQUIRED)
+
+else()
+
+  find_package(libconfuse REQUIRED)
+  find_package(libjson-c REQUIRED) 
+  find_package(libm REQUIRED)
+
+endif()
+
 find_package(libmicrohttpd REQUIRED)
+find_package(Threads REQUIRED)
 
 set(SOURCE_FILES
   config/config.c
@@ -13,7 +23,22 @@ set(SOURCE_FILES
   config/config_parsers.c
   config/config_private.c
   config/config_validators.c
-  daemon/daemon_utils.c
+  cross-platform/linux/daemon_linux.c
+  cross-platform/linux/process_linux.c
+  cross-platform/linux/serial_linux.c
+  cross-platform/linux/signals_linux.c
+  cross-platform/linux/socket_linux.c
+  cross-platform/linux/terminal_linux.c
+  cross-platform/linux/threads_linux.c
+  cross-platform/linux/time_linux.c
+  cross-platform/win32/daemon_win32.c
+  cross-platform/win32/process_win32.c
+  cross-platform/win32/serial_win32.c
+  cross-platform/win32/signals_win32.c
+  cross-platform/win32/socket_win32.c
+  cross-platform/win32/terminal_win32.c
+  cross-platform/win32/threads_win32.c
+  cross-platform/win32/time_win32.c
   hardware/buttons/buttons.c
   json/json_messages.c
   json/json_serializer.c
@@ -58,7 +83,6 @@ set(SOURCE_FILES
   pda_aq_programmer.c 
   pda_menu.c 
   pentair_messages.c 
-  mongoose.c
   utils.c 
 )
 
@@ -96,6 +120,23 @@ target_include_directories(aqualink
     ${LIBCONFUSE_INCLUDE_DIR}
 )
 
+if(WIN32)
+
+target_link_libraries(aqualink
+  PRIVATE 
+	Threads::Threads
+    json-c::json-c
+    unofficial::libconfuse::libconfuse
+
+  INTERFACE
+    ${LIBMICROHTTPD_LIBRARIES}
+
+  PUBLIC
+    # Nothing here
+)
+
+else()
+
 target_link_libraries(aqualink
   PRIVATE 
 	Threads::Threads
@@ -105,7 +146,9 @@ target_link_libraries(aqualink
     ${LIBJSON_C_LIBRARIES}
     ${LIBM_LIBRARIES}
     ${LIBMICROHTTPD_LIBRARIES}
-  
-  PUBLIC 
+
+  PUBLIC
     # Nothing here
 )
+
+endif()

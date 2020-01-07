@@ -1,9 +1,22 @@
 cmake_minimum_required(VERSION 3.12)
 project(aqualinkd_tests CXX)
 
+if(WIN32)
+
+  find_package(json-c CONFIG REQUIRED)
+  find_package(unofficial-libconfuse CONFIG REQUIRED)
+
+else()
+
+  find_package(libconfuse REQUIRED)
+  find_package(libjson-c REQUIRED) 
+
+endif()
+
+find_package(Threads REQUIRED)
+
 enable_testing()
 find_package(GTest REQUIRED)
-find_package(libconfuse REQUIRED)
 include(GoogleTest)
 
 include_directories(${AQUALINKD_HEADERS_DIR})
@@ -24,13 +37,24 @@ target_link_directories(aqualinkd
     ${AQUALINKD_INSTALL_LIB_DIR}
 )
 
-target_link_libraries(aqualinkd_tests 
+if(WIN32)
+
+target_link_libraries(aqualinkd_tests
   PRIVATE 
-    aqualink
+	Threads::Threads
+    GTest::GTest
+    GTest::Main
+    unofficial::libconfuse::libconfuse
+)
+
+else()
+
+target_link_libraries(aqualinkd_tests
+  PRIVATE 
+	Threads::Threads
     GTest::GTest
     GTest::Main
     ${LIBCONFUSE_LIBRARY}
-
-  PUBLIC 
-    # Nothing here
 )
+
+endif()

@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <sys/param.h>
 #include <json-c/json_object.h>
 
 #include "config/config.h"
@@ -43,7 +42,7 @@ const char* getStatus(struct aqualinkdata* aqdata)
 		return JSON_PROGRAMMING;
 	}
 
-	//if (aqdata->last_message != NULL && stristr(aqdata->last_message, "SERVICE") != NULL ) {
+	//if (aqdata->last_message != NULL && aq_stristr(aqdata->last_message, "SERVICE") != NULL ) {
 	if (aqdata->service_mode_state == ON) 
 	{
 		return JSON_SERVICE;
@@ -96,7 +95,7 @@ static int serialise_json_object(json_object* jobj, char* buffer, const int buff
 
 	if (0 != serialised_json)
 	{
-		copy_length = MIN(strlen(serialised_json), buffer_length);
+		copy_length = (strlen(serialised_json) < buffer_length) ? strlen(serialised_json) : buffer_length;
 
 		memset(buffer, 0, buffer_length);
 		memcpy(buffer, serialised_json, copy_length);

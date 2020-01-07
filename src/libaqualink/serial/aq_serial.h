@@ -1,9 +1,10 @@
 
-#ifndef AQ_SERIAL_H_
-#define AQ_SERIAL_H_
+#ifndef AQ_SERIAL_LEGACY_TYPES_H_
+#define AQ_SERIAL_LEGACY_TYPES_H_
 
 #include <stdbool.h>
-#include <termios.h>
+
+#include "cross-platform/serial.h"
 #include "aq_serial_types.h"
 
 #define CONNECTION_ERROR "ERROR No connection to RS control panel"
@@ -224,17 +225,17 @@ typedef enum {
 void set_pda_mode(bool mode);
 bool pda_mode();
 protocolType getProtocolType(const unsigned char* packet);
-void send_ack(int fd, unsigned char command);
-void send_extended_ack(int fd, unsigned char ack_type, unsigned char command);
-int get_packet(int fd, unsigned char* packet);
-int get_packet_lograw(int fd, unsigned char* packet);
+void send_ack(SerialDevice serial_device, unsigned char command);
+void send_extended_ack(SerialDevice serial_device, unsigned char ack_type, unsigned char command);
+int get_packet(SerialDevice serial_device, unsigned char* packet);
+int get_packet_lograw(SerialDevice serial_device, unsigned char* packet);
 
 void process_status(unsigned char* ptr);
 const char* get_packet_type(unsigned char* packet, int length);
 
 
-void send_jandy_command(int fd, const unsigned char* packet_buffer, int size);
-void send_pentair_command(int fd, const unsigned char* packet_buffer, int size);
-void send_command(int fd, const unsigned char* packet_buffer, int size);
+void send_jandy_command(SerialDevice serial_device, const unsigned char* packet_buffer, int size);
+void send_pentair_command(SerialDevice serial_device, const unsigned char* packet_buffer, int size);
+void send_command(SerialDevice serial_device, const unsigned char* packet_buffer, int size);
 
-#endif // AQ_SERIAL_H_
+#endif // AQ_SERIAL_LEGACY_TYPES_H_

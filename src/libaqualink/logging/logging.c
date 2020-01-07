@@ -5,6 +5,7 @@
 #include "logging_sink_registry.h"
 
 #include <assert.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 

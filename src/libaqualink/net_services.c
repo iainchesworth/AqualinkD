@@ -14,16 +14,10 @@
  *  https://github.com/sfeakes/aqualinkd
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <getopt.h>
 #include <string.h>
-#include <sys/time.h>
-#include <syslog.h>
-#include <assert.h>
-
-#include "mongoose.h"
 
 #include "config/config_helpers.h"
 #include "hardware/buttons/buttons.h"
@@ -31,18 +25,18 @@
 #include "json/json_messages.h"
 #include "json/json_string_utils.h"
 #include "serial/aq_serial_types.h"
+
 #include "aqualink.h"
-#include "aq_programmer.h"
-#include "utils.h"
-#include "net_services.h"
-#include "domoticz.h"
-#include "aq_mqtt.h"
-#include "pda.h"
 #include "aquapure.h"
+#include "aq_mqtt.h"
+#include "aq_programmer.h"
+#include "domoticz.h"
+#include "net_services.h"
+#include "pda.h"
+#include "utils.h"
 
-
+/*
 static struct aqualinkdata* _aqualink_data;
-static char* _web_root;
 
 static int _mqtt_exit_flag = false;
 
@@ -656,7 +650,6 @@ void set_light_mode(char* value, int button)
 	aq_programmer(AQ_SET_COLORMODE, buf, _aqualink_data);
 }
 
-/*
 void action_web_request(struct mg_connection* nc, struct http_message* http_msg) 
 {
 	assert(0 != nc);
@@ -944,7 +937,6 @@ void action_web_request(struct mg_connection* nc, struct http_message* http_msg)
 		mg_serve_http(nc, http_msg, s_http_server_opts);
 	}
 }
-*/
 
 void action_websocket_request(struct mg_connection* nc, struct websocket_message* wm) 
 {
@@ -1514,3 +1506,5 @@ bool start_net_services(struct mg_mgr* mgr, struct aqualinkdata* aqdata)
 
 	return true;
 }
+
+*/

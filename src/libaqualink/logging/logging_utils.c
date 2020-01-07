@@ -36,13 +36,13 @@ LoggingLevels string_to_logging_level(const char* level)
 {
 	assert(0 != level);
 
-	if (0 == strcmpi(LOGGING_LEVEL_TRACE, level)) { return Trace; }
-	if (0 == strcmpi(LOGGING_LEVEL_DEBUG, level)) { return Debug; }
-	if (0 == strcmpi(LOGGING_LEVEL_INFO, level)) { return Info; }
-	if (0 == strcmpi(LOGGING_LEVEL_NOTICE, level)) { return Notice; }
-	if (0 == strcmpi(LOGGING_LEVEL_WARNING, level)) { return Warning; }
-	if (0 == strcmpi(LOGGING_LEVEL_ERROR, level)) { return Error; }
-	if (0 == strcmpi(LOGGING_LEVEL_CRITICAL, level)) { return Critical; }
+	if (0 == aq_stricmp(LOGGING_LEVEL_TRACE, level)) { return Trace; }
+	if (0 == aq_stricmp(LOGGING_LEVEL_DEBUG, level)) { return Debug; }
+	if (0 == aq_stricmp(LOGGING_LEVEL_INFO, level)) { return Info; }
+	if (0 == aq_stricmp(LOGGING_LEVEL_NOTICE, level)) { return Notice; }
+	if (0 == aq_stricmp(LOGGING_LEVEL_WARNING, level)) { return Warning; }
+	if (0 == aq_stricmp(LOGGING_LEVEL_ERROR, level)) { return Error; }
+	if (0 == aq_stricmp(LOGGING_LEVEL_CRITICAL, level)) { return Critical; }
 	
 	// If there logging level is not identified, return "Off".
 	return Off;

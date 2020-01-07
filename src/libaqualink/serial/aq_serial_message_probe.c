@@ -2,7 +2,6 @@
 
 #include <assert.h>
 #include <string.h>
-#include <syslog.h>
 #include "config/config_helpers.h"
 #include "logging/logging.h"
 #include "aq_serial_types.h"
