@@ -50,7 +50,7 @@ bool set_interface_attributes(SerialDevice serial_device)
 	if (0 > tcgetattr(serial_device, &original_serial_config))
 	{
 		WARN("Failed to get serial port attributes");
-		WARN("tcgetattr() error: %d - %s", errno, strerror(errno));
+		WARN("    tcgetattr() error: %d - %s", errno, strerror(errno));
 	}
 	else
 	{
@@ -74,12 +74,12 @@ bool set_interface_attributes(SerialDevice serial_device)
 		if ((0 > cfsetispeed(&aqualink_serial_config, B9600)) || (0 > cfsetospeed(&aqualink_serial_config, B9600)))
 		{
 			ERROR("Failed to set serial port baud rate");
-			ERROR("cfset[i|o]speed() error: %d - %s", errno, strerror(errno));
+			ERROR("    cfset[i|o]speed() error: %d - %s", errno, strerror(errno));
 		}
 		else if (0 > tcsetattr(serial_device, TCSAFLUSH, &aqualink_serial_config))
 		{
 			ERROR("Failed to set serial port baud attributes");
-			ERROR("tcsetattr() error: %d - %s", errno, strerror(errno));
+			ERROR("    tcsetattr() error: %d - %s", errno, strerror(errno));
 		}
 		else
 		{

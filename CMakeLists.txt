@@ -19,6 +19,7 @@ project(aqualinkd
   HOMEPAGE_URL "https://github.com/sfeakes/AqualinkD/wiki"
 )
 
+include(${CMAKE_SOURCE_DIR}/cmake/cross-platform.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/tools/Tools.cmake)
 
 set(CMAKE_C_STANDARD 11)

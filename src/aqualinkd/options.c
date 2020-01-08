@@ -21,13 +21,14 @@ void printHelp()
 	printf("\t-c, --config-file <file>                    Daemon configuration file (default: %s)\n", CFG_ConfigFile());
 	printf("\t-D, --debug                                 Enable debug level logging\n");
 	printf("\t-h, --help                                  Print usage information\n");
+	printf("\t    --insecure                              Disable support for SSL for web connections (not recommended)\n");
 	printf("\t    --log-file <file>                       Daemon log file (default: %s)\n", CFG_LogFile());
 	printf("\t    --log-raw-serial                        Log all received serial bytes as-received without decoding\n");
 	printf("\t    --log-raw-serial-file <file>            Raw serial log file (default: %s)\n", CFG_LogRawRsBytes_LogFile());
 	printf("\t    --log-serial                            Log decoded serial payloads\n");
 	printf("\t    --log-serial-file <file>                Serial log file (default: %s)\n", CFG_LogRawRsBytes_LogFile());
 	printf("\t-n, --no-daemonize                          Prevent %s from running as a daemon\n", AQUALINKD_NAME);
-	printf("\t-p, --pid-file <file>                       ath to use for daemon PID file (default: %s)\n", CFG_PidFile());
+	printf("\t-p, --pid-file <file>                       Path to use for daemon PID file (default: %s)\n", CFG_PidFile());
 	printf("\t-s, --serial-port <file>                    Serial port/device to connect with (default: %s)\n", CFG_SerialPort());
 	printf("\t    --trace                                 Enable trace level logging\n");
 	printf("\t-v, --version                               Print version information and quit\n");
@@ -58,12 +59,13 @@ enum aqualink_option_flags
 	OPTION_FLAG_VERSION = 'v',
 	
 	// Long options without a corresponding short option.
-	OPTION_FLAG_LOG_FILE = 0x100,
-	OPTION_FLAG_LOG_RAW_SERIAL = 0x101,
-	OPTION_FLAG_LOG_RAW_SERIAL_FILE = 0x102,
-	OPTION_FLAG_LOG_SERIAL = 0x103,
-	OPTION_FLAG_LOG_SERIAL_FILE = 0x104,
-	OPTION_FLAG_TRACE = 0x105
+	OPTION_FLAG_INSECURE = 0x100,
+	OPTION_FLAG_LOG_FILE = 0x101,
+	OPTION_FLAG_LOG_RAW_SERIAL = 0x102,
+	OPTION_FLAG_LOG_RAW_SERIAL_FILE = 0x103,
+	OPTION_FLAG_LOG_SERIAL = 0x104,
+	OPTION_FLAG_LOG_SERIAL_FILE = 0x105,
+	OPTION_FLAG_TRACE = 0x106
 };
 
 void handleOptions(int argc, char* argv[])
@@ -73,6 +75,7 @@ void handleOptions(int argc, char* argv[])
 		{ "config-file",			required_argument,	0, OPTION_FLAG_CONFIG_FILE },
 		{ "debug",					no_argument,		0, OPTION_FLAG_DEBUG },
 		{ "help",					no_argument,		0, OPTION_FLAG_HELP },
+		{ "insecure",				no_argument,		0, OPTION_FLAG_INSECURE },
 		{ "log-file",				required_argument,	0, OPTION_FLAG_LOG_FILE },
 		{ "log-raw-serial",			no_argument,		0, OPTION_FLAG_LOG_RAW_SERIAL },
 		{ "log-raw-serial-file",	required_argument,	0, OPTION_FLAG_LOG_RAW_SERIAL_FILE },
@@ -102,6 +105,10 @@ void handleOptions(int argc, char* argv[])
 
 		case OPTION_FLAG_DEBUG: // short option 'D' / long option "debug"
 			CFG_Set_LogLevel(Debug);
+			break;
+
+		case OPTION_FLAG_INSECURE: // long option "insecure"
+			CFG_Set_Insecure(true);
 			break;
 
 		case OPTION_FLAG_LOG_FILE: // long option "log-file"

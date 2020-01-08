@@ -6,6 +6,7 @@
 #include <time.h>
 
 char* strptime(const char* s, const char* format, struct tm* tm);
+int nanosleep(const struct timespec* requested_delay, struct timespec* remaining_delay);
 
 #else // defined (WIN32)
 
@@ -23,7 +24,8 @@ char* strptime(const char* s, const char* format, struct tm* tm);
 
 #include <time.h>
 
-// strptime is available on Linux systems
+// strptime() is available on Linux systems
+// nanosleep() is available on Linux systems
 
 #endif // defined (WIN32)
 

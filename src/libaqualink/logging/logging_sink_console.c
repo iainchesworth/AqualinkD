@@ -4,24 +4,58 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include "logging.h"
 #include "logging_levels.h"
 #include "logging_sink.h"
 
 void logging_sink_console_initialise(LoggingSink* thisSink)
 {
+	assert(0 != thisSink);
+
+	if (thisSink->Config.SinkIsInitialised)
+	{
+		DEBUG("Console sink double initialisation...doing nothing this time");
+	}
+	else if (thrd_success != mtx_init(&(thisSink->Config.SinkWriterMutex), mtx_plain | mtx_recursive))
+	{
+		DEBUG("Console sink initialisation failed to create synchronisation mutex");
+	}
+	else
+	{
+		TRACE("Console sink initialisation completed successfully");
+		thisSink->Config.SinkIsInitialised = true;
+	}
 }
 
 void logging_sink_console_formatter(LoggingSink* thisSink)
 {
+	assert(0 != thisSink);
+
+	if (thisSink->Config.SinkIsInitialised)
+	{
+		// Only do things if the sink is initialised.
+	}
 }
 
 void logging_sink_console_pattern(LoggingSink* thisSink, const char* pattern)
 {
+	assert(0 != thisSink);
+
+	if (thisSink->Config.SinkIsInitialised)
+	{
+		// Only do things if the sink is initialised.
+	}
 }
 
 void logging_sink_console_writer(LoggingSink* thisSink, LoggingMessage message)
 {
-	if (Off == message.Level)
+	assert(0 != thisSink);
+
+	if (!thisSink->Config.SinkIsInitialised)
+	{
+		// Sink is not initialised...so do nothing.
+	}
+	else if (Off == message.Level)
 	{
 		// Do nothing, logging level is set to Off.
 	}
@@ -63,8 +97,20 @@ void logging_sink_console_writer(LoggingSink* thisSink, LoggingMessage message)
 
 void logging_sink_console_flush(LoggingSink* thisSink)
 {
+	assert(0 != thisSink);
 }
 
 void logging_sink_console_close(LoggingSink* thisSink)
 {
+	assert(0 != thisSink);
+
+	if (thisSink->Config.SinkIsInitialised)
+	{
+		TRACE("Destroying console sink synchronisation mutex");
+		mtx_destroy(&(thisSink->Config.SinkWriterMutex));
+	}
+	else
+	{
+		DEBUG("Shutdown requested for a non-initialised console sink...doing nothing");
+	}
 }

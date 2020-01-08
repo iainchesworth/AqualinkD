@@ -2,8 +2,10 @@
 #define AQ_CONFIG_PRIVATE_H_
 
 #define DEFAULT_LOG_LEVEL		5 
-#define DEFAULT_WEBPORT			"6580"
+#define DEFAULT_WEBPORT			80
+#define DEFAULT_SSL_WEBPORT		443
 #define DEFAULT_WEBROOT			"./"
+#define DEFAULT_INSECURE		false
 #define DEFAULT_CONFIG_FILE		"./aqualinkd.conf"
 #define DEFAULT_PID_FILE		"/var/run/aqualinkd.pid"
 #define DEFAULT_SERIALPORT		"/dev/ttyUSB0"
@@ -26,8 +28,10 @@ extern const char CONFIG_STR_CONFIG_FILE[];
 extern const char CONFIG_STR_PID_FILE[];
 extern const char CONFIG_STR_SERIAL_PORT[];
 extern const char CONFIG_INT_LOG_LEVEL[];
-extern const char CONFIG_STR_SOCKET_PORT[];
+extern const char CONFIG_INT_SOCKET_PORT[];
+extern const char CONFIG_INT_SSL_SOCKET_PORT[];
 extern const char CONFIG_STR_WEB_DIRECTORY[];
+extern const char CONFIG_BOOL_INSECURE[];
 extern const char CONFIG_INT_DEVICE_ID[];
 
 extern const char CONFIG_BOOL_OVERRIDE_FREEZE_PROTECT[];

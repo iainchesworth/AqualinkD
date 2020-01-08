@@ -28,14 +28,24 @@ const int CFG_LogLevel()
 	return cfg_getint(_config_parameters, CONFIG_INT_LOG_LEVEL);
 }
 
-const char* CFG_SocketPort()
+const int CFG_SocketPort()
 {
-	return cfg_getstr(_config_parameters, CONFIG_STR_SOCKET_PORT);
+	return cfg_getint(_config_parameters, CONFIG_INT_SOCKET_PORT);
+}
+
+const int CFG_SslSocketPort()
+{
+	return cfg_getint(_config_parameters, CONFIG_INT_SSL_SOCKET_PORT);
 }
 
 const char* CFG_WebDirectory()
 {
 	return cfg_getstr(_config_parameters, CONFIG_STR_WEB_DIRECTORY);
+}
+
+const bool CFG_Insecure()
+{
+	return cfg_getbool(_config_parameters, CONFIG_BOOL_INSECURE);
 }
 
 const int CFG_DeviceId()
@@ -247,6 +257,11 @@ void CFG_Set_SerialPort(const char* serialPort)
 void CFG_Set_LogLevel(int logLevel)
 {
 	cfg_setint(_config_parameters, CONFIG_INT_LOG_LEVEL, logLevel);
+}
+
+void CFG_Set_Insecure(bool insecure)
+{
+	cfg_setbool(_config_parameters, CONFIG_BOOL_INSECURE, insecure);
 }
 
 void CFG_Set_NoDaemonize(bool daemonize)

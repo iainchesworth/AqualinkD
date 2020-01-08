@@ -25,6 +25,7 @@ LoggingSink aq_serial_data_logger_file_sink =
 	.Config =
 	{
 		.SinkIsInitialised = false
+		//.SinkWriterMutex <-- cannot be inited this way.
 	},
 
 	.Initialise = &logging_sink_basic_file_initialise,	// DEFAULT - Basic File Sink

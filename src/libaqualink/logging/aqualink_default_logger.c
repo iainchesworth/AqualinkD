@@ -13,7 +13,8 @@ LoggingSink aqualink_default_logger_sink_file =
 {
 	.Config = 
 	{ 
-		.SinkIsInitialised = false 
+		.SinkIsInitialised = false
+		//.SinkWriterMutex <-- cannot be inited this way.
 	},
 
 	.Initialise = &logging_sink_basic_file_initialise,
@@ -30,7 +31,8 @@ LoggingSink aqualink_default_logging_sink_console =
 {
 	.Config =
 	{
-		.SinkIsInitialised = true
+		.SinkIsInitialised = false
+		//.SinkWriterMutex <-- cannot be inited this way.
 	},
 
 	.Initialise = &logging_sink_console_initialise,
@@ -45,7 +47,7 @@ LoggingSink aqualink_default_logging_sink_console =
 
 LoggingSink_ListNode aqualink_default_logger_default_sinks =
 {
-	.sink = &aqualink_default_logging_sink_console,
+	.sink = 0,
 	.next = 0
 };
 
@@ -55,9 +57,9 @@ Logger aqualink_default_logger =
 	.Verbosity = Warning,
 	.Sinks =
 		{
-			.head = &aqualink_default_logger_default_sinks,
-			.tail = &aqualink_default_logger_default_sinks,
-			.sink_count = 1
+			.head = 0,
+			.tail = 0,
+			.sink_count = 0
 		},
 	.ErrorHandler = &default_logger_error_handler,
 	.Formatter = &default_logger_formatter

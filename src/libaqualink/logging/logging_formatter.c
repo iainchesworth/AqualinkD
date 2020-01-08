@@ -10,7 +10,7 @@ void default_logger_formatter(char buffer[], unsigned int buffer_length, Logging
 {
 	assert(0 != buffer);
 
-	unsigned int TIME_BUFFER_LEN = 24;
+	const unsigned int TIME_BUFFER_LEN = 24;
 	char time_buffer[TIME_BUFFER_LEN];
 
 	time_t now;

@@ -1,87 +1,50 @@
-# - Try to find libmicrohttpd
-# Once done this will define
-#
-#  LIBMICROHTTPD_FOUND - system has libmicrohttpd
-#  LIBMICROHTTPD_INCLUDE_DIRS - the libmicrohttpd include directory
-#  LIBMICROHTTPD_LIBRARIES - Link these to use libmicrohttpd
-#
-#  Copyright (c) 2011 Wesley Moore <wes@wezm.net>
-#
-#  Redistribution and use is allowed according to the terms of the New
-#  BSD license.
-#  For details see the accompanying COPYING-CMAKE-SCRIPTS file.
-#
+if (NOT MSVC)
+    include(FindPkgConfig)
+    pkg_check_modules(PC_LIBMICROHTTPD "libmicrohttpd")
+    if (NOT PC_LIBMICROHTTPD_FOUND)
+        pkg_check_modules(PC_LIBMICROHTTPD "libmicrohttpd")
+    endif (NOT PC_LIBMICROHTTPD_FOUND)
+    if (PC_LIBMICROHTTPD_FOUND)
+        # add CFLAGS from pkg-config file, e.g. draft api.
+        add_definitions(${PC_LIBMICROHTTPD_CFLAGS} ${PC_LIBMICROHTTPD_CFLAGS_OTHER})
+        # some libraries install the headers is a subdirectory of the include dir
+        # returned by pkg-config, so use a wildcard match to improve chances of finding
+        # headers and SOs.
+        set(PC_LIBMICROHTTPD_INCLUDE_HINTS ${PC_LIBMICROHTTPD_INCLUDE_DIRS} ${PC_LIBMICROHTTPD_INCLUDE_DIRS}/*)
+        set(PC_LIBMICROHTTPD_LIBRARY_HINTS ${PC_LIBMICROHTTPD_LIBRARY_DIRS} ${PC_LIBMICROHTTPD_LIBRARY_DIRS}/*)
+    endif(PC_LIBMICROHTTPD_FOUND)
+endif (NOT MSVC)
 
+find_path (
+    LIBMICROHTTPD_INCLUDE_DIRS
+    NAMES microhttpd.h
+    HINTS ${PC_LIBMICROHTTPD_INCLUDE_HINTS}
+)
+if (NOT MSVC)
 
-if (LIBMICROHTTPD_LIBRARIES AND LIBMICROHTTPD_INCLUDE_DIRS)
-  # in cache already
-  set(LIBMICROHTTPD_FOUND TRUE)
-else (LIBMICROHTTPD_LIBRARIES AND LIBMICROHTTPD_INCLUDE_DIRS)
-  # use pkg-config to get the directories and then use these values
-  # in the FIND_PATH() and FIND_LIBRARY() calls
-  if (${CMAKE_MAJOR_VERSION} EQUAL 2 AND ${CMAKE_MINOR_VERSION} EQUAL 4)
-    include(UsePkgConfig)
-    pkgconfig(libmicrohttpd _LIBMICROHTTPD_INCLUDEDIR _LIBMICROHTTPD_LIBDIR _LIBMICROHTTPD_LDFLAGS _LIBMICROHTTPD_CFLAGS)
-  else (${CMAKE_MAJOR_VERSION} EQUAL 2 AND ${CMAKE_MINOR_VERSION} EQUAL 4)
-    find_package(PkgConfig)
-    if (PKG_CONFIG_FOUND)
-      pkg_check_modules(_LIBMICROHTTPD libmicrohttpd)
-    endif (PKG_CONFIG_FOUND)
-  endif (${CMAKE_MAJOR_VERSION} EQUAL 2 AND ${CMAKE_MINOR_VERSION} EQUAL 4)
-  find_path(LIBMICROHTTPD_INCLUDE_DIR
-    NAMES
-      microhttpd.h
-    PATHS
-      ${_LIBMICROHTTPD_INCLUDEDIR}
-      /usr/include
-      /usr/local/include
-      /usr/pkg/include
-      /opt/local/include
-      /sw/include
-  )
+find_library (
+    LIBMICROHTTPD_LIBRARIES
+    NAMES microhttpd
+    HINTS ${PC_LIBMICROHTTPD_LIBRARY_HINTS}
+)
 
-  find_library(LIBMICROHTTPD_LIBRARY
-    NAMES
-      microhttpd
-    PATHS
-      ${_LIBMICROHTTPD_LIBDIR}
-      /usr/lib
-      /usr/local/lib
-      /usr/pkg/lib
-      /opt/local/lib
-      /sw/lib
-  )
+else (NOT MSVC)
 
-  if (LIBMICROHTTPD_LIBRARY)
-    set(LIBMICROHTTPD_FOUND TRUE)
-  endif (LIBMICROHTTPD_LIBRARY)
+find_library (
+    LIBMICROHTTPD_LIBRARIES
+    NAMES libmicrohttpd
+    HINTS ${PC_LIBMICROHTTPD_LIBRARY_HINTS}
+)
 
-  set(LIBMICROHTTPD_INCLUDE_DIRS
-    ${LIBMICROHTTPD_INCLUDE_DIR}
-  )
+endif (NOT MSVC)
 
-  if (LIBMICROHTTPD_FOUND)
-    set(LIBMICROHTTPD_LIBRARIES
-      ${LIBMICROHTTPD_LIBRARIES}
-      ${LIBMICROHTTPD_LIBRARY}
-    )
-  endif (LIBMICROHTTPD_FOUND)
+include(FindPackageHandleStandardArgs)
 
-  if (LIBMICROHTTPD_INCLUDE_DIRS AND LIBMICROHTTPD_LIBRARIES)
-     set(LIBMICROHTTPD_FOUND TRUE)
-  endif (LIBMICROHTTPD_INCLUDE_DIRS AND LIBMICROHTTPD_LIBRARIES)
-
-  if (LIBMICROHTTPD_FOUND)
-    if (NOT LIBMICROHTTPD_FIND_QUIETLY)
-      message(STATUS "Found libmicrohttpd: ${LIBMICROHTTPD_LIBRARIES}")
-    endif (NOT LIBMICROHTTPD_FIND_QUIETLY)
-  else (LIBMICROHTTPD_FOUND)
-    if (LIBMICROHTTPD_FIND_REQUIRED)
-      message(FATAL_ERROR "Could not find libmicrohttpd")
-    endif (LIBMICROHTTPD_FIND_REQUIRED)
-  endif (LIBMICROHTTPD_FOUND)
-
-  # show the LIBMICROHTTPD_INCLUDE_DIRS and LIBMICROHTTPD_LIBRARIES variables only in the advanced view
-  mark_as_advanced(LIBMICROHTTPD_INCLUDE_DIRS LIBMICROHTTPD_LIBRARIES)
-
-endif (LIBMICROHTTPD_LIBRARIES AND LIBMICROHTTPD_INCLUDE_DIRS)
+find_package_handle_standard_args(
+    LIBMICROHTTPD
+    REQUIRED_VARS LIBMICROHTTPD_LIBRARIES LIBMICROHTTPD_INCLUDE_DIRS
+)
+mark_as_advanced(
+    LIBMICROHTTPD_FOUND
+    LIBMICROHTTPD_LIBRARIES LIBMICROHTTPD_INCLUDE_DIRS
+)

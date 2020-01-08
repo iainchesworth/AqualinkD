@@ -1,22 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 project(aqualink C)
 
-if(WIN32)
-
-  find_package(json-c CONFIG REQUIRED)
-  find_package(unofficial-libconfuse CONFIG REQUIRED)
-
-else()
-
-  find_package(libconfuse REQUIRED)
-  find_package(libjson-c REQUIRED) 
-  find_package(libm REQUIRED)
-
-endif()
-
-find_package(libmicrohttpd REQUIRED)
-find_package(Threads REQUIRED)
-
 set(SOURCE_FILES
   config/config.c
   config/config_helpers.c
@@ -86,69 +70,37 @@ set(SOURCE_FILES
   utils.c 
 )
 
+add_library(aqualink STATIC ${SOURCE_FILES})
+
 if (CMAKE_BUILD_TYPE EQUAL "DEBUG")
     
-target_compile_definitions(aqualink
-  PUBLIC
-    AQ_DEBUG
-)
+  target_compile_definitions(aqualink
+    PUBLIC
+      AQ_DEBUG
+  )
 
-set(SOURCE_FILES
-  ${SOURCES_FILES}
-  timespec_subtract.c
-)
+  set(SOURCE_FILES
+    ${SOURCES_FILES}
+    timespec_subtract.c
+  )
 
 endif (CMAKE_BUILD_TYPE EQUAL "DEBUG")
 
-add_library(aqualink STATIC ${SOURCE_FILES})
-
-target_compile_definitions(aqualink
-  PUBLIC
-    MG_DISABLE_MD5
-    MG_DISABLE_HTTP_DIGEST_AUTH
-    MG_DISABLE_MD5
-    MG_DISABLE_JSON_RPC
-)
-
 target_include_directories(aqualink
   PRIVATE
-    ${AQUALINKD_HEADERS_DIR}
-    ${LIBJSON_C_INCLUDE_DIRS}
-    ${LIBMICROHTTPD_INCLUDE_DIRS}
-
-  PUBLIC
-    ${LIBCONFUSE_INCLUDE_DIR}
-)
-
-if(WIN32)
-
-target_link_libraries(aqualink
-  PRIVATE 
-	Threads::Threads
-    json-c::json-c
-    unofficial::libconfuse::libconfuse
-
-  INTERFACE
-    ${LIBMICROHTTPD_LIBRARIES}
+    # Nothing here
 
   PUBLIC
     # Nothing here
 )
 
-else()
-
 target_link_libraries(aqualink
   PRIVATE 
-	Threads::Threads
+    # Nothing here
 
   INTERFACE
-    ${LIBCONFUSE_LIBRARY}
-    ${LIBJSON_C_LIBRARIES}
-    ${LIBM_LIBRARIES}
-    ${LIBMICROHTTPD_LIBRARIES}
+    # Nothing here
 
   PUBLIC
     # Nothing here
 )
-
-endif()

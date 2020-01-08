@@ -104,7 +104,22 @@ void log_message(Logger* logger, LoggingLevels logLevel, const char file[], cons
 		{
 			if ((0 != node) && (0 != node->sink))
 			{
+				mtx_t* sink_writer_mutex = &(node->sink->Config.SinkWriterMutex);
+
+				// Lock the writer mutex...  Note that we don't check for errors because it would all go 
+				// wrong (in an error handling case) as we would need to log a message (and get infinite 
+				// recursion).
+				mtx_lock(sink_writer_mutex);
+
+				// Sink mutex is locked...write the message to the sink.
 				node->sink->Writer(node->sink, message);
+
+				// Unlock the writer mutex...  Note that we don't check for errors because it would all go 
+				// wrong (in an error handling case) as we would need to log a message (and get infinite 
+				// recursion).
+				mtx_unlock(sink_writer_mutex);
+				
+				// Increment the pointer to the next sink.
 				node = node->next;
 			}
 		}

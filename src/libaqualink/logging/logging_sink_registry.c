@@ -15,6 +15,12 @@ static bool add_sink_to_tail_of_list(LoggingSinkRegistry* registry, LoggingSink*
 		return false;
 	}
 
+	// Trigger the sink's initialisation process (if it has one).
+	if ((0 != sink->Initialise) && (!sink->Config.SinkIsInitialised))
+	{
+		sink->Initialise(sink);
+	}
+
 	// Add the sink to the tail (by adding a new node).
 	registry->tail->next->sink = sink;
 	registry->tail->next->next = 0;
@@ -46,7 +52,7 @@ bool register_logging_sink(LoggingSinkRegistry* registry, LoggingSink* sink)
 	else
 	{
 		// Trigger the sink's initialisation process (if it has one).
-		if (0 != sink->Initialise)
+		if ((0 != sink->Initialise) && (!sink->Config.SinkIsInitialised))
 		{
 			sink->Initialise(sink);
 		}

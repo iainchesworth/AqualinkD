@@ -1,9 +1,6 @@
 ﻿cmake_minimum_required(VERSION 3.12)
 project(serial_logger C)
 
-find_package(Threads REQUIRED)
-
-
 set(SOURCE_FILES 
   serial_logger.c
 )
@@ -11,20 +8,20 @@ set(SOURCE_FILES
 add_executable(serial_logger ${SOURCE_FILES})
 
 target_include_directories(serial_logger 
+  PRIVATE
+    # Nothing here
+
   PUBLIC
-    # NOTHING HERE
+    # Nothing here
 )
 
-target_link_directories(serial_logger 
-  PUBLIC 
-    ${AQUALINKD_INSTALL_LIB_DIR}
-)
-
-target_link_libraries(serial_logger 
-  LINK_PRIVATE 
+target_link_libraries(serial_logger
+  PRIVATE 
     aqualink
-  
-  LINK_PUBLIC 
-	${LIBM_LIBRARIES}
-    Threads::Threads
+
+  INTERFACE
+    # Nothing here
+
+  PUBLIC
+    # Nothing here
 )

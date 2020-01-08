@@ -7,6 +7,7 @@ extern "C" {
 
 #include <stdbool.h>
 
+#include "cross-platform/threads.h"
 #include "logging_message.h"
 
 // Forward declarations
@@ -24,6 +25,7 @@ struct LoggingSink
 	struct
 	{
 		bool SinkIsInitialised;
+		mtx_t SinkWriterMutex;
 	}
 	Config;
 

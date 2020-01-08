@@ -813,6 +813,9 @@ int main(int argc, char* argv[])
 	initialize_logging(&aqualink_default_logger);
 	set_verbosity(&aqualink_default_logger, Notice);
 
+	// Add the default console sink
+	register_logging_sink(&aqualink_default_logger.Sinks, &aqualink_default_logging_sink_console);
+
 	// Initialize the daemon's parameters.
 	initialise_config_parameters();
 	init_buttons(&_aqualink_data);
@@ -843,9 +846,10 @@ int main(int argc, char* argv[])
 	INFO("%s %s", AQUALINKD_NAME, AQUALINKD_VERSION);
 
 	NOTICE("Config level             = %s", logging_level_to_string(CFG_LogLevel()));
-	NOTICE("Config socket_port       = %s", CFG_SocketPort());
+	NOTICE("Config socket_port       = %d", CFG_SocketPort());
 	NOTICE("Config serial_port       = %s", CFG_SerialPort());
 	NOTICE("Config web_directory     = %s", CFG_WebDirectory());
+	NOTICE("Config insecure          = %s", bool2text(CFG_Insecure()));
 	NOTICE("Config device_id         = 0x%02hhx", CFG_DeviceId());
 	NOTICE("Config read_all_devices  = %s", bool2text(CFG_ReadAllDevices()));
 	NOTICE("Config use_aux_labels    = %s", bool2text(CFG_UsePanelAuxLabels()));

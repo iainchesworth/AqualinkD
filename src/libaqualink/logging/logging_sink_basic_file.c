@@ -33,26 +33,45 @@ void logging_sink_basic_file_initialise(LoggingSink* thisSink)
 	{
 		ERROR("Failed to open specified log file: %s - error code %d", fileSinkUserData->Filename, errno);
 	}
+	else if (thrd_success != mtx_init(&(thisSink->Config.SinkWriterMutex), mtx_plain | mtx_recursive))
+	{
+		DEBUG("File sink initialisation failed to create synchronisation mutex");
+	}
 	else
 	{
-		// Success...do nothing.
+		TRACE("File sink initialisation completed successfully");
+		thisSink->Config.SinkIsInitialised = true;
 	}
-
 }
 
 void logging_sink_basic_file_formatter(LoggingSink* thisSink)
 {
 	assert(0 != thisSink);
+
+	if (thisSink->Config.SinkIsInitialised)
+	{
+		// Only do things if the sink is initialised.
+	}
 }
 
 void logging_sink_basic_file_pattern(LoggingSink* thisSink, const char* pattern)
 {
 	assert(0 != thisSink);
+
+	if (thisSink->Config.SinkIsInitialised)
+	{
+		// Only do things if the sink is initialised.
+	}
 }
 
 void logging_sink_basic_file_writer(LoggingSink* thisSink, LoggingMessage message)
 {
 	assert(0 != thisSink);
+
+	if (thisSink->Config.SinkIsInitialised)
+	{
+		// Only do things if the sink is initialised.
+	}
 }
 
 void logging_sink_basic_file_flush(LoggingSink* thisSink)
@@ -61,7 +80,11 @@ void logging_sink_basic_file_flush(LoggingSink* thisSink)
 
 	LoggingSinkBasicFileUserData* fileSinkUserData = (LoggingSinkBasicFileUserData*)thisSink->UserData;
 
-	if (0 == fileSinkUserData)
+	if (!thisSink->Config.SinkIsInitialised)
+	{
+		// Sink is not initialised...so do nothing.
+	}
+	else if (0 == fileSinkUserData)
 	{
 		WARN("No user data was configured for file sink...cannot continue");
 	}
@@ -85,7 +108,11 @@ void logging_sink_basic_file_close(LoggingSink* thisSink)
 
 	LoggingSinkBasicFileUserData* fileSinkUserData = (LoggingSinkBasicFileUserData*)thisSink->UserData;
 
-	if (0 == fileSinkUserData)
+	if (!thisSink->Config.SinkIsInitialised)
+	{
+		DEBUG("Shutdown requested for a non-initialised file sink...doing nothing");
+	}
+	else if (0 == fileSinkUserData)
 	{
 		WARN("No user data was configured for file sink...cannot continue");
 	}
@@ -100,5 +127,8 @@ void logging_sink_basic_file_close(LoggingSink* thisSink)
 	else
 	{
 		DEBUG("Closed logging file: %s", fileSinkUserData->Filename);
+
+		TRACE("Destroying file sink synchronisation mutex");
+		mtx_destroy(&(thisSink->Config.SinkWriterMutex));
 	}
 }
