@@ -62,6 +62,7 @@ void CFG_Set_PidFile(const char* pidFile);
 void CFG_Set_SerialPort(const char* serialPort);
 void CFG_Set_LogLevel(int logLevel);
 void CFG_Set_Insecure(bool insecure);
+void CFG_Set_DeviceId(int deviceId);
 void CFG_Set_NoDaemonize(bool daemonize);
 void CFG_Set_LogFile(const char* logFile);
 void CFG_Set_DebugRsProtocolPackets(bool debugRsProtocolPackets);

@@ -85,7 +85,7 @@ int serial_thread(void* termination_handler_ptr)
 				}
 				else
 				{
-
+					// Do nothing here as the packet has been processed.
 				}
 			}
 			break;

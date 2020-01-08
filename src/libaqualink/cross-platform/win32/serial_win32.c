@@ -11,11 +11,21 @@ const SerialDevice SERIALDEVICE_INVALID = INVALID_HANDLE_VALUE;
 
 static DCB original_serial_config, aqualink_serial_config;
 
+LPVOID GetFormattedMessage(DWORD dwErrorCode)
+{
+	LPVOID lpMsgBuf;
+
+	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, dwErrorCode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &lpMsgBuf, 0, NULL);
+
+	return lpMsgBuf;
+}
+
 SerialDevice initialise_serial_device()
 {
+	const char* serial_device = CFG_SerialPort();
 	HANDLE hSerialDevice;
 
-	hSerialDevice = CreateFile(CFG_SerialPort(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	hSerialDevice = CreateFile(serial_device, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
 	if (SERIALDEVICE_INVALID == hSerialDevice)
 	{
 		if (ERROR_FILE_NOT_FOUND == GetLastError())
@@ -25,8 +35,13 @@ SerialDevice initialise_serial_device()
 		}
 		else
 		{
+			DWORD dwErrorCode = GetLastError();
+			LPVOID lpMsgBuf = GetFormattedMessage(dwErrorCode);		
+				
 			ERROR("Failed to open serial port: %s", CFG_SerialPort());
-			ERROR("    CreateFile() error: %d - %s", GetLastError(), "FIXME - FormatMessage()");
+			ERROR("    CreateFile() error: %d - %s", dwErrorCode, lpMsgBuf);
+
+			LocalFree(lpMsgBuf);
 		}
 	}
 	else
@@ -50,8 +65,13 @@ bool set_interface_attributes(SerialDevice serial_device)
 
 	if (!GetCommState(serial_device, &original_serial_config))
 	{
+		DWORD dwErrorCode = GetLastError();
+		LPVOID lpMsgBuf = GetFormattedMessage(dwErrorCode);
+
 		WARN("Failed to get serial port attributes");
-		WARN("    GetCommState() error: %d - %s", GetLastError(), "FIXME - FormatMessage()");
+		WARN("    GetCommState() error: %d - %s", dwErrorCode, lpMsgBuf);
+
+		LocalFree(lpMsgBuf);
 	}
 	else
 	{
@@ -64,8 +84,13 @@ bool set_interface_attributes(SerialDevice serial_device)
 
 		if (!SetCommState(serial_device, &aqualink_serial_config))
 		{
+			DWORD dwErrorCode = GetLastError();
+			LPVOID lpMsgBuf = GetFormattedMessage(dwErrorCode);
+
 			ERROR("Failed to set serial port baud attributes");
-			ERROR("    GetCommState() error: %d - %s", GetLastError(), "FIXME - FormatMessage()");
+			ERROR("    GetCommState() error: %d - %s", dwErrorCode, lpMsgBuf);
+
+			LocalFree(lpMsgBuf);
 		}
 		else
 		{
@@ -83,8 +108,13 @@ int read_from_serial_device(SerialDevice serial_device, unsigned char buffer[], 
 
 	if (!ReadFile(serial_device, buffer, buffer_length, &dwBytesRead, NULL))
 	{
+		DWORD dwErrorCode = GetLastError();
+		LPVOID lpMsgBuf = GetFormattedMessage(dwErrorCode);
+
 		DEBUG("Failed to read from serial port");
-		DEBUG("    ReadFile() error: %d - %s", GetLastError(), "FIXME - FormatMessage()");
+		DEBUG("    ReadFile() error: %d - %s", dwErrorCode, lpMsgBuf);
+
+		LocalFree(lpMsgBuf);
 
 		return -1;
 	}
@@ -98,8 +128,13 @@ int write_to_serial_device(SerialDevice serial_device, const unsigned char buffe
 
 	if (!WriteFile(serial_device, buffer, buffer_length, &dwBytesWritten, NULL))
 	{
+		DWORD dwErrorCode = GetLastError();
+		LPVOID lpMsgBuf = GetFormattedMessage(dwErrorCode);
+
 		DEBUG("Failed to write to serial port");
-		DEBUG("    WriteFile() error: %d - %s", GetLastError(), "FIXME - FormatMessage()");
+		DEBUG("    WriteFile() error: %d - %s", dwErrorCode, lpMsgBuf);
+
+		LocalFree(lpMsgBuf);
 
 		return -1;
 	}

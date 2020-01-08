@@ -24,6 +24,10 @@ set(SOURCE_FILES
   cross-platform/win32/threads_win32.c
   cross-platform/win32/time_win32.c
   hardware/buttons/buttons.c
+  hardware/controllers/controller.c
+  hardware/devices/hardware_device_registry.c
+  hardware/devices/hardware_devices.c
+  hardware/devices/generic/generic_device.c
   json/json_messages.c
   json/json_serializer.c
   json/json_string_utils.c

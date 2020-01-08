@@ -17,7 +17,7 @@ typedef struct tagAqualinkController
 	AqualinkControllerVariants Variant;
 
 	// Buttons
-	AqualinkButton Buttons[Aqualink_Buttons];
+	AqualinkButton Buttons[AqualinkButtonCount];
 
 	// Pumps
 

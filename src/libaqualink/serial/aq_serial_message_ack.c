@@ -1,7 +1,11 @@
 #include "aq_serial_message_ack.h"
 
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
+
+#include "hardware/devices/hardware_device_registry.h"
+#include "hardware/devices/hardware_devices.h"
 #include "logging/logging.h"
 #include "aq_serial_types.h"
 #include "aq_serial_checksums.h"
@@ -46,6 +50,23 @@ bool handle_ack_packet(AQ_Ack_Packet processedPacket)
 
 	case DualSpaSideSwitch_InterfaceBoard:
 		TRACE("Received ACK for Dual Spa Side Switch interface board --> id: 0x%02x", processedPacket.Destination);
+		{
+			HardwareDevice* this_device = (HardwareDevice*)malloc(sizeof(HardwareDevice));
+			this_device->Info.gdi.Id = processedPacket.Destination;
+
+			if (does_device_exist_in_hardware_registry(0, this_device))
+			{
+				TRACE("Device %d is already present in the registry", this_device->Info.gdi.Id);
+			}
+			else if (add_device_to_hardware_registry(0, this_device))
+			{
+				NOTICE("Discovered device %d but could not register it in the local registry", this_device->Info.gdi.Id);
+			}
+			else
+			{
+				DEBUG("Device %d has been added to the registry", this_device->Info.gdi.Id);
+			}
+		}
 		break;
 
 	case SPA_Remote_0:

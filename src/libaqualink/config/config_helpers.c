@@ -264,6 +264,11 @@ void CFG_Set_Insecure(bool insecure)
 	cfg_setbool(_config_parameters, CONFIG_BOOL_INSECURE, insecure);
 }
 
+void CFG_Set_DeviceId(int deviceId)
+{
+	cfg_setint(_config_parameters, CONFIG_INT_DEVICE_ID, deviceId);
+}
+
 void CFG_Set_NoDaemonize(bool daemonize)
 {
 	cfg_setbool(_config_parameters, CONFIG_BOOL_NO_DAEMONIZE, daemonize);

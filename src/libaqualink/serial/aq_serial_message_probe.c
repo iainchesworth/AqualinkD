@@ -8,7 +8,7 @@
 #include "aq_serial_message_ack.h"
 #include "utils.h"
 
-static const unsigned int AQ_PROBE_PACKET_LENGTH = 11;
+static const unsigned int AQ_PROBE_PACKET_LENGTH = 7; //  11;
 typedef union tagAQ_Probe_Packet
 {
 	struct
@@ -17,7 +17,7 @@ typedef union tagAQ_Probe_Packet
 		unsigned char Header_STX;
 		SerialData_Destinations Destination : 8;
 		SerialData_Commands Command : 8;
-		unsigned char UNKNOWN_DATA[4];
+		// unsigned char UNKNOWN_DATA[4];
 		unsigned char Checksum;
 		unsigned char Terminator_DLE;
 		unsigned char Terminator_ETX;

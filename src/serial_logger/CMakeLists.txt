@@ -2,6 +2,8 @@
 project(serial_logger C)
 
 set(SOURCE_FILES 
+  serial-processor/serial_processor.c
+  options.c
   serial_logger.c
 )
 

@@ -18,6 +18,7 @@
 #include "config_helpers.h"
 #include "config_parsers.h"
 #include "config_private.h"
+#include "config_validators.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -103,6 +104,9 @@ cfg_t* _config_parameters = 0;
 void initialise_config_parameters()
 {
 	_config_parameters = cfg_init(_config_parameters_defaults, CFGF_NONE);
+
+	// Install any required validators (e.g. logging levels)
+	cfg_set_validate_func(_config_parameters, CONFIG_INT_LOG_LEVEL, validate_loglevel);
 }
 
 void handle_configuration_file_options()
