@@ -14,6 +14,19 @@ typedef int SerialDevice;
 
 #endif // defined (WIN32)
 
+#if defined (_MSC_VER)
+///FIXME -> MSVC uses #pragma packed and whatnot...grrr.
+// #define PACKED_SERIAL_STRUCT __attribute__((__packed__))
+#endif // defined (_MSC_VER)
+
+#if defined (__clang__)
+#define PACKED_SERIAL_STRUCT __attribute__((__packed__))
+#endif // defined (CLANG)
+
+#if defined (__GNUC__)
+#define PACKED_SERIAL_STRUCT __attribute__((__packed__))
+#endif // defined (CLANG)
+
 extern const SerialDevice SERIALDEVICE_INVALID;
 
 SerialDevice initialise_serial_device();

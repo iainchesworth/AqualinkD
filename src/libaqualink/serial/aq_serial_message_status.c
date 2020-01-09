@@ -2,50 +2,84 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdint.h>
+
+#include "cross-platform/serial.h"
+#include "hardware/aqualink_master_controller.h"
+#include "hardware/devices/hardware_device_registry.h"
+#include "hardware/devices/hardware_device.h"
 #include "logging/logging.h"
 #include "aq_serial_types.h"
 #include "utils.h"
 
-static const unsigned int AQ_STATUS_PACKET_LENGTH = 9;
-typedef union tagAQ_Status_Packet
+typedef struct PACKED_SERIAL_STRUCT tagAQ_Status_Packet
 {
-	struct
-	{
-		unsigned char Header_DLE;
-		unsigned char Header_STX;
-		SerialData_Destinations Destination : 8;
-		SerialData_Commands Command : 8;
-		struct
-		{
-			AQ_LED_States LED_00 : 2;
-			AQ_LED_States LED_01 : 2;
-			AQ_LED_States LED_02 : 2;
-			AQ_LED_States LED_03 : 2;
-			AQ_LED_States LED_04 : 2;
-			AQ_LED_States LED_05 : 2;
-			AQ_LED_States LED_06 : 2;
-			AQ_LED_States LED_07 : 2;
-			AQ_LED_States LED_08 : 2;
-			AQ_LED_States LED_09 : 2;
-			AQ_LED_States LED_10 : 2;
-			AQ_LED_States LED_11 : 2;
-			AQ_LED_States LED_12 : 2;
-			AQ_LED_States LED_13 : 2;
-			AQ_LED_States LED_14 : 2;
-			AQ_LED_States Pool_Header : 2;	// POOL_HTR_LED_INDEX
-			AQ_LED_States LED_16 : 2;
-			AQ_LED_States SPA_Heater : 2;		// SPA_HTR_LED_INDEX
-			AQ_LED_States LED_18 : 2;
-			AQ_LED_States Solar_Heater : 2;	// SOLAR_HTR_LED_INDEX
-		}
-		AQ_Status_Packet_LEDs;
-	};
-	unsigned char RawBytes[AQ_STATUS_PACKET_LENGTH];
+	uint8_t Header_DLE;
+	uint8_t Header_STX;
+	SerialData_Destinations Destination;
+	SerialData_Commands Command;
+
+	AQ_LED_States LED_00;
+	AQ_LED_States LED_01;
+	AQ_LED_States LED_02;
+	AQ_LED_States LED_03;
+
+	AQ_LED_States LED_04;
+	AQ_LED_States LED_05;
+	AQ_LED_States LED_06;
+	AQ_LED_States LED_07;
+
+	AQ_LED_States LED_08;
+	AQ_LED_States LED_09;
+	AQ_LED_States LED_10;
+	AQ_LED_States LED_11;
+
+	AQ_LED_States LED_12;
+	AQ_LED_States LED_13;
+	AQ_LED_States LED_14;
+	AQ_LED_States Pool_Heater;		// POOL_HTR_LED_INDEX
+
+	AQ_LED_States LED_16;
+	AQ_LED_States SPA_Heater;		// SPA_HTR_LED_INDEX
+	AQ_LED_States LED_18;
+	AQ_LED_States Solar_Heater;		// SOLAR_HTR_LED_INDEX
+
+	// padding byte here?
+
+	uint8_t Checksum;
+	uint8_t Terminator_DLE;
+	uint8_t Terminator_ETX;
 }
 AQ_Status_Packet;
 
+static const unsigned int AQ_STATUS_PACKET_LENGTH = 12;
+/*typedef union tagAQ_Status_Packet
+{
+	AQ_Status_Processed_Packet Processed;
+	uint8_t RawBytes[AQ_STATUS_PACKET_LENGTH];
+}
+AQ_Status_Packet;*/
+
 bool handle_status_packet(AQ_Status_Packet processedPacket)
 {
+	//
+	// STATUSes are in response to a PROBE which means that we are only able to know the source
+	// by checking out the last probe destination.  Note that they typically precede the ACK
+	// message from the PROBE'd device.
+	// 
+	//     M --> PROBE --> S
+	//     M <-- S'TUS <-- S
+	//     M <--  ACK  <-- S
+	//             .
+	//             .
+	//             .
+	//     M --> PROBE --> S
+	//     M <-- S'TUS <-- S
+	//     M <--  ACK  <-- S
+	//
+
+	const DeviceId source_of_status = aqualink_master_controller.ActiveProbe.Destination;
+
 	switch (processedPacket.Destination)
 	{
 	case Master_0:
@@ -80,11 +114,11 @@ bool handle_status_packet(AQ_Status_Packet processedPacket)
 		TRACE("Received STATUS for Aqualink --> id: 0x%02x", processedPacket.Destination);
 		break;
 
-	case LX_Header_0:
-	case LX_Header_1:
-	case LX_Header_2:
-	case LX_Header_3:
-		TRACE("Received STATUS for LX Header --> id: 0x%02x", processedPacket.Destination);
+	case LX_Heater_0:
+	case LX_Heater_1:
+	case LX_Heater_2:
+	case LX_Heater_3:
+		TRACE("Received STATUS for LX Heater --> id: 0x%02x", processedPacket.Destination);
 		break;
 
 	case OneTouch_0:
@@ -149,8 +183,38 @@ bool process_status_packet(unsigned char* rawPacket, unsigned int length)
 	assert(0 != rawPacket);
 	assert(AQ_STATUS_PACKET_LENGTH <= length);
 
+	TRACE("STATUS - received %d bytes ; expected %d bytes", length, AQ_STATUS_PACKET_LENGTH);
+	WARN_IF((AQ_STATUS_PACKET_LENGTH < length), "STATUS - packet length AS-READ is longer than expected...");
+
 	AQ_Status_Packet processedPacket;
-	memcpy(processedPacket.RawBytes, rawPacket, AQ_STATUS_PACKET_LENGTH);
+
+	processedPacket.Header_DLE = rawPacket[0];
+	processedPacket.Header_STX = rawPacket[1];
+	processedPacket.Destination = rawPacket[2];
+	processedPacket.Command = rawPacket[3];
+	processedPacket.LED_00 = ((rawPacket[4] & 0xff000000) >> 24);
+	processedPacket.LED_01 = ((rawPacket[4] & 0x00ff0000) >> 16);
+	processedPacket.LED_02 = ((rawPacket[4] & 0x0000ff00) >> 8);
+	processedPacket.LED_03 = ((rawPacket[4] & 0x000000ff) >> 0);
+	processedPacket.LED_04 = ((rawPacket[5] & 0xff000000) >> 24);
+	processedPacket.LED_05 = ((rawPacket[5] & 0x00ff0000) >> 16);
+	processedPacket.LED_06 = ((rawPacket[5] & 0x0000ff00) >> 8);
+	processedPacket.LED_07 = ((rawPacket[5] & 0x000000ff) >> 0);
+	processedPacket.LED_08 = ((rawPacket[6] & 0xff000000) >> 24);
+	processedPacket.LED_09 = ((rawPacket[6] & 0x00ff0000) >> 16);
+	processedPacket.LED_10 = ((rawPacket[6] & 0x0000ff00) >> 8);
+	processedPacket.LED_11 = ((rawPacket[6] & 0x000000ff) >> 0);
+	processedPacket.LED_12 = ((rawPacket[7] & 0xff000000) >> 24);
+	processedPacket.LED_13 = ((rawPacket[7] & 0x00ff0000) >> 16);
+	processedPacket.LED_14 = ((rawPacket[7] & 0x0000ff00) >> 8);
+	processedPacket.Pool_Heater = ((rawPacket[7] & 0x000000ff) >> 0);
+	processedPacket.LED_16 = ((rawPacket[8] & 0xff000000) >> 24);
+	processedPacket.SPA_Heater = ((rawPacket[8] & 0x00ff0000) >> 16);
+	processedPacket.LED_18 = ((rawPacket[8] & 0x0000ff00) >> 8);
+	processedPacket.Solar_Heater = ((rawPacket[8] & 0x000000ff) >> 0);
+	processedPacket.Checksum = rawPacket[9];
+	processedPacket.Terminator_DLE = rawPacket[10];
+	processedPacket.Terminator_ETX = rawPacket[11];
 
 	return handle_status_packet(processedPacket);
 }

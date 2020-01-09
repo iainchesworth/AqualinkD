@@ -2,6 +2,8 @@
 
 #include <assert.h>
 #include <string.h>
+
+#include "cross-platform/serial.h"
 #include "logging/logging.h"
 #include "aq_serial_types.h"
 #include "utils.h"
@@ -9,7 +11,7 @@
 static const unsigned int AQ_UNKNOWN_PACKET_LENGTH = 4;
 typedef union tagAQ_Unknown_Packet
 {
-	struct
+	struct PACKED_SERIAL_STRUCT
 	{
 		unsigned char Header_DLE;
 		unsigned char Header_STX;
@@ -56,11 +58,11 @@ bool handle_unknown_packet(AQ_Unknown_Packet processedPacket)
 		TRACE("Received unknown for Aqualink --> id: 0x%02x", processedPacket.Destination);
 		break;
 
-	case LX_Header_0:
-	case LX_Header_1:
-	case LX_Header_2:
-	case LX_Header_3:
-		TRACE("Received unknown for LX Header --> id: 0x%02x", processedPacket.Destination);
+	case LX_Heater_0:
+	case LX_Heater_1:
+	case LX_Heater_2:
+	case LX_Heater_3:
+		TRACE("Received unknown for LX Heater --> id: 0x%02x", processedPacket.Destination);
 		break;
 
 	case OneTouch_0:
@@ -124,6 +126,9 @@ bool process_unknown_packet(unsigned char* rawPacket, unsigned int length)
 {
 	assert(0 != rawPacket);
 	assert(AQ_UNKNOWN_PACKET_LENGTH <= length);
+
+	TRACE("UNKNOWN - received %d bytes ; expected %d bytes", length, AQ_UNKNOWN_PACKET_LENGTH);
+	WARN_IF((AQ_UNKNOWN_PACKET_LENGTH < length), "UNKNOWN - packet length AS-READ is longer than expected...");
 	
 	AQ_Unknown_Packet processedPacket;
 	memcpy(processedPacket.RawBytes, rawPacket, AQ_UNKNOWN_PACKET_LENGTH);

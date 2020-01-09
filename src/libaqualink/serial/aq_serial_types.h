@@ -42,10 +42,10 @@ typedef enum tagSerialData_Destinations
 	Aqualink_2 = 0x32,
 	Aqualink_3 = 0x33,
 
-	LX_Header_0 = 0x38,
-	LX_Header_1 = 0x39,
-	LX_Header_2 = 0x3A,
-	LX_Header_3 = 0x3B,
+	LX_Heater_0 = 0x38,
+	LX_Heater_1 = 0x39,
+	LX_Heater_2 = 0x3A,
+	LX_Heater_3 = 0x3B,
 
 	OneTouch_0 = 0x40,
 	OneTouch_1 = 0x41,

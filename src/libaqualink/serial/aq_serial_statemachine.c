@@ -65,6 +65,8 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 					// Log the raw byte (which will go out to file if initialised)...
 					TRACE_TO(&aq_serial_data_logger, "%d", byte);
 
+					TRACE("ST_WAITFOR_PACKETSTART - DLE - 0x%02x", byte);
+
 					// This might be the first byte of a new packet...wait and check for the STX byte.
 					prevByte = byte;
 				}
@@ -72,6 +74,8 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 				{
 					// Log the raw byte (which will go out to file if initialised)...
 					TRACE_TO(&aq_serial_data_logger, "%d", byte);
+
+					TRACE("ST_WAITFOR_PACKETSTART - STX - 0x%02x", byte);
 
 					// Valid packet start...transition and receive the packet payload and terminators.
 					TRACE("Transition: ST_WAITFOR_PACKETSTART --> ST_RECEIVE_PACKETPAYLOAD");
@@ -86,6 +90,7 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 					TRACE_TO(&aq_serial_data_logger, "%d", byte);
 
 					// It was a valid byte but since we are waiting for a packet start...do nothing.
+					TRACE("ST_WAITFOR_PACKETSTART - Ignored Byte - 0x%02x", byte);
 				}
 				else
 				{
@@ -133,7 +138,7 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 					// Log the raw byte (which will go out to file if initialised)...
 					TRACE_TO(&aq_serial_data_logger, "%d", byte);
 
-					TRACE("ST_RECEIVE_PACKETPAYLOAD - A - 0x%02x", byte);
+					TRACE("ST_RECEIVE_PACKETPAYLOAD - DLE - 0x%02x", byte);
 
 					// This might be the last-but-one byte of the current packet...wait and check for the ETX byte.
 					prevByte = byte;
@@ -143,15 +148,17 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 					// Log the raw byte (which will go out to file if initialised)...
 					TRACE_TO(&aq_serial_data_logger, "%d", byte);
 
-					TRACE("ST_RECEIVE_PACKETPAYLOAD - B - 0x%02x", byte);
+					TRACE("ST_RECEIVE_PACKETPAYLOAD - NUL - 0x%02x", byte);
 
 					// Okay, this is an escaped DLE that is merely part of the packet so keep processing bytes.
 
 					rawPacketBytes[packetPayloadBytesRead + 2] = prevByte;  // Store the 0x10 byte value (i.e. same as the DTE)
 					++packetPayloadBytesRead;
 
-					rawPacketBytes[packetPayloadBytesRead + 2] = byte;		// Store the 0x00 byte value (i.e. same as the NUL)
-					++packetPayloadBytesRead;
+					///FIXME - don't store the NUL byte because it's not a "packet" byte per se.
+
+					// rawPacketBytes[packetPayloadBytesRead + 2] = byte;		// Store the 0x00 byte value (i.e. same as the NUL)
+					// ++packetPayloadBytesRead;
 
 					prevByte = byte;
 				}
@@ -160,7 +167,7 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 					// Log the raw byte (which will go out to file if initialised)...
 					TRACE_TO(&aq_serial_data_logger, "%d", byte);
 
-					TRACE("ST_RECEIVE_PACKETPAYLOAD - C - 0x%02x", byte);
+					TRACE("ST_RECEIVE_PACKETPAYLOAD - ETX - 0x%02x", byte);
 
 					// Compute the total number of bytes in the "packet".
 					totalPacketBytesRead = packetPayloadBytesRead + 4;
@@ -183,7 +190,7 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 					// Log the raw byte (which will go out to file if initialised)...
 					TRACE_TO(&aq_serial_data_logger, "%d", byte);
 
-					TRACE("ST_RECEIVE_PACKETPAYLOAD - D - 0x%02x", byte);
+					TRACE("ST_RECEIVE_PACKETPAYLOAD - 0x%02x", byte);
 
 					// A payload byte was received - store it away (in the payload section).
 					rawPacketBytes[packetPayloadBytesRead + 2] = byte;
