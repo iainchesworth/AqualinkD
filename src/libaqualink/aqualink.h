@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #include "cross-platform/threads.h"
-#include "hardware/buttons/buttons.h"
+#include "hardware/buttons/rs_buttons.h"
 #include "serial/aq_serial.h"
 #include "aq_programmer.h"
 
@@ -80,7 +80,7 @@ struct aqualinkdata
   char last_display_message[AQ_MSGLONGLEN+1];
   unsigned char raw_status[AQ_PSTLEN];
   aqled aqualinkleds[TOTAL_LEDS];
-  aqkey aqbuttons[AqualinkButtonCount];
+  aqkey aqbuttons[ButtonTypeCount];
   int air_temp;
   int pool_temp;
   int spa_temp;

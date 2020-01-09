@@ -26,7 +26,7 @@
 #include <json-c/json_object.h>
 
 #include "config/config.h"
-#include "hardware/buttons/buttons.h"
+#include "hardware/buttons/rs_buttons.h"
 #include "logging/logging.h"
 #include "version/version.h"
 #include "aqualink.h"
@@ -202,7 +202,7 @@ int build_aqualink_status_JSON(struct aqualinkdata* aqdata, char* buffer, int bu
 		json_object* jleds = json_object_new_object();
 		int button_index;
 
-		for (button_index = 0; button_index < AqualinkButtonCount; ++button_index)
+		for (button_index = FilterPump; button_index < ButtonTypeCount; ++button_index)
 		{
 			assert(0 != aqdata->aqbuttons[button_index].name);
 			assert(0 != aqdata->aqbuttons[button_index].label);
@@ -322,7 +322,7 @@ int build_device_JSON(struct aqualinkdata* aqdata, int programable_switch1, int 
 
 	length += sprintf(buffer + length, ", \"devices\": [");
 
-	for (i = 0; i < AqualinkButtonCount; i++)
+	for (i = FilterPump; i < ButtonTypeCount; i++)
 	{
 		if (strcmp(BTN_POOL_HTR, aqdata->aqbuttons[i].name) == 0 && aqdata->pool_htr_set_point != TEMP_UNKNOWN) {
 			length += sprintf(buffer + length, "{\"type\": \"setpoint_thermo\", \"id\": \"%s\", \"name\": \"%s\", \"state\": \"%s\", \"status\": \"%s\", \"spvalue\": \"%.*f\", \"value\": \"%.*f\", \"int_status\": \"%d\" },",
@@ -479,7 +479,7 @@ int build_aux_labels_JSON(struct aqualinkdata* aqdata, char* buffer, int size)
 
 	length += sprintf(buffer + length, "{\"type\": \"aux_labels\"");
 
-	for (i = 0; i < AqualinkButtonCount; i++)
+	for (i = FilterPump; i < ButtonTypeCount; i++)
 	{
 		length += sprintf(buffer + length, ",\"%s\": \"%s\"", aqdata->aqbuttons[i].name, aqdata->aqbuttons[i].label);
 	}

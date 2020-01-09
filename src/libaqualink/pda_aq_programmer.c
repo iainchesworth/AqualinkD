@@ -22,7 +22,7 @@
 
 #include "cross-platform/time.h"
 #include "cross-platform/threads.h"
-#include "hardware/buttons/buttons.h"
+#include "hardware/buttons/rs_buttons.h"
 #include "logging/logging.h"
 #include "serial/aq_serial.h"
 #include "string/string_utils.h"
@@ -445,7 +445,7 @@ int set_aqualink_PDA_device_on_off(void* ptr)
 	unsigned int device = atoi(&buf[0]);
 	unsigned int state = atoi(&buf[5]);
 
-	if (device > AqualinkButtonCount) {
+	if (device > ButtonTypeCount) {
 		ERROR("PDA Device On/Off :- bad device number '%d'", device);
 		cleanAndTerminateThread(threadCtrl);
 		return 0;

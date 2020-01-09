@@ -27,6 +27,8 @@
 #include "config/config_helpers.h"
 #include "cross-platform/signals.h"
 #include "cross-platform/threads.h"
+#include "hardware/aqualink_master_controller.h"
+#include "hardware/controllers/rs_controller.h"
 #include "logging/logging.h"
 #include "serial/aq_serial_threaded.h"
 #include "threads/thread_utils.h"
@@ -50,6 +52,9 @@ int main(int argc, char* argv[])
 
 	// Process any options on the command line.
 	handleOptions(argc, argv);
+
+	// Initialise the master controller (and turn on the simulator).
+	initialise_aqualinkrs_controller(&aqualink_master_controller, RS8);
 
 	//
 	// SERIAL LOGGER MAIN LOOP

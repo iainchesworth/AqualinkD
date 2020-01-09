@@ -10,7 +10,7 @@ AqualinkD contributors (sorted alphabetically)
 
   * TBC
   
-* **[sfeakes](https://github.com/sfeakes)**
+* **[Shaun Feakes](https://github.com/sfeakes)**
 
   * Original author of AqualinkD
   

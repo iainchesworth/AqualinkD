@@ -52,3 +52,16 @@ const char CONFIG_BOOL_DISPLAY_WARNINGS_IN_WEB[] = "display_warnings_in_web";
 const char CONFIG_BOOL_DEBUG_RSPROTOCOL_PACKETS[] = "debug_RSProtocol_packets";
 const char CONFIG_BOOL_LOG_RAW_RS_BYTES[] = "log_raw_RS_bytes";
 const char CONFIG_STR_LOG_RAW_RS_BYTES_LOGFILE[] = "log_raw_RS_bytes_logfile";
+
+const char CONFIG_STR_BUTTON_FILTERPUMP_LABEL[] = "button_01_label";
+const char CONFIG_STR_BUTTON_SPAMODE_LABEL[] = "button_02_label";
+const char CONFIG_STR_BUTTON_AUX1_LABEL[] = "button_03_label";
+const char CONFIG_STR_BUTTON_AUX2_LABEL[] = "button_04_label";
+const char CONFIG_STR_BUTTON_AUX3_LABEL[] = "button_05_label";
+const char CONFIG_STR_BUTTON_AUX4_LABEL[] = "button_06_label";
+const char CONFIG_STR_BUTTON_AUX5_LABEL[] = "button_07_label";
+const char CONFIG_STR_BUTTON_AUX6_LABEL[] = "button_08_label";
+const char CONFIG_STR_BUTTON_AUX7_LABEL[] = "button_09_label";
+const char CONFIG_STR_BUTTON_POOLHEATER_LABEL[] = "button_10_label";
+const char CONFIG_STR_BUTTON_SPAHEATER_LABEL[] = "button_11_label";
+const char CONFIG_STR_BUTTON_SOLARHEATER_LABEL[] = "button_12_label";

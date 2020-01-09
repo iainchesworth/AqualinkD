@@ -23,11 +23,16 @@ set(SOURCE_FILES
   cross-platform/win32/terminal_win32.c
   cross-platform/win32/threads_win32.c
   cross-platform/win32/time_win32.c
-  hardware/buttons/buttons.c
-  hardware/controllers/controller.c
+  hardware/aqualink_master_controller.c
+  hardware/buttons/rs_buttons.c
+  hardware/controllers/rs_controller.c
+  hardware/devices/hardware_device.c
   hardware/devices/hardware_device_registry.c
-  hardware/devices/hardware_devices.c
+  hardware/devices/hardware_device_types.c
+  hardware/devices/hardware_device_utils.c
   hardware/devices/generic/generic_device.c
+  hardware/heaters/heaters.c
+  hardware/simulators/rs_keypadsimulator.c
   json/json_messages.c
   json/json_serializer.c
   json/json_string_utils.c

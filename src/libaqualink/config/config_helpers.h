@@ -55,6 +55,19 @@ const bool CFG_DebugRsProtocolPackets();
 const bool CFG_LogRawRsBytes();
 const char* CFG_LogRawRsBytes_LogFile();
 
+const char* CFG_ButtonFilterPumpLabel();
+const char* CFG_ButtonSpaModeLabel();
+const char* CFG_ButtonAux1Label();
+const char* CFG_ButtonAux2Label();
+const char* CFG_ButtonAux3Label();
+const char* CFG_ButtonAux4Label();
+const char* CFG_ButtonAux5Label();
+const char* CFG_ButtonAux6Label();
+const char* CFG_ButtonAux7Label();
+const char* CFG_ButtonPoolHeaterLabel();
+const char* CFG_ButtonSpaHeaterLabel();
+const char* CFG_ButtonSolarHeaterLabel();
+
 // Setters
 
 void CFG_Set_ConfigFile(const char* configFile);

@@ -14,7 +14,7 @@
  *  https://github.com/sfeakes/aqualinkd
  */
 
-#include "buttons.h"
+#include "rs_buttons.h"
 
 #include "config/config_helpers.h"
 #include "domoticz.h"

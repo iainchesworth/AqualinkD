@@ -233,6 +233,66 @@ const char* CFG_LogRawRsBytes_LogFile()
 	return cfg_getstr(_config_parameters, CONFIG_STR_LOG_RAW_RS_BYTES_LOGFILE);
 }
 
+const char* CFG_ButtonFilterPumpLabel()
+{
+	return cfg_getstr(_config_parameters, CONFIG_STR_BUTTON_FILTERPUMP_LABEL);
+}
+
+const char* CFG_ButtonSpaModeLabel()
+{
+	return cfg_getstr(_config_parameters, CONFIG_STR_BUTTON_SPAMODE_LABEL);
+}
+
+const char* CFG_ButtonAux1Label()
+{
+	return cfg_getstr(_config_parameters, CONFIG_STR_BUTTON_AUX1_LABEL);
+}
+
+const char* CFG_ButtonAux2Label()
+{
+	return cfg_getstr(_config_parameters, CONFIG_STR_BUTTON_AUX2_LABEL);
+}
+
+const char* CFG_ButtonAux3Label()
+{
+	return cfg_getstr(_config_parameters, CONFIG_STR_BUTTON_AUX3_LABEL);
+}
+
+const char* CFG_ButtonAux4Label()
+{
+	return cfg_getstr(_config_parameters, CONFIG_STR_BUTTON_AUX4_LABEL);
+}
+
+const char* CFG_ButtonAux5Label()
+{
+	return cfg_getstr(_config_parameters, CONFIG_STR_BUTTON_AUX5_LABEL);
+}
+
+const char* CFG_ButtonAux6Label()
+{
+	return cfg_getstr(_config_parameters, CONFIG_STR_BUTTON_AUX6_LABEL);
+}
+
+const char* CFG_ButtonAux7Label()
+{
+	return cfg_getstr(_config_parameters, CONFIG_STR_BUTTON_AUX7_LABEL);
+}
+
+const char* CFG_ButtonPoolHeaterLabel()
+{
+	return cfg_getstr(_config_parameters, CONFIG_STR_BUTTON_POOLHEATER_LABEL);
+}
+
+const char* CFG_ButtonSpaHeaterLabel()
+{
+	return cfg_getstr(_config_parameters, CONFIG_STR_BUTTON_SPAHEATER_LABEL);
+}
+
+const char* CFG_ButtonSolarHeaterLabel()
+{
+	return cfg_getstr(_config_parameters, CONFIG_STR_BUTTON_SOLARHEATER_LABEL);
+}
+
 //-----------------------------------------------------------------------
 //
 // SETTERS

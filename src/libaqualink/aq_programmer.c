@@ -21,7 +21,7 @@
 
 #include "cross-platform/time.h"
 #include "cross-platform/threads.h"
-#include "hardware/buttons/buttons.h"
+#include "hardware/buttons/rs_buttons.h"
 #include "logging/logging.h"
 #include "serial/aq_serial.h"
 #include "serial/aq_serial_types.h"
@@ -840,7 +840,7 @@ int set_aqualink_light_colormode(void* ptr)
 	int iOff = atoi(&buf[15]);
 	float pmode = atof(&buf[20]);
 
-	if (btn < 0 || btn >= AqualinkButtonCount) {
+	if (btn < FilterPump || btn >= ButtonTypeCount) {
 		ERROR("Can't program light mode on button %d", btn);
 		cleanAndTerminateThread(threadCtrl);
 		return 0;

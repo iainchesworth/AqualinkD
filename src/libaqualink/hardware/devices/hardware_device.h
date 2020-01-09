@@ -1,5 +1,5 @@
-#ifndef AQ_HARDWARE_DEVICES_H_
-#define AQ_HARDWARE_DEVICES_H_
+#ifndef AQ_HARDWARE_DEVICE_H_
+#define AQ_HARDWARE_DEVICE_H_
 
 #include "hardware/devices/generic/generic_device.h"
 
@@ -20,4 +20,4 @@ typedef struct tagHardwareDevice
 }
 HardwareDevice;
 
-#endif // AQ_HARDWARE_DEVICES_H_
+#endif // AQ_HARDWARE_DEVICE_H_

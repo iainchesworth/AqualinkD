@@ -77,4 +77,17 @@ extern const char CONFIG_BOOL_DEBUG_RSPROTOCOL_PACKETS[];
 extern const char CONFIG_BOOL_LOG_RAW_RS_BYTES[];
 extern const char CONFIG_STR_LOG_RAW_RS_BYTES_LOGFILE[];
 
+extern const char CONFIG_STR_BUTTON_FILTERPUMP_LABEL[];
+extern const char CONFIG_STR_BUTTON_SPAMODE_LABEL[];
+extern const char CONFIG_STR_BUTTON_AUX1_LABEL[];
+extern const char CONFIG_STR_BUTTON_AUX2_LABEL[];
+extern const char CONFIG_STR_BUTTON_AUX3_LABEL[];
+extern const char CONFIG_STR_BUTTON_AUX4_LABEL[];
+extern const char CONFIG_STR_BUTTON_AUX5_LABEL[];
+extern const char CONFIG_STR_BUTTON_AUX6_LABEL[];
+extern const char CONFIG_STR_BUTTON_AUX7_LABEL[];
+extern const char CONFIG_STR_BUTTON_POOLHEATER_LABEL[];
+extern const char CONFIG_STR_BUTTON_SPAHEATER_LABEL[];
+extern const char CONFIG_STR_BUTTON_SOLARHEATER_LABEL[];
+
 #endif // AQ_CONFIG_PRIVATE_H_

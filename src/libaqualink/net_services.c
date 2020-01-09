@@ -20,7 +20,7 @@
 #include <string.h>
 
 #include "config/config_helpers.h"
-#include "hardware/buttons/buttons.h"
+#include "hardware/buttons/rs_buttons.h"
 #include "logging/logging.h"
 #include "json/json_messages.h"
 #include "json/json_string_utils.h"

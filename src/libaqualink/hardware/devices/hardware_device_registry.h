@@ -3,11 +3,11 @@
 
 #include <stdbool.h>
 
-#include "hardware/devices/hardware_devices.h"
+#include "hardware/devices/hardware_device.h"
 
 struct DevicesRegistry_ListNode
 {
-	HardwareDevice device;
+	HardwareDevice* device;
 	struct DevicesRegistry_ListNode* next;
 };
 typedef struct DevicesRegistry_ListNode DevicesRegistry_ListNode;
