@@ -31,6 +31,7 @@ set(SOURCE_FILES
   hardware/devices/hardware_device_types.c
   hardware/devices/hardware_device_utils.c
   hardware/devices/generic/generic_device.c
+  hardware/devices/pda-remote/pda_remote.c
   hardware/heaters/heaters.c
   hardware/simulators/rs_keypadsimulator.c
   json/json_messages.c
@@ -49,13 +50,19 @@ set(SOURCE_FILES
   logging/logging_sink_registry.c
   logging/logging_utils.c
   mqtt/mqtt_utils.c
+  serial/message-processors/aq_serial_message_ack.c
+  serial/message-processors/aq_serial_message_msg_long.c
+  serial/message-processors/aq_serial_message_probe.c
+  serial/message-processors/aq_serial_message_status.c
+  serial/message-processors/aq_serial_message_unknown.c
+  serial/serializers/aq_serial_message_ack_serializer.c
+  serial/serializers/aq_serial_message_msg_long_serializer.c
+  serial/serializers/aq_serial_message_probe_serializer.c
+  serial/serializers/aq_serial_message_status_serializer.c
+  serial/serializers/aq_serial_message_unknown_serializer.c
   serial/aq_serial.c 
   serial/aq_serial_checksums.c 
   serial/aq_serial_data_logger.c
-  serial/aq_serial_message_ack.c
-  serial/aq_serial_message_probe.c
-  serial/aq_serial_message_status.c
-  serial/aq_serial_message_unknown.c
   serial/aq_serial_messages.c
   serial/aq_serial_statemachine.c
   serial/aq_serial_threaded.c

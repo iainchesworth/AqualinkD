@@ -2,11 +2,12 @@
 
 #include <assert.h>
 #include "logging/logging.h"
+#include "serial/message-processors/aq_serial_message_ack.h"
+#include "serial/message-processors/aq_serial_message_msg_long.h"
+#include "serial/message-processors/aq_serial_message_probe.h"
+#include "serial/message-processors/aq_serial_message_status.h"
+#include "serial/message-processors/aq_serial_message_unknown.h"
 #include "aq_serial.h"
-#include "aq_serial_message_ack.h"
-#include "aq_serial_message_probe.h"
-#include "aq_serial_message_status.h"
-#include "aq_serial_message_unknown.h"
 #include "aq_serial_types.h"
 #include "utils.h"
 
@@ -37,6 +38,7 @@ bool process_aqualink_packet(unsigned char* rawPacket, unsigned int length)
 
 	case CMD_MSG_LONG:
 		DEBUG("Received CMD_MSG_LONG packet");
+		returnCode = process_msg_long_packet(rawPacket, length);
 		break;
 
 	case CMD_PROBE:

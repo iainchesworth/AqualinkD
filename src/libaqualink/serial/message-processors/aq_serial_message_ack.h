@@ -2,7 +2,8 @@
 #define AQ_SERIAL_MESSAGE_ACK_H_
 
 #include <stdbool.h>
-#include "aq_serial_types.h"
+
+#include "serial/aq_serial_types.h"
 
 bool process_ack_packet(unsigned char* rawPacket, unsigned int length);
 

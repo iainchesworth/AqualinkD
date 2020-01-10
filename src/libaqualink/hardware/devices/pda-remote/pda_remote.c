@@ -1,4 +1,4 @@
-#include "generic_device.h"
+#include "pda_remote.h"
 
 #include <stdlib.h>
 
@@ -7,12 +7,16 @@
 #include "hardware/devices/hardware_device_registry.h"
 #include "logging/logging.h"
 
-void add_generic_device_to_hardware_registry(const DeviceId device_id)
+static const char PDA_REMOTE_DEVICE_NAME[] = "PDA Remote";
+
+void add_pda_remote_to_hardware_registry(const DeviceId device_id)
 {
 	HardwareDevice* this_device = (HardwareDevice*)malloc(sizeof(HardwareDevice));
 
 	this_device->Type = Generic;
-	this_device->Info.gdi.Id = device_id;
+	
+	this_device->Info.prdi.Id = device_id;
+	this_device->Info.prdi.Name = PDA_REMOTE_DEVICE_NAME;
 
 	if (does_device_exist_in_hardware_registry(&(aqualink_master_controller.Devices), this_device))
 	{

@@ -2,15 +2,18 @@
 #define AQ_HARDWARE_DEVICE_H_
 
 #include "hardware/devices/generic/generic_device.h"
+#include "hardware/devices/pda-remote/pda_remote.h"
 
 enum DeviceTypes
 {
-	Generic
+	Generic,
+	Pda_Remote
 };
 
 union DeviceInfoTypes
 {
 	GenericDeviceInfo gdi;
+	PdaRemote_DeviceInfo prdi;
 };
 
 typedef struct tagHardwareDevice

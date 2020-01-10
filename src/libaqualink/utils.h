@@ -3,16 +3,6 @@
 
 #include <stdbool.h>
 
-#ifndef EXIT_SUCCESS
-#define EXIT_FAILURE 1
-#define EXIT_SUCCESS 0
-#endif
-
-#ifndef TRUE
-#define TRUE 1
-#define FALSE 0
-#endif
-
 #define MAXLEN 256
 
 #define round(a) (int) (a+0.5)				// 0 decimal places

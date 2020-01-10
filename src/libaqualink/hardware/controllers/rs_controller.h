@@ -57,7 +57,7 @@ typedef struct tagAqualinkRS
 	Heater SolarHeater;
 
 	// Keypad Simulator
-	AqualinkRS_KeypadSimulator Simulator;
+	AqualinkRS_KeypadSimulator* Simulator;
 
 	//==============================================
 	//

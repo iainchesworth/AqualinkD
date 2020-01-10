@@ -74,12 +74,13 @@ static void configure_aqualinkrs_controller_buttons(AqualinkRS* controller)
 void initialise_aqualinkrs_controller(AqualinkRS* controller, AqualinkRS_Variants variant)
 {
 	assert(0 != controller);
+	assert(0 != controller->Simulator);
 
 	controller->Variant = variant;
 	controller->State = Auto;
 	controller->Mode = Pool;
 
-	controller->Simulator.Id = CFG_DeviceId();
+	controller->Simulator->Id = CFG_DeviceId();
 
 	configure_aqualinkrs_controller_buttons(controller);
 }

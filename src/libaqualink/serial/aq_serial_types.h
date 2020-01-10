@@ -8,7 +8,7 @@
 #define STX  0x02
 #define ETX  0x03
 */
-typedef enum tagSerialData_JandyKeyBytes
+typedef enum tagSerialData_JandyKeyBytes : unsigned char
 {
 	NUL = 0x00,
 	DLE = 0x10,
@@ -18,7 +18,7 @@ typedef enum tagSerialData_JandyKeyBytes
 SerialData_JandyKeyBytes;
 
 /* DESTINATIONS */
-typedef enum tagSerialData_Destinations
+typedef enum tagSerialData_Destinations : unsigned char
 {
 	Master_0 = 0x00,
 	Master_1 = 0x01,
@@ -32,10 +32,17 @@ typedef enum tagSerialData_Destinations
 
 	DualSpaSideSwitch_InterfaceBoard = 0x10,
 
+	Unknown_0x18 = 0x18,
+
 	SPA_Remote_0 = 0x20,
 	SPA_Remote_1 = 0x21,
 	SPA_Remote_2 = 0x22,
 	SPA_Remote_3 = 0x23,
+
+	Unknown_1_0x28 = 0x28,
+	Unknown_2_0x29 = 0x29,
+	Unknown_3_0x2A = 0x2A,
+	Unknown_4_0x2B = 0x2B,
 
 	Aqualink_0 = 0x30,
 	Aqualink_1 = 0x31,
@@ -52,6 +59,8 @@ typedef enum tagSerialData_Destinations
 	OneTouch_2 = 0x42,
 	OneTouch_3 = 0x43,
 
+	Unknown_0x48 = 0x48,
+
 	SWG_0 = 0x50,
 	SWG_1 = 0x51,
 	SWG_2 = 0x52,
@@ -67,6 +76,16 @@ typedef enum tagSerialData_Destinations
 	PDA_Remote_2 = 0x62,
 	PDA_Remote_3 = 0x63,
 
+	Unknown_1_0x68 = 0x68,
+	Unknown_2_0x69 = 0x69,
+	Unknown_3_0x6A = 0x6A,
+	Unknown_4_0x6B = 0x6B,
+
+	Unknown_1_0x70 = 0x70,
+	Unknown_2_0x71 = 0x71,
+	Unknown_3_0x72 = 0x72,
+	Unknown_4_0x73 = 0x73,
+
 	Jandy_VSP_ePump_0 = 0x78,
 	Jandy_VSP_ePump_1 = 0x79,
 	Jandy_VSP_ePump_2 = 0x7A,
@@ -77,17 +96,20 @@ typedef enum tagSerialData_Destinations
 	ChemLink_2 = 0x82,
 	ChemLink_3 = 0x83,
 
+	Unknown_0_0x88 = 0x88,
+	Unknown_1_0x89 = 0x89,
+
 	iAqualink_0 = 0xA0,
 	iAqualink_1 = 0xA1,
 	iAqualink_2 = 0xA2,
 	iAqualink_3 = 0xA3,
 
-	Unknown_Device
+	Unknown_Device = 0xFF
 }
 SerialData_Destinations;
 
 /* COMMANDS */
-typedef enum tagSerialData_Commands
+typedef enum tagSerialData_Commands : unsigned char
 {
 	CMD_PROBE = 0x00,
 	CMD_ACK = 0x01,
@@ -116,7 +138,7 @@ typedef enum tagSerialData_Commands
 SerialData_Commands;
 
 /* ACK RETURN COMMANDS */
-typedef enum tagSerialData_AckTypes
+typedef enum tagSerialData_AckTypes : unsigned char
 {
 	ACK_NORMAL = 0x00,
 	ACK_SCREEN_BUSY = 0x01,			// Seems to be busy but can cache a message,
@@ -126,7 +148,7 @@ typedef enum tagSerialData_AckTypes
 }
 SerialData_AckTypes;
 
-typedef enum tagAQ_LED_States
+typedef enum tagAQ_LED_States : unsigned char
 {
 	ON = 0,
 	OFF = 1,

@@ -10,7 +10,7 @@ typedef bool (*KeypadSimulator_ProbeMessageHandler)();
 
 typedef struct tagAqualinkRS_KeypadSimulator
 {
-	bool IsEnabled;
+	volatile bool IsEnabled;
 
 	DeviceId Id;
 

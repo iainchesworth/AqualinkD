@@ -847,7 +847,7 @@ int main(int argc, char* argv[])
 
 	// Initialise the master controller (and turn on the simulator).
 	initialise_aqualinkrs_controller(&aqualink_master_controller, RS8);
-	enable_aqualinkrs_keypadsimulator(&(aqualink_master_controller.Simulator));
+	enable_aqualinkrs_keypadsimulator(aqualink_master_controller.Simulator);
 
 	INFO("%s %s", AQUALINKD_NAME, AQUALINKD_VERSION);
 
