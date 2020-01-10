@@ -64,8 +64,10 @@ set(SOURCE_FILES
   serial/aq_serial_checksums.c 
   serial/aq_serial_data_logger.c
   serial/aq_serial_messages.c
-  serial/aq_serial_statemachine.c
+  serial/aq_serial_reader.c
   serial/aq_serial_threaded.c
+  serial/aq_serial_writer.c
+  serial/aq_serial_writer_queue.c
   string/string_utils.c
   threads/thread_utils.c
   web/aq_web.c

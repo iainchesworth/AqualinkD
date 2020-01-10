@@ -1,4 +1,4 @@
-#include "aq_serial_statemachine.h"
+#include "aq_serial_reader.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -155,10 +155,7 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 					rawPacketBytes[packetPayloadBytesRead + 2] = prevByte;  // Store the 0x10 byte value (i.e. same as the DTE)
 					++packetPayloadBytesRead;
 
-					///FIXME - don't store the NUL byte because it's not a "packet" byte per se.
-
-					// rawPacketBytes[packetPayloadBytesRead + 2] = byte;		// Store the 0x00 byte value (i.e. same as the NUL)
-					// ++packetPayloadBytesRead;
+					// Don't store the NUL byte because it's not a "packet" byte per se.
 
 					prevByte = byte;
 				}

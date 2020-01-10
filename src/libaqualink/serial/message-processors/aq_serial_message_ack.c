@@ -11,6 +11,7 @@
 #include "logging/logging.h"
 #include "serial/serializers/aq_serial_message_ack_serializer.h"
 #include "serial/aq_serial_types.h"
+#include "serial/aq_serial_writer_queue.h"
 #include "utils.h"
 
 bool handle_ack_packet(AQ_Ack_Packet processedPacket)
@@ -206,7 +207,7 @@ bool process_ack_packet(unsigned char* rawPacket, unsigned int length)
 
 bool send_ack_packet(SerialData_AckTypes ackType, unsigned char commandBeingAcked)
 {
-	unsigned char rawBytes[AQ_ACK_PACKET_LENGTH];
+	bool packet_can_be_sent_successfully = false;
 	AQ_Ack_Packet ackPacket;
 
 	ackPacket.Header_DLE = DLE;
@@ -222,9 +223,10 @@ bool send_ack_packet(SerialData_AckTypes ackType, unsigned char commandBeingAcke
 	ackPacket.Terminator_DLE = DLE;
 	ackPacket.Terminator_ETX = ETX;
 
-	serialize_ack_packet(&ackPacket, rawBytes, AQ_ACK_PACKET_LENGTH);
+	if(!serial_writer_enqueue_ack_message(&ackPacket))
+	{
+		packet_can_be_sent_successfully = true;
+	}
 
-	///FIXME Send this message out on the wire!
-
-	return false;	
+	return packet_can_be_sent_successfully;
 }

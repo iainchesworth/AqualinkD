@@ -1,17 +1,7 @@
-#ifndef AQ_SERIAL_STATEMACHINE_H_
-#define AQ_SERIAL_STATEMACHINE_H_
+#ifndef AQ_SERIAL_READER_H_
+#define AQ_SERIAL_READER_H_
 
 #include "cross-platform/serial.h"
-
-typedef enum tagSerialThread_States
-{
-	ST_INIT = 0,
-	ST_READPACKET = 1,
-	ST_WRITEPACKET = 2,
-	ST_RECOVERY = 3,
-	ST_TERMINATE = 4
-}
-SerialThread_States;
 
 typedef enum tagSerialThread_ReadStates
 {
@@ -26,4 +16,4 @@ SerialThread_ReadStates;
 
 int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet);
 
-#endif // AQ_SERIAL_STATEMACHINE_H_
+#endif // AQ_SERIAL_READER_H_

@@ -25,7 +25,7 @@
 #include "aq_serial.h"
 #include "aq_serial_checksums.h"
 #include "aq_serial_data_logger.h"
-#include "aq_serial_statemachine.h"
+#include "aq_serial_reader.h"
 #include "aq_serial_types.h"
 #include "utils.h"
 

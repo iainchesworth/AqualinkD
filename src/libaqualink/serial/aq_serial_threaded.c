@@ -11,13 +11,16 @@
 #include "aq_serial.h"
 #include "aq_serial_data_logger.h"
 #include "aq_serial_messages.h"
-#include "aq_serial_statemachine.h"
+#include "aq_serial_reader.h"
+#include "aq_serial_writer_queue.h"
 #include "utils.h"
 
 int serial_thread(void* termination_handler_ptr)
 {
 	TRACE("Serial worker thread is starting");
 	
+	const int MAXIMUM_NUMBER_OF_WRITER_ENTRIES = 10;
+
 	SerialThread_States state = ST_INIT;
 	SerialDevice serial_device = SERIALDEVICE_INVALID;
 
@@ -41,6 +44,10 @@ int serial_thread(void* termination_handler_ptr)
 				{
 					ERROR("Failed configuring serial port for communications");
 				}
+				else if (!initialise_serial_writer_send_queue(MAXIMUM_NUMBER_OF_WRITER_ENTRIES))
+				{
+					WARN("Failed initialising the serial writer queue; can receive but not send packets");
+				}
 				else
 				{
 					// Initialise the serial data logger, if required.
@@ -63,7 +70,7 @@ int serial_thread(void* termination_handler_ptr)
 				memset(&packet, 0, AQ_MAXPKTLEN);
 
 				const int packet_length = serial_getnextpacket(serial_device, packet);
-				
+
 				if (0 > packet_length)
 				{
 					// There was an error while reading data from the serial port (resulting in a -1 error code).
@@ -83,9 +90,15 @@ int serial_thread(void* termination_handler_ptr)
 					TRACE("Transition: ST_READPACKET --> ST_RECOVERY");
 					state = ST_RECOVERY;
 				}
+				else if (MAXIMUM_NUMBER_OF_WRITER_ENTRIES != serial_writer_send_queue_empty_entries())
+				{
+					// There is at least one or more packets of data to send.  Let's do that.
+					TRACE("Transition: ST_READPACKET --> ST_WRITEPACKET");
+					state = ST_WRITEPACKET;
+				}
 				else
 				{
-					// Do nothing here as the packet has been processed.
+					// Everything's done!
 				}
 			}
 			break;
@@ -93,6 +106,8 @@ int serial_thread(void* termination_handler_ptr)
 		case ST_WRITEPACKET:
 			TRACE("ST_WRITEPACKET");
 			{
+				TRACE("Transition: ST_WRITEPACKET --> ST_READPACKET");
+				state = ST_READPACKET;
 			}
 			break;
 
