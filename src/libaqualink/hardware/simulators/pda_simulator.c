@@ -6,6 +6,7 @@
 
 #include "cross-platform/threads.h"
 #include "logging/logging.h"
+#include "serial/serializers/aq_serial_message_msg_long_serializer.h"
 
 Aqualink_PDASimulator aqualink_pda_simulator =
 {
@@ -19,8 +20,11 @@ Aqualink_PDASimulator aqualink_pda_simulator =
 	.Id = 0xFF,
 
 	.Initialise = &pda_simulator_initialise,
+	.AckMessageHandler = 0,
+	.MsgLongMessageHandler = &pda_simulator_msglongmessagehandler,
 	.ProbeMessageHandler = 0,
-	.MsgLongMessageHandler = &pda_simulator_msglongmessagehandler
+	.StatusMessageHandler = 0,
+	.UnknownMessageHandler = 0
 };
 
 static bool pda_simulator_initmutex()
@@ -88,7 +92,7 @@ bool pda_simulator_initialise()
 	return aqualink_pda_simulator.Config.IsInitialised;
 }
 
-bool pda_simulator_msglongmessagehandler()
+bool pda_simulator_msglongmessagehandler(AQ_Msg_Long_Packet* packet)
 {
 	bool handled_msglong_message = false;
 

@@ -7,12 +7,13 @@
 #include "cross-platform/threads.h"
 #include "logging/logging.h"
 #include "serial/message-processors/aq_serial_message_ack.h"
+#include "serial/serializers/aq_serial_message_probe_serializer.h"
 #include "serial/aq_serial_types.h"
 
 AqualinkRS_KeypadSimulator aqualink_keypad_simulator =
 {
-	.Config = 
-	{ 
+	.Config =
+	{
 		.IsInitialised = false,
 		// .SimulatorAccessMutex
 	},
@@ -24,7 +25,11 @@ AqualinkRS_KeypadSimulator aqualink_keypad_simulator =
 	.MenuKeypad = { Back, 1, 2, 3, 4, 5, 6 },
 
 	.Initialise = &rs_keypadsimulator_initialise,
-	.ProbeMessageHandler = &rs_keypadsimulator_probemessagehandler
+	.AckMessageHandler = 0,
+	.MsgLongMessageHandler = 0,
+	.ProbeMessageHandler = &rs_keypadsimulator_probemessagehandler,
+	.StatusMessageHandler = 0,
+	.UnknownMessageHandler = 0
 };
 
 static bool rs_keypadsimulator_initmutex()
@@ -92,7 +97,7 @@ bool rs_keypadsimulator_initialise()
 	return aqualink_keypad_simulator.Config.IsInitialised;
 }
 
-bool rs_keypadsimulator_probemessagehandler()
+bool rs_keypadsimulator_probemessagehandler(AQ_Probe_Packet* packet)
 {
 	bool handled_probe_message = false;
 
