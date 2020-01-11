@@ -7,6 +7,8 @@
 
 #include "logging/logging.h"
 
+DevicesRegistry aqualink_master_controller_device_registry;
+
 bool does_device_exist_in_hardware_registry(DevicesRegistry* registry, HardwareDevice* device)
 {
 	assert(0 != registry);
@@ -18,7 +20,7 @@ bool does_device_exist_in_hardware_registry(DevicesRegistry* registry, HardwareD
 
 	if (0 == registry->device_count)
 	{
-		TRACE("Desired device (%02x) was not found in device registry as there are no devices in the registry", desired_device_id);
+		TRACE("Desired device (0x%02x) was not found in device registry as there are no devices in the registry", desired_device_id);
 	}
 	else
 	{
@@ -30,7 +32,7 @@ bool does_device_exist_in_hardware_registry(DevicesRegistry* registry, HardwareD
 			const DeviceId current_device_id = extract_device_id_from_device_structure(device_node->device);
 			if (current_device_id == desired_device_id)
 			{
-				TRACE("Desired device (%02x) already exists in device registry", desired_device_id);
+				TRACE("Desired device (0x%02x) already exists in device registry", desired_device_id);
 				device_exists = true;
 
 				// Terminate the search loop.
@@ -43,7 +45,7 @@ bool does_device_exist_in_hardware_registry(DevicesRegistry* registry, HardwareD
 			}
 		}
 
-		TRACE("Desired device (%02x) was not found in device registry", desired_device_id);
+		TRACE("Desired device (0x%02x) was %s in the device registry", desired_device_id, (device_exists) ? "found" : "NOT found");
 	}
 
 	return device_exists;

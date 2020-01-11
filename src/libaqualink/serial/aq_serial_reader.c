@@ -42,7 +42,7 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 				// Clear the byte buffer to prevent any unintended data being copied.
 				unsigned char byte = 0;
 
-				// Get the next byte....note that this is non-blocking and will fall through.
+				// Get the next byte....note that this is blocking and wait for data to appear.
 				bytesRead = read_from_serial_device(serial_device, &byte, 1);
 
 				if ((bytesRead < 0) && ((EAGAIN == errno) || (EWOULDBLOCK == errno)))
@@ -57,8 +57,8 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 				else if ((bytesRead < 0) && (EBADF == errno))
 				{
 					// The file descriptor seems to have closed...that's bad but nothing can be done.
-					TRACE("Transition: ST_WAITFOR_PACKETSTART --> ST_ERROR_OCCURRED");
-					state = ST_ERROR_OCCURRED;
+					TRACE("Transition: ST_WAITFOR_PACKETSTART --> ST_READERROR_OCCURRED");
+					state = ST_READERROR_OCCURRED;
 				}
 				else if ((1 == bytesRead) && (DLE == byte))
 				{
@@ -103,8 +103,8 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 					DEBUG("            %d bytes read in last read", bytesRead);
 					DEBUG("            0x%02x read in last read", byte);
 
-					TRACE("Transition: ST_WAITFOR_PACKETSTART --> ST_ERROR_OCCURRED");
-					state = ST_ERROR_OCCURRED;
+					TRACE("Transition: ST_WAITFOR_PACKETSTART --> ST_READERROR_OCCURRED");
+					state = ST_READERROR_OCCURRED;
 				}
 			}
 			break;
@@ -130,8 +130,8 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 				else if ((bytesRead < 0) && (EBADF == errno))
 				{
 					// The file descriptor seems to have closed...that's bad but nothing can be done.
-					TRACE("Transition: ST_RETRY_RECEIVEPAYLOAD --> ST_ERROR_OCCURRED");
-					state = ST_ERROR_OCCURRED;
+					TRACE("Transition: ST_RECEIVE_PACKETPAYLOAD --> ST_READERROR_OCCURRED");
+					state = ST_READERROR_OCCURRED;
 				}
 				else if ((1 == bytesRead) && (DLE == byte))
 				{
@@ -201,8 +201,8 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 
 					// The payload is too long.  Transition to error state and throw it all away.
 					WARN("Serial read too long");					
-					TRACE("Transition: ST_RECEIVE_PACKETPAYLOAD --> ST_ERROR_OCCURRED");
-					state = ST_ERROR_OCCURRED;
+					TRACE("Transition: ST_RECEIVE_PACKETPAYLOAD --> ST_READERROR_OCCURRED");
+					state = ST_READERROR_OCCURRED;
 				}
 				else
 				{
@@ -215,8 +215,8 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 					DEBUG("            %d bytes read in last read", bytesRead);
 					DEBUG("            0x%02x read in last read", byte);
 
-					TRACE("Transition: ST_RECEIVE_PACKETPAYLOAD --> ST_ERROR_OCCURRED");
-					state = ST_ERROR_OCCURRED;
+					TRACE("Transition: ST_RECEIVE_PACKETPAYLOAD --> ST_READERROR_OCCURRED");
+					state = ST_READERROR_OCCURRED;
 				}
 			}
 			break;
@@ -230,8 +230,8 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 				{
 					log_serial_packet(rawPacketBytes, AQ_MAXPKTLEN, true);
 					WARN("Serial read too short");
-					TRACE("Transition: ST_RETRY_RECEIVEPAYLOAD --> ST_ERROR_OCCURRED");
-					state = ST_ERROR_OCCURRED;
+					TRACE("Transition: ST_RETRY_RECEIVEPAYLOAD --> ST_READERROR_OCCURRED");
+					state = ST_READERROR_OCCURRED;
 				}
 				else
 				{
@@ -255,8 +255,8 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 
 					// The packet is too small...something has gone wrong so reject it.
 					WARN("Serial read too short");
-					TRACE("Transition: ST_VALIDATE_PACKETPAYLOAD --> ST_ERROR_OCCURRED");
-					state = ST_ERROR_OCCURRED;
+					TRACE("Transition: ST_VALIDATE_PACKETPAYLOAD --> ST_READERROR_OCCURRED");
+					state = ST_READERROR_OCCURRED;
 				}
 				else if (!checksumIsValid)
 				{
@@ -264,8 +264,8 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 
 					// The checksum for the packet is incorrect...something has gone wrong so reject it.
 					WARN((isPentairPacket) ? "Serial read bad Pentair checksum, ignoring" : "Serial read bad Jandy checksum, ignoring");
-					TRACE("Transition: ST_VALIDATE_PACKETPAYLOAD --> ST_ERROR_OCCURRED");
-					state = ST_ERROR_OCCURRED;
+					TRACE("Transition: ST_VALIDATE_PACKETPAYLOAD --> ST_READERROR_OCCURRED");
+					state = ST_READERROR_OCCURRED;
 				}
 				else
 				{
@@ -278,8 +278,8 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 			}
 			break;
 
-		case ST_ERROR_OCCURRED:
-			TRACE("ST_ERROR_OCCURRED");
+		case ST_READERROR_OCCURRED:
+			TRACE("ST_READERROR_OCCURRED");
 			ERROR("Something has happened and the AQ_Serial packet process has entered an error state!");
 			break;
 
@@ -290,12 +290,12 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 		default:
 			TRACE("UNKNOWN STATE");
 			ERROR("Something has happened and the AQ_Serial packet process has entered an unknown state!");
-			TRACE("Transition: UNKNOWN STATE --> ST_ERROR_OCCURRED");
-			state = ST_ERROR_OCCURRED;
+			TRACE("Transition: UNKNOWN STATE --> ST_READERROR_OCCURRED");
+			state = ST_READERROR_OCCURRED;
 			break;
 		}
 	} 
-	while ((ST_TERMINATE_READPACKET != state) && (ST_ERROR_OCCURRED != state));
+	while ((ST_TERMINATE_READPACKET != state) && (ST_READERROR_OCCURRED != state));
 
 	// Return the number of bytes read.  Note this is set to 0 or -1 for error states.
 	return returnCodeOrBytesRead;

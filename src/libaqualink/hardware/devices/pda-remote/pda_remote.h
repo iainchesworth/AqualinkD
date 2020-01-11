@@ -10,6 +10,4 @@ typedef struct tagPdaRemote_DeviceInfo
 }
 PdaRemote_DeviceInfo;
 
-void add_pda_remote_to_hardware_registry(const DeviceId device_id);
-
 #endif // AQ_PDA_REMOTE_H_

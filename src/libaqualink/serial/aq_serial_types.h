@@ -140,11 +140,11 @@ SerialData_Commands;
 /* ACK RETURN COMMANDS */
 typedef enum tagSerialData_AckTypes : unsigned char
 {
-	ACK_NORMAL = 0x00,
-	ACK_SCREEN_BUSY = 0x01,			// Seems to be busy but can cache a message,
+	ACK_NORMAL			  = 0x00,
+	ACK_SCREEN_BUSY		  = 0x01,	// Seems to be busy but can cache a message,
 	ACK_SCREEN_BUSY_BLOCK = 0x03,	// Seems to be don't send me shit.
-	ACK_PDA = 0x40,
-	ACK_UNKNOWN_TYPE_1 = 0x80		// Unknown ACK type - found in serial traffic from a OneTouch
+	ACK_PDA				  = 0x40,
+	ACK_UNKNOWN_TYPE_1	  = 0x80	// Unknown ACK type - found in serial traffic from a OneTouch
 }
 SerialData_AckTypes;
 

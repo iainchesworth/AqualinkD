@@ -6,25 +6,29 @@
 
 #include "config/config_helpers.h"
 #include "cross-platform/serial.h"
-#include "hardware/aqualink_master_controller.h"
+#include "hardware/controllers/rs_controller.h"
 #include "logging/logging.h"
 #include "serial/serializers/aq_serial_message_probe_serializer.h"
-#include "serial/aq_serial_types.h"
 #include "utils.h"
 
 bool handle_probe_packet(AQ_Probe_Packet processedPacket)
 {
 	bool handled_probe_packet = false;
 
-	// The controller has issued a probe request, record it (along with the time it was sent).
-	record_probe_event(&aqualink_master_controller, processedPacket.Destination);
+	//
+	// PROBE messages are only ever sent by the master so we don't need to do any of the normal
+	// checks that we would do for other message types.
+	//
 
-	// Do anything custom that is required for each probe type (e.g. handle simulator responses).
-	const DeviceId simulator_id = aqualink_master_controller.Simulator->Id;
-	if ((aqualink_master_controller.Simulator->IsEnabled) && (simulator_id == processedPacket.Destination))
+	if (rs_controller_was_packet_to_or_from_rs6_simulator(processedPacket.Destination))
 	{
-		TRACE("Received PROBE for the Simulator --> id: 0x%02x", processedPacket.Destination);
-		handled_probe_packet = aqualink_master_controller.Simulator->ProbeMessageHandler(&aqualink_master_controller);
+		TRACE("Received PROBE for the RS6 Keypad Simulator --> id: 0x%02x", processedPacket.Destination);
+		handled_probe_packet = rs_controller_rs6_simulator_handle_probe_packet(&processedPacket);
+	}
+	else if (rs_controller_was_packet_to_or_from_pda_simulator(processedPacket.Destination))
+	{
+		TRACE("Received PROBE for the PDA Simulator --> id: 0x%02x", processedPacket.Destination);
+		handled_probe_packet = rs_controller_pda_simulator_handle_probe_packet(&processedPacket);
 	}
 	else
 	{
@@ -159,6 +163,9 @@ bool handle_probe_packet(AQ_Probe_Packet processedPacket)
 
 		handled_probe_packet = true;
 	}
+
+	// Last thing to do is register this packet with the controller as the "previous packet".
+	rs_controller_record_message_event(processedPacket.Command, processedPacket.Destination);
 
 	return handled_probe_packet;
 }

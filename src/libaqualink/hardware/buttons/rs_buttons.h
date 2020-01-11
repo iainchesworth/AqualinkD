@@ -68,9 +68,4 @@ typedef enum AqualinkRS_KeypadMenuButtonTypes
 }
 AqualinkRS_KeypadMenuButtonTypes;
 
-// Forward declarations.
-struct aqualinkdata;
-
-void init_buttons(struct aqualinkdata* aqdata);
-
 #endif // AQ_RS_BUTTONS_H_

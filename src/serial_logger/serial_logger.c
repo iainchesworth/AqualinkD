@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2017 Shaun Feakes - All rights reserved
  *
@@ -27,11 +26,11 @@
 #include "config/config_helpers.h"
 #include "cross-platform/signals.h"
 #include "cross-platform/threads.h"
-#include "hardware/aqualink_master_controller.h"
 #include "hardware/controllers/rs_controller.h"
 #include "logging/logging.h"
 #include "serial/aq_serial_threaded.h"
 #include "threads/thread_utils.h"
+#include "version/version.h"
 
 #include "options.h"
 
@@ -54,8 +53,12 @@ int main(int argc, char* argv[])
 	handleOptions(argc, argv);
 
 	// Initialise the master controller (and turn on the simulator).
-	initialise_aqualinkrs_controller(&aqualink_master_controller, RS8);
+	rs_controller_initialise(RS8);
 
+	NOTICE("AqualinkD - Serial Logger v%s", AQUALINKD_VERSION);
+	NOTICE("");
+	NOTICE("Logging serial information...");
+	
 	//
 	// SERIAL LOGGER MAIN LOOP
 	//
@@ -84,6 +87,7 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
+			rs_controller_print_detected_devices();
 			ran_successfully = EXIT_SUCCESS;
 		}
 	}
@@ -92,146 +96,3 @@ int main(int argc, char* argv[])
 
 	return ran_successfully;
 }
-
-#ifdef OLD
-
-// printf("AqualinkD %s\n", VERSION);
-
-/*
-if (argc < 2 || access(argv[1], F_OK) == -1) {
-	fprintf(stderr, "ERROR, first param must be valid serial port, ie:-\n\t%s /dev/ttyUSB0\n\n", argv[0]);
-	fprintf(stderr, "Optional parameters are -d (debug) & -p <number> (log # packets) & -i <ID> & -r (raw) ie:=\n\t%s /dev/ttyUSB0 -d -p 1000 -i 0x08\n\n", argv[0]);
-	return 1;
-
-	///FIXME support : -p <number> (log # packets) & -i <ID> & -r (raw)
-
-
-
-	}
-	*/
-
-
-
-	if (_playback_file) {
-		rs_fd = open(argv[1], O_RDONLY | O_NOCTTY | O_NONBLOCK | O_NDELAY);
-		if (rs_fd < 0) {
-			ERROR("Unable to open file: %s\n", argv[1]);
-			displayLastSystemError(argv[1]);
-			return -1;
-		}
-	}
-	else {
-		rs_fd = init_serial_port(argv[1]);
-	}
-
-	signal(SIGINT, intHandler);
-	signal(SIGTERM, intHandler);
-
-	NOTICE("Logging serial information!");
-	if (logLevel < LOG_DEBUG)
-		printf("Please wait.");
-
-	while (_keepRunning == true) {
-		if (rs_fd < 0) {
-			ERROR("ERROR, serial port disconnect");
-		}
-
-		//packet_length = get_packet(rs_fd, packet_buffer);
-		packet_length = get_packet(rs_fd, packet_buffer);
-
-		if (packet_length == -1) {
-			// Unrecoverable read error. Force an attempt to reconnect.
-			ERROR("ERROR, on serial port");
-			_keepRunning = false;
-		}
-		else if (packet_length == 0) {
-			// Nothing read
-		}
-		else if (packet_length > 0) {
-
-			//TRACE("Received Packet for ID 0x%02hhx of type %s", packet_buffer[PKT_DEST], get_packet_type(packet_buffer, packet_length));
-			if (logLevel > LOG_NOTICE)
-				printPacket(lastID, packet_buffer, packet_length);
-
-			if (getProtocolType(packet_buffer) == PENTAIR) {
-				found = false;
-				for (i = 0; i <= pent_sindex; i++) {
-					if (pent_slog[i].ID == packet_buffer[PEN_PKT_FROM]) {
-						found = true;
-						break;
-					}
-				}
-				if (found == false) {
-					pent_slog[pent_sindex].ID = packet_buffer[PEN_PKT_FROM];
-					pent_slog[pent_sindex].inuse = true;
-					pent_sindex++;
-				}
-			}
-			else {
-				if (packet_buffer[PKT_DEST] != DEV_MASTER) {
-					found = false;
-					for (i = 0; i <= sindex; i++) {
-						if (slog[i].ID == packet_buffer[PKT_DEST]) {
-							found = true;
-							break;
-						}
-					}
-					if (found != true && sindex < SLOG_MAX) {
-						slog[sindex].ID = packet_buffer[PKT_DEST];
-						slog[sindex].inuse = false;
-						sindex++;
-					}
-				}
-
-				if (packet_buffer[PKT_DEST] == DEV_MASTER /*&& packet_buffer[PKT_CMD] == CMD_ACK*/) {
-					//NOTICE("ID is in use 0x%02hhx %x", lastID, lastID);
-					for (i = 0; i <= sindex; i++) {
-						if (slog[i].ID == lastID) {
-							slog[i].inuse = true;
-							break;
-						}
-					}
-				}
-
-				lastID = packet_buffer[PKT_DEST];
-			}
-			received_packets++;
-		}
-
-		if (logPackets != 0 && received_packets >= logPackets) {
-			_keepRunning = false;
-		}
-		if (logLevel < LOG_DEBUG)
-			advance_cursor();
-
-		//sleep(1);
-	}
-
-	DEBUG("\n");
-	if (logLevel < LOG_DEBUG)
-		printf("\n");
-
-	if (sindex >= SLOG_MAX)
-		ERROR("Ran out of storage, some ID's were not captured, please increase SLOG_MAX and recompile");
-	NOTICE("Jandy ID's found");
-	for (i = 0; i < sindex; i++) {
-		//NOTICE("ID 0x%02hhx is %s %s", slog[i].ID, (slog[i].inuse == true) ? "in use" : "not used",
-		//           (slog[i].inuse == false && canUse(slog[i].ID) == true)? " <-- can use for Aqualinkd" : "");
-		if (logLevel >= LOG_DEBUG || slog[i].inuse == true || canUse(slog[i].ID) == true) {
-			NOTICE("ID 0x%02hhx is %s %s", slog[i].ID, (slog[i].inuse == true) ? "in use" : "not used",
-				(slog[i].inuse == false) ? canUseExtended(slog[i].ID) : getDevice(slog[i].ID));
-		}
-	}
-
-	if (pent_sindex > 0) {
-		NOTICE("\n");
-		NOTICE("Pentair ID's found");
-	}
-	for (i = 0; i < pent_sindex; i++) {
-		NOTICE("ID 0x%02hhx is %s %s", pent_slog[i].ID, (pent_slog[i].inuse == true) ? "in use" : "not used",
-			(pent_slog[i].inuse == false) ? canUseExtended(pent_slog[i].ID) : getPentairDevice(pent_slog[i].ID));
-	}
-
-	NOTICE("\n\n");
-
-#endif // OLD

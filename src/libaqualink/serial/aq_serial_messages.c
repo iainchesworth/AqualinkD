@@ -1,6 +1,7 @@
 #include "aq_serial_messages.h"
 
 #include <assert.h>
+
 #include "logging/logging.h"
 #include "serial/message-processors/aq_serial_message_ack.h"
 #include "serial/message-processors/aq_serial_message_msg_long.h"
@@ -13,10 +14,12 @@
 
 bool process_aqualink_packet(unsigned char* rawPacket, unsigned int length)
 {
+	static const int DESTINATION_BYTE_LOCATION = 2;
 	static const int COMMAND_ID_BYTE_LOCATION = 3;
 
 	assert(0 != rawPacket);
-	assert(COMMAND_ID_BYTE_LOCATION <= length);
+	assert(DESTINATION_BYTE_LOCATION < length);
+	assert(COMMAND_ID_BYTE_LOCATION < length);
 
 	bool returnCode = false;
 

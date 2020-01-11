@@ -31,10 +31,8 @@
 #include "version/version.h"
 #include "aqualink.h"
 #include "utils.h"
-#include "domoticz.h"
-#include "aq_mqtt.h"
-#include "aquapure.h"
 
+/*
 const char* getStatus(struct aqualinkdata* aqdata)
 {
 	if (aqdata->active_thread.thread_id != 0 && !aqdata->simulate_panel) 
@@ -423,43 +421,43 @@ int build_device_JSON(struct aqualinkdata* aqdata, int programable_switch1, int 
 			((homekit) ? 2 : 0),
 			((homekit_f) ? roundf(degFtoC(aqdata->swg_ppm)) : aqdata->swg_ppm));
 
-		/*
-	  length += sprintf(buffer+length, "{\"type\": \"value\", \"id\": \"%s\", \"name\": \"%s\", \"state\": \"%s\", \"value\": \"%d\" },",
-									  SWG_PPM_TOPIC,
-									  "Salt Level PPM",
-									  "on",
-									  aqdata->swg_ppm);
-	  */
+	//	
+	  //length += sprintf(buffer+length, "{\"type\": \"value\", \"id\": \"%s\", \"name\": \"%s\", \"state\": \"%s\", \"value\": \"%d\" },",
+		//							  SWG_PPM_TOPIC,
+			//						  "Salt Level PPM",
+				//					  "on",
+					//				  aqdata->swg_ppm);
+	  //
 
 	}
 
 	length += sprintf(buffer + length, "{\"type\": \"temperature\", \"id\": \"%s\", \"name\": \"%s\", \"state\": \"%s\", \"value\": \"%.*f\" },",
 		AIR_TEMP_TOPIC,
-		/*AIR_TEMPERATURE,*/
+		//AIR_TEMPERATURE,
 		"Pool Air Temperature",
 		"on",
 		((homekit) ? 2 : 0),
 		((homekit_f) ? degFtoC(aqdata->air_temp) : aqdata->air_temp));
 	length += sprintf(buffer + length, "{\"type\": \"temperature\", \"id\": \"%s\", \"name\": \"%s\", \"state\": \"%s\", \"value\": \"%.*f\" },",
 		POOL_TEMP_TOPIC,
-		/*POOL_TEMPERATURE,*/
+		//POOL_TEMPERATURE,
 		"Pool Water Temperature",
 		"on",
 		((homekit) ? 2 : 0),
 		((homekit_f) ? degFtoC(aqdata->air_temp) : aqdata->pool_temp));
 	length += sprintf(buffer + length, "{\"type\": \"temperature\", \"id\": \"%s\", \"name\": \"%s\", \"state\": \"%s\", \"value\": \"%.*f\" }",
 		SPA_TEMP_TOPIC,
-		/*SPA_TEMPERATURE,*/
+		//SPA_TEMPERATURE,
 		"Spa Water Temperature",
 		"on",
 		((homekit) ? 2 : 0),
 		((homekit_f) ? degFtoC(aqdata->air_temp) : aqdata->spa_temp));
 
-	/*
-	  length += sprintf(buffer+length,  "], \"aux_device_detail\": [");
-	  for (i=0; i < MAX_PUMPS; i++) {
-	  }
-	*/
+	//
+	//  length += sprintf(buffer+length,  "], \"aux_device_detail\": [");
+	//  for (i=0; i < MAX_PUMPS; i++) {
+	//  }
+	
 	length += sprintf(buffer + length, "]}");
 
 	DEBUG("WEB: homebridge used %d of %d", length, size);
@@ -612,3 +610,4 @@ bool parseJSONmqttrequest(const char* str, size_t len, int* idx, int* nvalue, ch
 	}
 	return false;
 }
+*/

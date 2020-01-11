@@ -18,6 +18,7 @@
 #define DEFAULT_MQTT_SERVER		0
 #define DEFAULT_MQTT_USER		0
 #define DEFAULT_MQTT_PASSWD		0
+#define TEMP_UNKNOWN			-999
 
 // Set this high, as people are confused about SWG bouncing to zero on some panels, just stop the questions
 #define DEFAILT_SWG_ZERO_IGNORE_COUNT 20

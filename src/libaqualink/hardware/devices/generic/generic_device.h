@@ -9,6 +9,4 @@ typedef struct tagGenericDeviceInfo
 }
 GenericDeviceInfo;
 
-void add_generic_device_to_hardware_registry(const DeviceId device_id);
-
 #endif // AQ_GENERIC_DEVICE_H_

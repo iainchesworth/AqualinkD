@@ -4,20 +4,22 @@
 #include "cross-platform/time.h"
 #include "hardware/buttons/rs_buttons.h"
 #include "hardware/devices/hardware_device_registry.h"
+#include "hardware/devices/hardware_device_types.h"
 #include "hardware/heaters/heaters.h"
+#include "hardware/simulators/pda_simulator.h"
 #include "hardware/simulators/rs_keypadsimulator.h"
+#include "serial/serializers/aq_serial_message_ack_serializer.h"
+#include "serial/serializers/aq_serial_message_msg_long_serializer.h"
+#include "serial/serializers/aq_serial_message_probe_serializer.h"
+#include "serial/serializers/aq_serial_message_status_serializer.h"
+#include "serial/serializers/aq_serial_message_unknown_serializer.h"
+#include "serial/aq_serial_types.h"
 
 typedef enum tagAqualinkRS_Variants
 {
 	RS4, RS6, RS8, RS12, RS16, RS24, RS32
 }
 AqualinkRS_Variants;
-
-/* 
-	PDA4, PDA6, PDA8,
-	ZQ4,
-	UnknownControllerVariant
-*/
 
 typedef enum tagAqualinkRS_States
 {
@@ -56,8 +58,9 @@ typedef struct tagAqualinkRS
 	Heater SpaHeater;
 	Heater SolarHeater;
 
-	// Keypad Simulator
-	AqualinkRS_KeypadSimulator* Simulator;
+	// Simulators
+	AqualinkRS_KeypadSimulator* RS6_KeypadSimulator;
+	Aqualink_PDASimulator* PDA_Simulator;
 
 	//==============================================
 	//
@@ -65,7 +68,7 @@ typedef struct tagAqualinkRS
 	//
 	//==============================================
 
-	DevicesRegistry Devices;
+	DevicesRegistry* Devices;
 
 	//==============================================
 	//
@@ -74,22 +77,41 @@ typedef struct tagAqualinkRS
 	//
 	//==============================================
 
-	struct 
+	struct
 	{
-		unsigned int Destination;
+		SerialData_Commands Type;
+		DeviceId Destination;
 		time_t Timestamp;
 	}
-	ActiveProbe;
+	LastMessage;
 
 }
 AqualinkRS;
 
-// Aqualink RS controller functions.
+void rs_controller_initialise(AqualinkRS_Variants variant);
 
-void initialise_aqualinkrs_controller(AqualinkRS* controller, AqualinkRS_Variants variant);
+void rs_controller_record_message_event(SerialData_Commands command, DeviceId destination);
+SerialData_Commands rs_controller_get_last_message_type();
+DeviceId rs_controller_get_last_message_destination();
 
-// Messaging functions
+void rs_controller_print_detected_devices();
 
-void record_probe_event(AqualinkRS* controller, unsigned int destination);
+// RS6 Keypad Simulator
+bool rs_controller_enable_rs6_simulator();
+bool rs_controller_was_packet_to_or_from_rs6_simulator(DeviceId device_id);
+bool rs_controller_rs6_simulator_handle_ack_packet(AQ_Ack_Packet* probePacketforSimulator);
+bool rs_controller_rs6_simulator_handle_msg_long_packet(AQ_Msg_Long_Packet* probePacketforSimulator);
+bool rs_controller_rs6_simulator_handle_status_packet(AQ_Status_Packet* probePacketforSimulator);
+bool rs_controller_rs6_simulator_handle_probe_packet(AQ_Probe_Packet* probePacketforSimulator);
+bool rs_controller_rs6_simulator_handle_unknown_packet(AQ_Unknown_Packet* probePacketforSimulator);
+
+// PDA Simulator
+bool rs_controller_enable_pda_simulator(); 
+bool rs_controller_was_packet_to_or_from_pda_simulator(DeviceId device_id);
+bool rs_controller_pda_simulator_handle_ack_packet(AQ_Ack_Packet* probePacketforSimulator);
+bool rs_controller_pda_simulator_handle_msg_long_packet(AQ_Msg_Long_Packet* probePacketforSimulator);
+bool rs_controller_pda_simulator_handle_status_packet(AQ_Status_Packet* probePacketforSimulator);
+bool rs_controller_pda_simulator_handle_probe_packet(AQ_Probe_Packet* probePacketforSimulator);
+bool rs_controller_pda_simulator_handle_unknown_packet(AQ_Unknown_Packet* probePacketforSimulator);
 
 #endif // AQ_RS_CONTROLLER_H_

@@ -21,6 +21,7 @@ struct JSONwebrequest {
   struct JSONkeyvalue third;
 };
 
+/*
 int build_mqtt_status_JSON(char* buffer, int buffer_length, int idx, int nvalue, double tvalue);
 int build_mqtt_status_message_JSON(char* buffer, int buffer_length, int idx, int nvalue, char* svalue);
 
@@ -32,6 +33,7 @@ int build_aux_labels_JSON(struct aqualinkdata *aqdata, char* buffer, int size);
 
 bool parseJSONwebrequest(char *buffer, struct JSONwebrequest *request);
 bool parseJSONmqttrequest(const char *str, size_t len, int *idx, int *nvalue, char *svalue);
+*/
 
 #ifdef __cplusplus
 }

@@ -12,6 +12,7 @@
 #include "aq_serial_data_logger.h"
 #include "aq_serial_messages.h"
 #include "aq_serial_reader.h"
+#include "aq_serial_writer.h"
 #include "aq_serial_writer_queue.h"
 #include "utils.h"
 
@@ -106,8 +107,30 @@ int serial_thread(void* termination_handler_ptr)
 		case ST_WRITEPACKET:
 			TRACE("ST_WRITEPACKET");
 			{
-				TRACE("Transition: ST_WRITEPACKET --> ST_READPACKET");
-				state = ST_READPACKET;
+				const int length_written = serial_sendnextpacket(serial_device);
+
+				if (0 > length_written)
+				{
+					// There was an error while writing data to the serial port (resulting in a -1 error code).
+					WARN("There was an error while writing data from the serial port...attempting recovery");
+					TRACE("Transition: ST_READPACKET --> ST_RECOVERY");
+					state = ST_RECOVERY;
+				}
+				else if (0 == length_written)
+				{
+					// There was no data sent to the serial port.  This is weird because we specifcally block while writing data.
+					TRACE("Weird...had a write() return 0 bytes");
+				}
+				else if (MAXIMUM_NUMBER_OF_WRITER_ENTRIES == serial_writer_send_queue_empty_entries())
+				{
+					// There are no more packets to send so transitionback to waiting for a new packet.
+					TRACE("Transition: ST_WRITEPACKET --> ST_READPACKET");
+					state = ST_READPACKET;
+				}
+				else
+				{
+					// There is at least one or more packets of data to send...go round and do that.
+				}
 			}
 			break;
 

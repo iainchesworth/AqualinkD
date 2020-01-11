@@ -9,52 +9,62 @@
 #include "serial/message-processors/aq_serial_message_ack.h"
 #include "serial/aq_serial_types.h"
 
-static mtx_t* aqualinkrs_keypadsimulator_mutex = 0;
-
-void enable_aqualinkrs_keypadsimulator(AqualinkRS_KeypadSimulator* simulator)
+AqualinkRS_KeypadSimulator aqualink_keypad_simulator =
 {
-	assert(0 != simulator);
+	.Config = 
+	{ 
+		.IsInitialised = false,
+		// .SimulatorAccessMutex
+	},
 
-	if (0 == aqualinkrs_keypadsimulator_mutex)
+	.IsEnabled = false,
+	.Id = 0xFF,
+
+	.FunctionKeypad = { FilterPump, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 },
+	.MenuKeypad = { Back, 1, 2, 3, 4, 5, 6 },
+
+	.Initialise = &rs_keypadsimulator_initialise,
+	.ProbeMessageHandler = &rs_keypadsimulator_probemessagehandler
+};
+
+static bool rs_keypadsimulator_initmutex()
+{
+	TRACE("Initialising Aqualink RS Keypad Simulator mutex");
+
+	aqualink_keypad_simulator.Config.IsInitialised = (thrd_success == mtx_init(&(aqualink_keypad_simulator.Config.SimulatorAccessMutex), mtx_plain | mtx_recursive));
+	
+	return aqualink_keypad_simulator.Config.IsInitialised;
+}
+
+void rs_keypadsimulator_enable()
+{
+	if ((!aqualink_keypad_simulator.Config.IsInitialised) && (!rs_keypadsimulator_initmutex()))
 	{
-		TRACE("Initialising Aqualink RS Keypad Simulator mutex");
-
-		if (0 == (aqualinkrs_keypadsimulator_mutex = (mtx_t*)malloc(sizeof(mtx_t))))
-		{
-			ERROR("Failed to allocate memory for Aqualink RS Keypad Simulator mutex");
-		}
-		if (thrd_error == mtx_init(aqualinkrs_keypadsimulator_mutex, mtx_plain | mtx_recursive))
-		{
-			ERROR("Failed to initialise Aqualink RS Keypad Simulator mutex");
-		}
-		else
-		{
-			DEBUG("Aqualink RS Keypad Simulator mutex successfully initialised");
-		}
+		ERROR("Failed to initialise Aqualink RS Keypad Simulator mutex");
 	}
-
-	if (thrd_error == mtx_lock(aqualinkrs_keypadsimulator_mutex))
+	else if (thrd_error == mtx_lock(&(aqualink_keypad_simulator.Config.SimulatorAccessMutex)))
 	{
 		ERROR("Failed to lock Aqualink RS Keypad Simulator mutex");
 	}
 	else
 	{
-		simulator->IsEnabled = true;
-		INFO("Aqualink keypad simulator is now ENABLED");
+		aqualink_keypad_simulator.IsEnabled = true;
+		INFO("Aqualink RS Keypad Simulator is now ENABLED");
 	}
 
-	if ((0 != aqualinkrs_keypadsimulator_mutex) && (thrd_error == mtx_unlock(aqualinkrs_keypadsimulator_mutex)))
+	if ((aqualink_keypad_simulator.Config.IsInitialised) && (thrd_error == mtx_unlock(&(aqualink_keypad_simulator.Config.SimulatorAccessMutex))))
 	{
 		ERROR("Failed to unlock Aqualink RS Keypad Simulator mutex");
 	}
 }
 
-void disable_aqualinkrs_keypadsimulator(AqualinkRS_KeypadSimulator* simulator)
+void rs_keypadsimulator_disable(AqualinkRS_KeypadSimulator* simulator)
 {
-	assert(0 != aqualinkrs_keypadsimulator_mutex);
-	assert(0 != simulator);
-
-	if (thrd_error == mtx_lock(aqualinkrs_keypadsimulator_mutex))
+	if ((!aqualink_keypad_simulator.Config.IsInitialised) && (!rs_keypadsimulator_initmutex()))
+	{
+		ERROR("Failed to initialise Aqualink RS Keypad Simulator mutex");
+	}
+	else if (thrd_error == mtx_lock(&(aqualink_keypad_simulator.Config.SimulatorAccessMutex)))
 	{
 		ERROR("Failed to lock Aqualink RS Keypad Simulator mutex");
 	}
@@ -64,41 +74,51 @@ void disable_aqualinkrs_keypadsimulator(AqualinkRS_KeypadSimulator* simulator)
 		INFO("Aqualink keypad simulator is now DISABLED");
 	}
 
-	if ((0 != aqualinkrs_keypadsimulator_mutex) && (thrd_error == mtx_unlock(aqualinkrs_keypadsimulator_mutex)))
+	if ((aqualink_keypad_simulator.Config.IsInitialised) && (thrd_error == mtx_unlock(&(aqualink_keypad_simulator.Config.SimulatorAccessMutex))))
 	{
 		ERROR("Failed to unlock Aqualink RS Keypad Simulator mutex");
 	}
 }
 
-bool aqualinkrs_keypadsimulator_probemessagehandler(AqualinkRS_KeypadSimulator* simulator)
+bool rs_keypadsimulator_initialise()
 {
-	assert(0 != aqualinkrs_keypadsimulator_mutex);
-	assert(0 != simulator);
+	TRACE("Initialising Aqualink RS Keypad Simulator");
 
+	if ((!aqualink_keypad_simulator.Config.IsInitialised) && (!rs_keypadsimulator_initmutex()))
+	{
+		ERROR("Failed to initialise Aqualink RS Keypad Simulator mutex");
+	}
+
+	return aqualink_keypad_simulator.Config.IsInitialised;
+}
+
+bool rs_keypadsimulator_probemessagehandler()
+{
 	bool handled_probe_message = false;
 
-	if (thrd_error == mtx_lock(aqualinkrs_keypadsimulator_mutex))
+	if ((!aqualink_keypad_simulator.Config.IsInitialised) && (!rs_keypadsimulator_initmutex()))
+	{
+		ERROR("Failed to initialise Aqualink RS Keypad Simulator mutex");
+	}
+	else if (thrd_error == mtx_lock(&(aqualink_keypad_simulator.Config.SimulatorAccessMutex)))
 	{
 		ERROR("Failed to lock Aqualink RS Keypad Simulator mutex");
 	}
+	else if (!aqualink_keypad_simulator.IsEnabled)
+	{
+		WARN("Simulator is DISABLED but was asked to ACK a PROBE request");
+	}
+	else if (!send_ack_packet(ACK_NORMAL, CMD_PROBE))
+	{
+		WARN("Failed to send an ACK response to PROBE request");
+	}
 	else
 	{
-		if (simulator->IsEnabled)
-		{
-			WARN("Simulator is DISABLED but was asked to ACK a PROBE request");
-		}
-		else if (!send_ack_packet(ACK_NORMAL, CMD_PROBE))
-		{
-			WARN("Failed to send an ACK response to PROBE request");
-		}
-		else
-		{
-			TRACE("Transmitted ACK response to PROBE request");
-			handled_probe_message = true;
-		}
+		TRACE("Transmitted ACK response to PROBE request");
+		handled_probe_message = true;
 	}
-
-	if ((0 != aqualinkrs_keypadsimulator_mutex) && (thrd_error == mtx_unlock(aqualinkrs_keypadsimulator_mutex)))
+	
+	if ((aqualink_keypad_simulator.Config.IsInitialised) && (thrd_error == mtx_unlock(&(aqualink_keypad_simulator.Config.SimulatorAccessMutex))))
 	{
 		ERROR("Failed to unlock Aqualink RS Keypad Simulator mutex");
 	}

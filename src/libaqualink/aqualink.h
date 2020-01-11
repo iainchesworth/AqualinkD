@@ -1,7 +1,7 @@
-
 #ifndef AQUALINK_H_
 #define AQUALINK_H_
 
+/*
 #include <stdbool.h>
 
 #include "cross-platform/threads.h"
@@ -109,5 +109,6 @@ struct aqualinkdata
   struct timespec start_active_time;
   #endif
 };
+*/
 
 #endif 
