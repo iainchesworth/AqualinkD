@@ -58,7 +58,7 @@ void rs_keypadsimulator_enable()
 	}
 }
 
-void rs_keypadsimulator_disable(AqualinkRS_KeypadSimulator* simulator)
+void rs_keypadsimulator_disable()
 {
 	if ((!aqualink_keypad_simulator.Config.IsInitialised) && (!rs_keypadsimulator_initmutex()))
 	{
@@ -70,7 +70,7 @@ void rs_keypadsimulator_disable(AqualinkRS_KeypadSimulator* simulator)
 	}
 	else
 	{
-		simulator->IsEnabled = false;
+		aqualink_keypad_simulator.IsEnabled = false;
 		INFO("Aqualink keypad simulator is now DISABLED");
 	}
 
