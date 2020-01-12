@@ -41,7 +41,7 @@ static bool rs_keypadsimulator_initmutex()
 	return aqualink_keypad_simulator.Config.IsInitialised;
 }
 
-void rs_keypadsimulator_enable()
+bool rs_keypadsimulator_enable()
 {
 	if ((!aqualink_keypad_simulator.Config.IsInitialised) && (!rs_keypadsimulator_initmutex()))
 	{
@@ -61,9 +61,11 @@ void rs_keypadsimulator_enable()
 	{
 		ERROR("Failed to unlock Aqualink RS Keypad Simulator mutex");
 	}
+
+	return (true == aqualink_keypad_simulator.IsEnabled);
 }
 
-void rs_keypadsimulator_disable()
+bool rs_keypadsimulator_disable()
 {
 	if ((!aqualink_keypad_simulator.Config.IsInitialised) && (!rs_keypadsimulator_initmutex()))
 	{
@@ -83,6 +85,8 @@ void rs_keypadsimulator_disable()
 	{
 		ERROR("Failed to unlock Aqualink RS Keypad Simulator mutex");
 	}
+
+	return (false == aqualink_keypad_simulator.IsEnabled);
 }
 
 bool rs_keypadsimulator_initialise()

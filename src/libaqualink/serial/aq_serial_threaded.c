@@ -45,7 +45,7 @@ int serial_thread(void* termination_handler_ptr)
 				{
 					ERROR("Failed configuring serial port for communications");
 				}
-				else if (!initialise_serial_writer_send_queue(MAXIMUM_NUMBER_OF_WRITER_ENTRIES))
+				else if (!serial_writer_send_queue_initialise(MAXIMUM_NUMBER_OF_WRITER_ENTRIES))
 				{
 					WARN("Failed initialising the serial writer queue; can receive but not send packets");
 				}
@@ -147,16 +147,22 @@ int serial_thread(void* termination_handler_ptr)
 			break;
 		}
 	} 
-	while (ST_TERMINATE != state);
-
-
-	// Terminate the serial data logger if it was running.
+	while ((ST_TERMINATE != state) && (!test_for_termination()));
+	
+	// Destory the serial data logger if it was created.
 	if (CFG_LogRawRsBytes())
 	{
 		shutdown_logging(&aq_serial_data_logger);
 	}
 
+	// Deallocate the send queue.
+	serial_writer_send_queue_destroy();
+
+	// Shutdown the serial device.
 	close_serial_device(serial_device);
+	serial_device = SERIALDEVICE_INVALID;
+
+	TRACE("Serial worker thread is stopping");
 
 	return returnCode;
 }

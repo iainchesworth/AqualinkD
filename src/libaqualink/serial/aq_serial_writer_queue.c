@@ -6,9 +6,20 @@
 #include "logging/logging.h"
 #include "serial/serializers/aq_serial_message_ack_serializer.h"
 
-SerialWriter_SendQueue serial_device_send_queue;
+SerialWriter_SendQueue serial_device_send_queue =
+{
+	.Capacity = 0,
 
-bool initialise_serial_writer_send_queue(const unsigned int maximum_size)
+	.Tail = 0,
+	.Head = 0,
+
+	.IsFull = false,
+
+	// .SlotMutex
+	.SendSlots = 0
+};
+
+bool serial_writer_send_queue_initialise(const unsigned int maximum_size)
 {
 	assert(0 == serial_device_send_queue.SendSlots);
 	assert(0 < maximum_size);
@@ -19,13 +30,13 @@ bool initialise_serial_writer_send_queue(const unsigned int maximum_size)
 	{
 		ERROR("Failed to create serial device send queue slot mutex");
 	}
-	else if (0 == (serial_device_send_queue.SendSlots = (SerialWriter_SendQueueEntry*)malloc(maximum_size * sizeof(SerialWriter_SendQueueEntry))))
-	{
-		ERROR("Failed to allocate memory for the serial device send queue");
-	}
 	else if (thrd_error == mtx_lock(&serial_device_send_queue.SlotMutex))
 	{
 		ERROR("Failed to lock the serial writer send queue slot mutex...cannot continue initiailing queue");
+	}
+	else if (0 == (serial_device_send_queue.SendSlots = (SerialWriter_SendQueueEntry*)malloc(maximum_size * sizeof(SerialWriter_SendQueueEntry))))
+	{
+		ERROR("Failed to allocate memory for the serial device send queue");
 	}
 	else
 	{
@@ -54,6 +65,27 @@ bool initialise_serial_writer_send_queue(const unsigned int maximum_size)
 	}
 
 	return send_queue_initialised_successfully;
+}
+
+void serial_writer_send_queue_destroy()
+{
+	if (thrd_error == mtx_lock(&serial_device_send_queue.SlotMutex))
+	{
+		ERROR("Failed to lock the serial writer send queue slot mutex...cannot destroy queue");
+	}
+	else
+	{
+		free(serial_device_send_queue.SendSlots);
+		serial_device_send_queue.SendSlots = 0;
+		
+		TRACE("Successfully destroyed serial writer send queue slots");
+	}
+
+	if (thrd_error == mtx_unlock(&serial_device_send_queue.SlotMutex))
+	{
+		ERROR("Failed to unlock serial writer send queue slot mutex");
+	}
+
 }
 
 int serial_writer_send_queue_used_entries()
@@ -103,11 +135,11 @@ static int serial_writer_send_queue_allocate_entry(unsigned int required_length)
 	}
 	else if (serial_device_send_queue.IsFull)
 	{
-		DEBUG("Serial device send queue is at capacity but additional packets were sent.  Is buffer too small?");
+		WARN("Serial device send queue is at capacity but additional packets were sent.  Is %d slots too few?", serial_writer_send_queue_total_entries());
 	}
 	else if ((serial_device_send_queue.SendSlots[serial_device_send_queue.Head].SlotIsReserved) || (0 != serial_device_send_queue.SendSlots[serial_device_send_queue.Head].RawBytes))
 	{
-		DEBUG("Collision while allocating a slot...the proposed slot is marked as reserved and/or has a buffer allocated");
+		ERROR("Collision while allocating a slot...the proposed slot is marked as reserved and/or has a buffer allocated");
 	}
 	else if (0 == (serial_device_send_queue.SendSlots[serial_device_send_queue.Head].RawBytes = (unsigned char*)malloc(required_length)))
 	{
@@ -125,7 +157,7 @@ static int serial_writer_send_queue_allocate_entry(unsigned int required_length)
 		serial_device_send_queue.Head = (serial_device_send_queue.Head + 1) % serial_device_send_queue.Capacity;
 		serial_device_send_queue.IsFull = (serial_device_send_queue.Head == serial_device_send_queue.Tail);
 
-		TRACE("Successfully allocated serial device send slot");
+		DEBUG("Successfully allocated serial device send slot %d", slot_id);
 	}
 
 	if (thrd_error == mtx_unlock(&serial_device_send_queue.SlotMutex))
@@ -149,11 +181,11 @@ unsigned char serial_writer_dequeue_message_get_next_byte()
 	}
 	else if (0 == serial_device_send_queue.SendSlots[serial_device_send_queue.Tail].RawBytes)
 	{
-		///error
+		ERROR("The serial writer send queue slot's raw byte pointer is not valid...cannot dequeue bytes");
 	}
 	else if (serial_device_send_queue.SendSlots[serial_device_send_queue.Tail].BytesDequeued >= serial_device_send_queue.SendSlots[serial_device_send_queue.Tail].DataLength)
 	{
-		///error
+		ERROR("The serial writer send queue slot's entire byte buffer was dequeued however the slot is still indicated as valid for dequeuing...weird");
 	}
 	else
 	{
@@ -168,17 +200,20 @@ unsigned char serial_writer_dequeue_message_get_next_byte()
 		if (serial_device_send_queue.SendSlots[serial_device_send_queue.Tail].BytesDequeued >= serial_device_send_queue.SendSlots[serial_device_send_queue.Tail].DataLength)
 		{
 			// Release the memory that was allocated for this slot.
+			TRACE("The serial writer send queue slot's entire byte buffer was dequeued so deallocate the buffer");
 			free(serial_device_send_queue.SendSlots[serial_device_send_queue.Tail].RawBytes);
 			
 			// All bytes from this message has been dequeued...remove it and move the tail on to the next slot.
-			serial_device_send_queue.SendSlots[serial_device_send_queue.Tail].SlotIsReserved = true;
+			serial_device_send_queue.SendSlots[serial_device_send_queue.Tail].SlotIsReserved = false;
 			serial_device_send_queue.SendSlots[serial_device_send_queue.Tail].DataLength = 0;
 			serial_device_send_queue.SendSlots[serial_device_send_queue.Tail].BytesDequeued = 0;
 			serial_device_send_queue.SendSlots[serial_device_send_queue.Tail].RawBytes = 0;
+
+			DEBUG("Successfully deallocated serial device send slot %d", serial_device_send_queue.Tail);
 			
 			// Advance the tail pointer to past this packet!
 			serial_device_send_queue.Tail = (serial_device_send_queue.Tail + 1) % serial_device_send_queue.Capacity;
-			serial_device_send_queue.IsFull = (serial_device_send_queue.Head == serial_device_send_queue.Tail);	
+			serial_device_send_queue.IsFull = false;
 		}
 	}
 
@@ -203,7 +238,7 @@ bool serial_writer_enqueue_ack_message(AQ_Ack_Packet* ackPacket)
 	}
 	else if (serial_device_send_queue.IsFull)
 	{
-		DEBUG("Serial device send queue is at capacity but additional packets were sent.  Is buffer too small?");
+		WARN("Serial device send queue is at capacity but additional packets were sent.  Is %d slots too few?", serial_writer_send_queue_total_entries());
 	}
 	else if (-1 == (slot_id = serial_writer_send_queue_allocate_entry(AQ_ACK_PACKET_LENGTH)))
 	{

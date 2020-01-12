@@ -37,8 +37,8 @@ AqualinkRS_KeypadSimulator;
 
 // Simulator functions
 
-void rs_keypadsimulator_enable();
-void rs_keypadsimulator_disable();
+bool rs_keypadsimulator_enable();
+bool rs_keypadsimulator_disable();
 
 // Simulator message handlers
 

@@ -204,6 +204,11 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	// Shutdown and destroy the simulators and RS controller
+	rs_controller_disable_pda_simulator();
+	rs_controller_disable_rs6_simulator();
+	rs_controller_destroy();
+
 	shutdown_logging(&aqualink_default_logger);
 
 	return EXIT_SUCCESS;

@@ -89,6 +89,7 @@ typedef struct tagAqualinkRS
 AqualinkRS;
 
 void rs_controller_initialise(AqualinkRS_Variants variant);
+void rs_controller_destroy();
 
 void rs_controller_record_message_event(SerialData_Commands command, DeviceId destination);
 SerialData_Commands rs_controller_get_last_message_type();
@@ -98,6 +99,7 @@ void rs_controller_print_detected_devices();
 
 // RS6 Keypad Simulator
 bool rs_controller_enable_rs6_simulator();
+bool rs_controller_disable_rs6_simulator();
 bool rs_controller_was_packet_to_or_from_rs6_simulator(DeviceId device_id);
 bool rs_controller_rs6_simulator_handle_ack_packet(AQ_Ack_Packet* probePacketforSimulator);
 bool rs_controller_rs6_simulator_handle_msg_long_packet(AQ_Msg_Long_Packet* probePacketforSimulator);
@@ -107,6 +109,7 @@ bool rs_controller_rs6_simulator_handle_unknown_packet(AQ_Unknown_Packet* probeP
 
 // PDA Simulator
 bool rs_controller_enable_pda_simulator(); 
+bool rs_controller_disable_pda_simulator();
 bool rs_controller_was_packet_to_or_from_pda_simulator(DeviceId device_id);
 bool rs_controller_pda_simulator_handle_ack_packet(AQ_Ack_Packet* probePacketforSimulator);
 bool rs_controller_pda_simulator_handle_msg_long_packet(AQ_Msg_Long_Packet* probePacketforSimulator);

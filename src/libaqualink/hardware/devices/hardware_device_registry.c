@@ -5,29 +5,29 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "hardware_device_registry_helpers.h"
 #include "logging/logging.h"
 
 DevicesRegistry aqualink_master_controller_device_registry;
 
-bool does_device_exist_in_hardware_registry(DevicesRegistry* registry, HardwareDevice* device)
+bool hardware_registry_does_device_exist(HardwareDevice* device)
 {
-	assert(0 != registry);
 	assert(0 != device);
 
 	const DeviceId desired_device_id = extract_device_id_from_device_structure(device);
 
 	bool device_exists = false;
 
-	if (0 == registry->device_count)
+	if (0 == aqualink_master_controller_device_registry.device_count)
 	{
 		TRACE("Desired device (0x%02x) was not found in device registry as there are no devices in the registry", desired_device_id);
 	}
 	else
 	{
-		DevicesRegistry_ListNode* device_node = registry->head;
+		DevicesRegistry_ListNode* device_node = aqualink_master_controller_device_registry.head;
 		int device_index;
 
-		for (device_index = 0; device_index < registry->device_count; ++device_index)
+		for (device_index = 0; device_index < aqualink_master_controller_device_registry.device_count; ++device_index)
 		{
 			const DeviceId current_device_id = extract_device_id_from_device_structure(device_node->device);
 			if (current_device_id == desired_device_id)
@@ -51,42 +51,40 @@ bool does_device_exist_in_hardware_registry(DevicesRegistry* registry, HardwareD
 	return device_exists;
 }
 
-static bool add_device_to_tail_of_list(DevicesRegistry* registry, HardwareDevice* device)
+static bool add_device_to_tail_of_list(HardwareDevice* device)
 {
-	assert(0 != registry);
-	assert(0 == registry->tail->next);
+	assert(0 == aqualink_master_controller_device_registry.tail->next);
 	assert(0 != device);
 
-	if (0 == (registry->tail->next = (DevicesRegistry_ListNode*)malloc(sizeof(DevicesRegistry_ListNode))))
+	if (0 == (aqualink_master_controller_device_registry.tail->next = (DevicesRegistry_ListNode*)malloc(sizeof(DevicesRegistry_ListNode))))
 	{
 		// Failed to allocate a new node.
 		return false;
 	}
 
 	// Add the device to the tail (by adding a new node).
-	registry->tail->next->device = device;
-	registry->tail->next->next = 0;
-	registry->device_count++;
+	aqualink_master_controller_device_registry.tail->next->device = device;
+	aqualink_master_controller_device_registry.tail->next->next = 0;
+	aqualink_master_controller_device_registry.device_count++;
 
 	// Move the tail to point at the last node.
-	registry->tail = registry->tail->next;
+	aqualink_master_controller_device_registry.tail = aqualink_master_controller_device_registry.tail->next;
 
 	return true;
 }
 
-bool add_device_to_hardware_registry(DevicesRegistry* registry, HardwareDevice* device)
+bool hardware_registry_add_device(HardwareDevice* device)
 {
-	assert(0 != registry);
 	assert(0 != device);
 	
 	bool retSuccess;
 
-	if (0 != registry->head)
+	if (0 != aqualink_master_controller_device_registry.head)
 	{
 		// The list already exists, add the device to the end of the list
-		retSuccess = add_device_to_tail_of_list(registry, device);
+		retSuccess = add_device_to_tail_of_list(device);
 	}
-	else if (0 == (registry->head = (DevicesRegistry_ListNode*)malloc(sizeof(DevicesRegistry_ListNode))))
+	else if (0 == (aqualink_master_controller_device_registry.head = (DevicesRegistry_ListNode*)malloc(sizeof(DevicesRegistry_ListNode))))
 	{
 		// Failed to allocate a new node to create a new list.
 		retSuccess = false;
@@ -94,12 +92,12 @@ bool add_device_to_hardware_registry(DevicesRegistry* registry, HardwareDevice* 
 	else
 	{
 		// Add the device as the first node of the list.
-		registry->head->device = device;
-		registry->head->next = 0;
-		registry->device_count++;
+		aqualink_master_controller_device_registry.head->device = device;
+		aqualink_master_controller_device_registry.head->next = 0;
+		aqualink_master_controller_device_registry.device_count++;
 
 		// Make the tail point to the "last" node of the list.
-		registry->tail = registry->head;
+		aqualink_master_controller_device_registry.tail = aqualink_master_controller_device_registry.head;
 
 		retSuccess = true;
 	}
@@ -107,9 +105,52 @@ bool add_device_to_hardware_registry(DevicesRegistry* registry, HardwareDevice* 
 	return retSuccess;
 }
 
-unsigned int count_of_devices_in_hardware_registry(DevicesRegistry* registry)
+unsigned int hardware_registry_get_device_count()
 {
-	assert(0 != registry);
+	return aqualink_master_controller_device_registry.device_count;
+}
 
-	return registry->device_count;
+void hardware_registry_destroy()
+{
+	if (0 == aqualink_master_controller_device_registry.device_count)
+	{
+		TRACE("Not iterating through device registry to destroy it as there are no devices registered");
+	}
+	else
+	{
+		DevicesRegistry_ListNode* device_node = aqualink_master_controller_device_registry.head, * prev_device_node;
+		int device_index;
+
+		for (device_index = 0; device_index < aqualink_master_controller_device_registry.device_count; ++device_index)
+		{
+			if (0 == device_node)
+			{
+				// An invalid node means something went wrong...there's nothing more we can do here as there's no next pointer.
+				DEBUG("Came across an invalid device at index %d while attempting to destroy the registry", device_index);
+				break;
+			}
+			else if (0 == device_node->device)
+			{
+				DEBUG("Device information structure for device index %d was invalid; will ignore it", device_index);
+			}
+			else
+			{
+				TRACE("Destroying device information structure for device index %d", device_index);
+				device_registry_destroy_entry(device_node->device);
+			}
+
+
+			// Now de-allocate the structural node component but remember
+			// to store the pointer to the next node before de-allocating 
+			// the node otherwise things will go wrong.
+
+			prev_device_node = device_node;
+			device_node = device_node->next;
+
+			free(prev_device_node);
+			prev_device_node = 0;
+		}
+
+		TRACE("Device registry has been destroyed; %d devices were deallocated", device_index);
+	}
 }

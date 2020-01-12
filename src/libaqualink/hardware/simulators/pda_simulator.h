@@ -33,12 +33,13 @@ Aqualink_PDASimulator;
 
 // Simulator functions
 
-void pda_simulator_enable();
-void pda_simulator_disable();
+bool pda_simulator_enable();
+bool pda_simulator_disable();
 
 // Simulator message handlers
 
 bool pda_simulator_initialise();
+bool pda_simulator_probemessagehandler(AQ_Probe_Packet* packet);
 bool pda_simulator_msglongmessagehandler(AQ_Msg_Long_Packet* packet);
 
 // Simulator message builders

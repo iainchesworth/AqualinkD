@@ -21,8 +21,6 @@ int serial_sendnextpacket(SerialDevice serial_device)
 
 	unsigned char prevByte = 0;
 
-	set_verbosity(&aqualink_default_logger, Trace);
-
 	do
 	{
 		switch (state)
@@ -109,7 +107,7 @@ int serial_sendnextpacket(SerialDevice serial_device)
 						// Log the raw byte (which will go out to file if initialised)...
 						TRACE_TO(&aq_serial_data_logger, "%d", byte);
 
-						TRACE("ST_SEND_PACKETPAYLOAD - process0x%02x", byte);
+						TRACE("ST_SEND_PACKETPAYLOAD - 0x%02x", byte);
 
 						if (serial_writer_send_queue_total_entries() == serial_writer_send_queue_empty_entries())
 						{
@@ -163,8 +161,6 @@ int serial_sendnextpacket(SerialDevice serial_device)
 		}
 	} 
 	while ((ST_TERMINATE_WRITEPACKET != state) && (ST_WRITEERROR_OCCURRED != state));
-
-	set_verbosity(&aqualink_default_logger, Debug);
 
 	// Return the number of bytes read.  Note this is set to 0 or -1 for error states.
 	return returnCodeOrBytesSent;

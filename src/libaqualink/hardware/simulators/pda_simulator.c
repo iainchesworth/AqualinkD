@@ -6,7 +6,9 @@
 
 #include "cross-platform/threads.h"
 #include "logging/logging.h"
+#include "serial/message-processors/aq_serial_message_ack.h"
 #include "serial/serializers/aq_serial_message_msg_long_serializer.h"
+#include "serial/aq_serial_types.h"
 
 Aqualink_PDASimulator aqualink_pda_simulator =
 {
@@ -22,7 +24,7 @@ Aqualink_PDASimulator aqualink_pda_simulator =
 	.Initialise = &pda_simulator_initialise,
 	.AckMessageHandler = 0,
 	.MsgLongMessageHandler = &pda_simulator_msglongmessagehandler,
-	.ProbeMessageHandler = 0,
+	.ProbeMessageHandler = &pda_simulator_probemessagehandler,
 	.StatusMessageHandler = 0,
 	.UnknownMessageHandler = 0
 };
@@ -36,7 +38,7 @@ static bool pda_simulator_initmutex()
 	return aqualink_pda_simulator.Config.IsInitialised;
 }
 
-void pda_simulator_enable()
+bool pda_simulator_enable()
 {
 	if ((!aqualink_pda_simulator.Config.IsInitialised) && (!pda_simulator_initmutex()))
 	{
@@ -56,9 +58,11 @@ void pda_simulator_enable()
 	{
 		ERROR("Failed to unlock Aqualink PDA Simulator mutex");
 	}
+
+	return (true == aqualink_pda_simulator.IsEnabled);
 }
 
-void pda_simulator_disable()
+bool pda_simulator_disable()
 {
 	if ((!aqualink_pda_simulator.Config.IsInitialised) && (!pda_simulator_initmutex()))
 	{
@@ -78,6 +82,8 @@ void pda_simulator_disable()
 	{
 		ERROR("Failed to unlock Aqualink PDA Simulator mutex");
 	}
+
+	return (false == aqualink_pda_simulator.IsEnabled);
 }
 
 bool pda_simulator_initialise()
@@ -92,21 +98,59 @@ bool pda_simulator_initialise()
 	return aqualink_pda_simulator.Config.IsInitialised;
 }
 
+bool pda_simulator_probemessagehandler(AQ_Probe_Packet* packet)
+{
+	bool handled_probe_message = false;
+
+	if ((!aqualink_pda_simulator.Config.IsInitialised) && (!pda_simulator_initmutex()))
+	{
+		ERROR("Failed to initialise Aqualink PDA Simulator mutex");
+	}
+	else if (thrd_error == mtx_lock(&(aqualink_pda_simulator.Config.SimulatorAccessMutex)))
+	{
+		ERROR("Failed to lock Aqualink PDA Simulator mutex");
+	}
+	else if (!aqualink_pda_simulator.IsEnabled)
+	{
+		WARN("PDA Simulator is DISABLED but was asked to ACK a PROBE request");
+	}
+	else if (!send_ack_packet(ACK_NORMAL, CMD_PROBE))
+	{
+		WARN("PDA Simulator failed to send an ACK response to PROBE request");
+	}
+	else
+	{
+		TRACE("PDA Simulator transmitted ACK response to PROBE request");
+		handled_probe_message = true;
+	}
+
+	if ((aqualink_pda_simulator.Config.IsInitialised) && (thrd_error == mtx_unlock(&(aqualink_pda_simulator.Config.SimulatorAccessMutex))))
+	{
+		ERROR("Failed to unlock Aqualink PDA Simulator mutex");
+	}
+
+	return handled_probe_message;
+}
+
 bool pda_simulator_msglongmessagehandler(AQ_Msg_Long_Packet* packet)
 {
 	bool handled_msglong_message = false;
 
 	if ((!aqualink_pda_simulator.Config.IsInitialised) && (!pda_simulator_initmutex()))
 	{
-		ERROR("Failed to initialise Aqualink RS Keypad Simulator mutex");
+		ERROR("Failed to initialise Aqualink PDA Simulator mutex");
 	}
 	else if (thrd_error == mtx_lock(&(aqualink_pda_simulator.Config.SimulatorAccessMutex)))
 	{
-		ERROR("Failed to lock Aqualink RS Keypad Simulator mutex");
+		ERROR("Failed to lock Aqualink PDA Simulator mutex");
 	}
 	else if (!aqualink_pda_simulator.IsEnabled)
 	{
 		WARN("Simulator is DISABLED but was asked to handle a MSG LONG message");
+	}
+	else if (!send_ack_packet(ACK_NORMAL, CMD_MSG_LONG))
+	{
+		WARN("PDA Simulator failed to send an ACK response to MSG LONG request");
 	}
 	else
 	{
@@ -120,4 +164,38 @@ bool pda_simulator_msglongmessagehandler(AQ_Msg_Long_Packet* packet)
 	}
 
 	return handled_msglong_message;
+}
+
+bool pda_simulator_statusmessagehandler(AQ_Status_Packet* packet)
+{
+	bool handled_status_message = false;
+
+	if ((!aqualink_pda_simulator.Config.IsInitialised) && (!pda_simulator_initmutex()))
+	{
+		ERROR("Failed to initialise Aqualink PDA Simulator mutex");
+	}
+	else if (thrd_error == mtx_lock(&(aqualink_pda_simulator.Config.SimulatorAccessMutex)))
+	{
+		ERROR("Failed to lock Aqualink PDA Simulator mutex");
+	}
+	else if (!aqualink_pda_simulator.IsEnabled)
+	{
+		WARN("PDA Simulator is DISABLED but was asked to ACK a STATUS request");
+	}
+	else if (!send_ack_packet(ACK_NORMAL, CMD_STATUS))
+	{
+		WARN("PDA Simulator failed to send an ACK response to STATUS request");
+	}
+	else
+	{
+		TRACE("PDA Simulator transmitted ACK response to STATUS request");
+		handled_status_message = true;
+	}
+
+	if ((aqualink_pda_simulator.Config.IsInitialised) && (thrd_error == mtx_unlock(&(aqualink_pda_simulator.Config.SimulatorAccessMutex))))
+	{
+		ERROR("Failed to unlock Aqualink PDA Simulator mutex");
+	}
+
+	return handled_status_message;
 }

@@ -31,7 +31,8 @@ typedef struct tagSerialWriter_SendQueue
 }
 SerialWriter_SendQueue;
 
-bool initialise_serial_writer_send_queue(const unsigned int maximum_size);
+bool serial_writer_send_queue_initialise(const unsigned int maximum_size);
+void serial_writer_send_queue_destroy();
 
 // Utility functions
 int serial_writer_send_queue_used_entries();

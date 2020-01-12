@@ -20,8 +20,9 @@ struct DevicesRegistry
 };
 typedef struct DevicesRegistry DevicesRegistry;
 
-bool does_device_exist_in_hardware_registry(DevicesRegistry* registry, HardwareDevice* device);
-bool add_device_to_hardware_registry(DevicesRegistry* registry, HardwareDevice* device);
-unsigned int count_of_devices_in_hardware_registry(DevicesRegistry* registry);
+bool hardware_registry_does_device_exist(HardwareDevice* device);
+bool hardware_registry_add_device(HardwareDevice* device);
+unsigned int hardware_registry_get_device_count();
+void hardware_registry_destroy();
 
 #endif // AQ_HARDWARE_DEVICE_REGISTRY_H_

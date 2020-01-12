@@ -90,18 +90,20 @@ int webserver_thread(void* termination_handler_ptr)
 {
 	assert(0 != termination_handler_ptr);
 
-	const unsigned int base_flags = MHD_USE_THREAD_PER_CONNECTION | MHD_USE_INTERNAL_POLLING_THREAD | MHD_USE_PIPE_FOR_SHUTDOWN | MHD_USE_DEBUG | MHD_ALLOW_UPGRADE | MHD_ALLOW_SUSPEND_RESUME;
+	const unsigned int base_flags = MHD_USE_THREAD_PER_CONNECTION | MHD_USE_INTERNAL_POLLING_THREAD |  MHD_USE_DEBUG | MHD_ALLOW_UPGRADE | MHD_ALLOW_SUSPEND_RESUME;
 	
 	char* key_pem = 0, * cert_pem = 0;
 	bool use_ssl;
 
 	struct MHD_OptionItem options[] =
 	{
-		{.option = MHD_OPTION_NOTIFY_COMPLETED, .value = (intptr_t)&request_closed, .ptr_value = 0 },
+		{.option = MHD_OPTION_NOTIFY_COMPLETED,  .value = (intptr_t)&request_closed, .ptr_value = 0 },
 		{.option = MHD_OPTION_HTTPS_MEM_KEY,	 .value = (intptr_t)key_pem,		 .ptr_value = 0 },	// Set the MHD_OPTION_HTTPS_MEM_KEY (key_pem) option if SSL = true
 		{.option = MHD_OPTION_HTTPS_MEM_CERT,	 .value = (intptr_t)cert_pem,		 .ptr_value = 0 },	// Set the MHD_OPTION_HTTPS_MEM_CERT (cert_pem) option if SSL = true
 		{.option = MHD_OPTION_END,				 .value = 0,						 .ptr_value = 0}
 	};
+
+	TRACE("Web server worker thread is starting");
 
 	// First - validate SSL configuration.
 	if (CFG_Insecure())
@@ -167,6 +169,8 @@ int webserver_thread(void* termination_handler_ptr)
 		ERROR("Failed when attempting to block-wait for termination handler");
 		returnCode = -1;
 	}
+
+	TRACE("Web server worker thread is stopping");
 		
 	MHD_quiesce_daemon(daemon);
 	MHD_stop_daemon(daemon);

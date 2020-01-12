@@ -7,6 +7,4 @@ void initialise_config_parameters();
 void handle_configuration_file_options();
 bool write_configuration_options_to_file();
 
-char *cleanalloc(char*str);
-
 #endif // AQ_CONFIG_H_

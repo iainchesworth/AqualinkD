@@ -121,6 +121,8 @@ void rs_controller_initialise(AqualinkRS_Variants variant)
 {
 	assert(0 != aqualink_master_controller.RS6_KeypadSimulator);
 
+	TRACE("Initialising Aqualink RS Controller...");
+
 	aqualink_master_controller.Variant = variant;
 	aqualink_master_controller.State = Auto;
 	aqualink_master_controller.Mode = Pool;
@@ -139,6 +141,16 @@ void rs_controller_initialise(AqualinkRS_Variants variant)
 	{
 		aqualink_master_controller.PDA_Simulator->Initialise();
 	}
+}
+
+void rs_controller_destroy()
+{
+	TRACE("Destroying Aqualink RS Controller...");
+
+	rs_controller_disable_pda_simulator();
+	rs_controller_disable_rs6_simulator();
+
+	hardware_registry_destroy();
 }
 
 void rs_controller_record_message_event(SerialData_Commands command, DeviceId destination)
@@ -199,9 +211,31 @@ void rs_controller_print_detected_devices()
 	}
 }
 
+//=============================================================================
+//
+// RS6 Simulator functions
+//
+//
+//=============================================================================
+
 bool rs_controller_enable_rs6_simulator()
 {
-	return true;
+	if (0 == aqualink_master_controller.RS6_KeypadSimulator)
+	{
+		return false;
+	}
+
+	return rs_keypadsimulator_enable();
+}
+
+bool rs_controller_disable_rs6_simulator()
+{
+	if (0 == aqualink_master_controller.RS6_KeypadSimulator)
+	{
+		return false;
+	}
+
+	return rs_keypadsimulator_disable();
 }
 
 bool rs_controller_was_packet_to_or_from_rs6_simulator(DeviceId device_id)
@@ -314,10 +348,31 @@ bool rs_controller_rs6_simulator_handle_unknown_packet(AQ_Unknown_Packet* probeP
 	return handled_message;
 }
 
+//=============================================================================
+//
+// PDA Simulator functions
+//
+//
+//=============================================================================
 
 bool rs_controller_enable_pda_simulator()
 {
-	return true;
+	if (0 == aqualink_master_controller.PDA_Simulator)
+	{
+		return false;
+	}
+
+	return pda_simulator_enable();
+}
+
+bool rs_controller_disable_pda_simulator()
+{
+	if (0 == aqualink_master_controller.PDA_Simulator)
+	{
+		return false;
+	}
+
+	return pda_simulator_disable();
 }
 
 bool rs_controller_was_packet_to_or_from_pda_simulator(DeviceId device_id)

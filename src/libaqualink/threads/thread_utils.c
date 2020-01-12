@@ -1,14 +1,18 @@
 #include "thread_utils.h"
 
 #include <signal.h>
+#include <stdatomic.h>
 #include <stdbool.h>
+
 #include "cross-platform/threads.h"
 #include "logging/logging.h"
 #include "utils.h"
 
 static cnd_t termination_cv;
 static mtx_t termination_mtx;
-static bool termination_inited = false;
+
+static _Atomic bool termination_inited = false;
+static _Atomic bool aqualink_is_stopping = false;
 
 bool initialise_termination_handler()
 {
@@ -44,6 +48,11 @@ void termination_handler(int signum)
 	cnd_broadcast(&termination_cv);
 }
 
+bool test_for_termination()
+{
+	return aqualink_is_stopping;
+}
+
 bool wait_for_termination()
 {
 	bool ret = false;
@@ -51,6 +60,7 @@ bool wait_for_termination()
 	// Block the calling thread until the termination handler condition variable is set.
 	if ((termination_inited) && (thrd_success == cnd_wait(&termination_cv, &termination_mtx)))
 	{
+		aqualink_is_stopping = true;
 		ret = true;
 	}
 	else
