@@ -6,6 +6,7 @@
 #include "hardware/devices/hardware_device_registry.h"
 #include "hardware/devices/hardware_device_types.h"
 #include "hardware/heaters/heaters.h"
+#include "hardware/simulators/onetouch_simulator.h"
 #include "hardware/simulators/pda_simulator.h"
 #include "hardware/simulators/rs_keypadsimulator.h"
 #include "serial/serializers/aq_serial_message_ack_serializer.h"
@@ -59,8 +60,9 @@ typedef struct tagAqualinkRS
 	Heater SolarHeater;
 
 	// Simulators
-	AqualinkRS_KeypadSimulator* RS6_KeypadSimulator;
+	Aqualink_RS6KeypadSimulator* RS6_KeypadSimulator;
 	Aqualink_PDASimulator* PDA_Simulator;
+	Aqualink_OneTouchSimulator* OneTouch_Simulator;
 
 	//==============================================
 	//
@@ -116,5 +118,15 @@ bool rs_controller_pda_simulator_handle_msg_long_packet(AQ_Msg_Long_Packet* prob
 bool rs_controller_pda_simulator_handle_status_packet(AQ_Status_Packet* probePacketforSimulator);
 bool rs_controller_pda_simulator_handle_probe_packet(AQ_Probe_Packet* probePacketforSimulator);
 bool rs_controller_pda_simulator_handle_unknown_packet(AQ_Unknown_Packet* probePacketforSimulator);
+
+// OneTouch Simulator
+bool rs_controller_enable_onetouch_simulator();
+bool rs_controller_disable_onetouch_simulator();
+bool rs_controller_was_packet_to_or_from_onetouch_simulator(DeviceId device_id);
+bool rs_controller_onetouch_simulator_handle_ack_packet(AQ_Ack_Packet* probePacketforSimulator);
+bool rs_controller_onetouch_simulator_handle_msg_long_packet(AQ_Msg_Long_Packet* probePacketforSimulator);
+bool rs_controller_onetouch_simulator_handle_status_packet(AQ_Status_Packet* probePacketforSimulator);
+bool rs_controller_onetouch_simulator_handle_probe_packet(AQ_Probe_Packet* probePacketforSimulator);
+bool rs_controller_onetouch_simulator_handle_unknown_packet(AQ_Unknown_Packet* probePacketforSimulator);
 
 #endif // AQ_RS_CONTROLLER_H_

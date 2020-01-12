@@ -125,6 +125,7 @@ int main(int argc, char* argv[])
 	rs_controller_initialise(RS8);
 	rs_controller_enable_rs6_simulator();
 	rs_controller_enable_pda_simulator();
+	rs_controller_enable_onetouch_simulator();
 
 	INFO("%s %s", AQUALINKD_NAME, AQUALINKD_VERSION);
 

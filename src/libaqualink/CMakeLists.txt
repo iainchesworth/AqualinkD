@@ -34,6 +34,7 @@ set(SOURCE_FILES
   hardware/devices/hardware_device_types.c
   hardware/devices/hardware_device_utils.c
   hardware/heaters/heaters.c
+  hardware/simulators/onetouch_simulator.c
   hardware/simulators/pda_simulator.c
   hardware/simulators/rs_keypadsimulator.c
   hardware/simulators/simulator_private.c

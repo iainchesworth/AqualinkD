@@ -10,7 +10,7 @@
 #include "serial/serializers/aq_serial_message_probe_serializer.h"
 #include "serial/aq_serial_types.h"
 
-AqualinkRS_KeypadSimulator aqualink_keypad_simulator =
+Aqualink_RS6KeypadSimulator aqualink_keypad_simulator =
 {
 	.Config =
 	{

@@ -112,15 +112,15 @@ bool pda_simulator_probemessagehandler(AQ_Probe_Packet* packet)
 	}
 	else if (!aqualink_pda_simulator.IsEnabled)
 	{
-		WARN("PDA Simulator is DISABLED but was asked to ACK a PROBE request");
+		WARN("Aqualink PDA Simulator is DISABLED but was asked to ACK a PROBE request");
 	}
 	else if (!send_ack_packet(ACK_NORMAL, CMD_PROBE))
 	{
-		WARN("PDA Simulator failed to send an ACK response to PROBE request");
+		WARN("Aqualink PDA Simulator failed to send an ACK response to PROBE request");
 	}
 	else
 	{
-		TRACE("PDA Simulator transmitted ACK response to PROBE request");
+		TRACE("Aqualink PDA Simulator transmitted ACK response to PROBE request");
 		handled_probe_message = true;
 	}
 
@@ -146,15 +146,15 @@ bool pda_simulator_msglongmessagehandler(AQ_Msg_Long_Packet* packet)
 	}
 	else if (!aqualink_pda_simulator.IsEnabled)
 	{
-		WARN("Simulator is DISABLED but was asked to handle a MSG LONG message");
+		WARN("Aqualink PDA Simulator is DISABLED but was asked to handle a MSG LONG message");
 	}
 	else if (!send_ack_packet(ACK_NORMAL, CMD_MSG_LONG))
 	{
-		WARN("PDA Simulator failed to send an ACK response to MSG LONG request");
+		WARN("Aqualink PDA Simulator failed to send an ACK response to MSG LONG request");
 	}
 	else
 	{
-		TRACE("Simulator successfully handled MSG LONG message");
+		TRACE("Aqualink PDA Simulator successfully handled MSG LONG message");
 		handled_msglong_message = true;
 	}
 
@@ -180,15 +180,15 @@ bool pda_simulator_statusmessagehandler(AQ_Status_Packet* packet)
 	}
 	else if (!aqualink_pda_simulator.IsEnabled)
 	{
-		WARN("PDA Simulator is DISABLED but was asked to ACK a STATUS request");
+		WARN("Aqualink PDA Simulator is DISABLED but was asked to ACK a STATUS request");
 	}
 	else if (!send_ack_packet(ACK_NORMAL, CMD_STATUS))
 	{
-		WARN("PDA Simulator failed to send an ACK response to STATUS request");
+		WARN("Aqualink PDA Simulator failed to send an ACK response to STATUS request");
 	}
 	else
 	{
-		TRACE("PDA Simulator transmitted ACK response to STATUS request");
+		TRACE("Aqualink PDA Simulator transmitted ACK response to STATUS request");
 		handled_status_message = true;
 	}
 

@@ -33,7 +33,7 @@ typedef struct tagAqualinkRS_KeypadSimulator
 	Simulator_StatusMessageHandler StatusMessageHandler;
 	Simulator_UnknownMessageHandler UnknownMessageHandler;
 }
-AqualinkRS_KeypadSimulator;
+Aqualink_RS6KeypadSimulator;
 
 // Simulator functions
 

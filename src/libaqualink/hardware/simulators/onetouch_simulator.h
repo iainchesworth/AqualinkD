@@ -1,5 +1,5 @@
-#ifndef AQ_PDA_SIMULATOR_H_
-#define AQ_PDA_SIMULATOR_H_
+#ifndef AQ_ONETOUCH_SIMULATOR_H_
+#define AQ_ONETOUCH_SIMULATOR_H_
 
 #include <stdbool.h>
 
@@ -10,7 +10,7 @@
 
 #include "simulator_types.h"
 
-typedef struct tagAqualink_PDASimulator
+typedef struct tagAqualink_OneTouchSimulator
 {
 	struct
 	{
@@ -22,7 +22,7 @@ typedef struct tagAqualink_PDASimulator
 	bool IsEnabled;
 
 	DeviceId Id;
-	
+
 	Simulator_Initialise Initialise;
 	Simulator_AckMessageHandler AckMessageHandler;
 	Simulator_MsgLongMessageHandler MsgLongMessageHandler;
@@ -30,19 +30,20 @@ typedef struct tagAqualink_PDASimulator
 	Simulator_StatusMessageHandler StatusMessageHandler;
 	Simulator_UnknownMessageHandler UnknownMessageHandler;
 }
-Aqualink_PDASimulator;
+Aqualink_OneTouchSimulator;
 
 // Simulator functions
 
-bool pda_simulator_enable();
-bool pda_simulator_disable();
+bool onetouch_simulator_enable();
+bool onetouch_simulator_disable();
 
 // Simulator message handlers
 
-bool pda_simulator_initialise();
-bool pda_simulator_probemessagehandler(AQ_Probe_Packet* packet);
-bool pda_simulator_msglongmessagehandler(AQ_Msg_Long_Packet* packet);
+bool onetouch_simulator_initialise();
+bool onetouch_simulator_probemessagehandler(AQ_Probe_Packet* packet);
+bool onetouch_simulator_msglongmessagehandler(AQ_Msg_Long_Packet* packet);
 
 // Simulator message builders
 
-#endif // AQ_PDA_SIMULATOR_H_
+
+#endif // AQ_ONETOUCH_SIMULATOR_H_
