@@ -5,7 +5,7 @@
 
 typedef struct tagPdaRemote_DeviceInfo
 {
-	DeviceId Id;
+	HardwareDeviceId Id;
 	const char* Name;
 }
 PdaRemote_DeviceInfo;

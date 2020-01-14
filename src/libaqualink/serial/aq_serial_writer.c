@@ -1,6 +1,7 @@
 #include "aq_serial_writer.h"
 
 #include <assert.h>
+#include <errno.h>
 
 #include "cross-platform/serial.h"
 #include "logging/logging.h"

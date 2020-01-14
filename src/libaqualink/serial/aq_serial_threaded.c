@@ -8,13 +8,14 @@
 #include "cross-platform/serial.h"
 #include "logging/logging.h"
 #include "threads/thread_utils.h"
+#include "utility/utils.h"
+
 #include "aq_serial.h"
 #include "aq_serial_data_logger.h"
 #include "aq_serial_messages.h"
 #include "aq_serial_reader.h"
 #include "aq_serial_writer.h"
 #include "aq_serial_writer_queue.h"
-#include "utils.h"
 
 int serial_thread(void* termination_handler_ptr)
 {

@@ -3,11 +3,11 @@
 
 #include <stdbool.h>
 
-#include "serial/serializers/aq_serial_message_ack_serializer.h"
-#include "serial/serializers/aq_serial_message_msg_long_serializer.h"
-#include "serial/serializers/aq_serial_message_probe_serializer.h"
-#include "serial/serializers/aq_serial_message_status_serializer.h"
-#include "serial/serializers/aq_serial_message_unknown_serializer.h"
+#include "messages/message-serializers/aq_serial_message_ack_serializer.h"
+#include "messages/message-serializers/aq_serial_message_msg_long_serializer.h"
+#include "messages/message-serializers/aq_serial_message_probe_serializer.h"
+#include "messages/message-serializers/aq_serial_message_status_serializer.h"
+#include "messages/message-serializers/aq_serial_message_unknown_serializer.h"
 
 typedef bool (*Simulator_Initialise)();
 typedef bool (*Simulator_AckMessageHandler)(AQ_Ack_Packet* packet);

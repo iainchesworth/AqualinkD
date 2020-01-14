@@ -4,18 +4,20 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <string.h>
+
 #include "cross-platform/serial.h"
 #include "logging/logging.h"
+#include "utility/utils.h"
+
 #include "aq_serial.h"
 #include "aq_serial_checksums.h"
 #include "aq_serial_data_logger.h"
 #include "aq_serial_types.h"
-#include "utils.h"
 
 int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 {
-	assert((SERIALDEVICE_INVALID != serial_device));	// Look for a "valid" file descriptor
-	assert((0 != packet));								// Ensure the destination packet buffer is not NULL
+	assert(SERIALDEVICE_INVALID != serial_device);	// Look for a "valid" file descriptor
+	assert(0 != packet);							// Ensure the destination packet buffer is not NULL
 
 	static const int MAXIMUM_PAYLOAD_LENGTH = AQ_MAXPKTLEN - 4;  // 64 bytes minus DLE+STX / DLE+ETX
 	static const int MINIMUM_PAYLOAD_LENGTH = 3;				 // Ignore DLE+STX | DEST + CMD + CSUM | Ignore DLE+ETX
@@ -25,7 +27,7 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 	SerialThread_ReadStates state = ST_WAITFOR_PACKETSTART;
 
 	unsigned char rawPacketBytes[AQ_MAXPKTLEN];
-	unsigned char prevByte;
+	unsigned char prevByte = NUL;
 
 	int bytesRead, returnCodeOrBytesRead = ERROR_WHILE_RECEIVING_PACKET;
 	int packetPayloadBytesRead = 0, retryCounter = 0, totalPacketBytesRead = 0;

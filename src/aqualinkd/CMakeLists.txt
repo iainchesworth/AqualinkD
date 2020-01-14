@@ -1,5 +1,5 @@
 ﻿cmake_minimum_required(VERSION 3.12)
-project(aqualinkd C)
+project(aqualinkd CXX)
 
 find_package(Threads REQUIRED)
 

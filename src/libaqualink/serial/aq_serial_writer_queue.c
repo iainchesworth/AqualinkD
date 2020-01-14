@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "logging/logging.h"
-#include "serial/serializers/aq_serial_message_ack_serializer.h"
+#include "messages/message-serializers/aq_serial_message_ack_serializer.h"
 
 SerialWriter_SendQueue serial_device_send_queue =
 {

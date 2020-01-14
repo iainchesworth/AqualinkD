@@ -1,9 +1,10 @@
 #include "hardware_device_types.h"
 
-const DeviceId INVALID_DEVICE_ID = 0xFF;
+const HardwareDeviceId INVALID_DEVICE_ID = { .Type = UnknownDevice, .Instance = Instance_0 };
 
 const char* const MASTER = " <-- Master control panel";
-const char* const SWG = " <-- Salt Water Generator (Aquarite mode)";
+const char* const DUALSPASIDESWITCH = " <-- Dual spa side switch";
+const char* const SW_GEN = " <-- Salt Water Generator (Aquarite mode)";
 const char* const KEYPAD = " <-- RS Keypad";
 const char* const SPA_R = " <-- Spa remote";
 const char* const AQUA = " <-- Aqualink (iAqualink?)";
@@ -24,52 +25,55 @@ const char* const P_CTL = " <-- Pool controller (EasyTouch)";
 
 const char* const UNKNOWN = " <-- Unknown Device";
 
-const char* const device_id_to_string(DeviceId device_id)
+const char* const device_id_to_string(HardwareDeviceId device_id)
 {
-    if (device_id >= 0x00 && device_id <= 0x03)
+    switch (device_id.Type)
     {
+    case Master: 
         return MASTER;
-    }
-    if (device_id >= 0x08 && device_id <= 0x0B)
-    {
-        return KEYPAD;
-    }
-    if (device_id >= 0x50 && device_id <= 0x53)
-    {
-        return SWG;
-    }
-    if (device_id >= 0x20 && device_id <= 0x23)
-    {
-        return SPA_R;
-    }
-    if (device_id >= 0x30 && device_id <= 0x33)
-    {
-        return AQUA;
-    }
-    if (device_id >= 0x38 && device_id <= 0x3B)
-    {
-        return HEATER;
-    }
-    if (device_id >= 0x40 && device_id <= 0x43)
-    {
-        return ONE_T;
-    }
-    if (device_id >= 0x58 && device_id <= 0x5B)
-    {
-        return PC_DOCK;
-    }
-    if (device_id >= 0x60 && device_id <= 0x63)
-    {
-        return PDA;
-    }
-    if (device_id >= 0x78 && device_id <= 0x7B)
-    {
-        return EPUMP;
-    }
-    if (device_id >= 0x80 && device_id <= 0x83)
-    {
-        return CHEM;
-    }
 
-    return UNKNOWN;
+    case Keypad: 
+        return KEYPAD;
+
+    case DualSpaSideSwitch: 
+        return DUALSPASIDESWITCH;
+
+    case SPA_Remote:
+        return SPA_R;
+
+    case Aqualink:
+    case iAqualink:
+        return AQUA;
+
+    case LX_Heater:
+        return HEATER;
+
+    case OneTouch:
+        return ONE_T;
+
+    case SWG:
+        return SW_GEN;
+
+    case PC_Interface:
+        return PC_DOCK;
+
+    case PDA_Remote:
+        return PDA;
+
+    case Jandy_VSP_ePump:
+        return EPUMP;
+
+    case ChemLink:
+        return CHEM;
+
+    case Unknown_0x1x:
+    case Unknown_0x2x:
+    case Unknown_0x4x:
+    case Unknown_0x6x:
+    case Unknown_0x7x:
+    case Unknown_0x8x:
+    case UnknownDevice:
+    default:
+        return UNKNOWN;
+    }
 }

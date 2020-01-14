@@ -5,7 +5,7 @@
 
 typedef struct tagGenericDeviceInfo
 {
-	DeviceId Id;
+	HardwareDeviceId Id;
 }
 GenericDeviceInfo;
 

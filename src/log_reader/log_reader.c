@@ -26,7 +26,7 @@
 #include <fcntl.h>
 
 #include "serial/aq_serial.h"
-#include "utils.h"
+#include "utility/utils.h"
 
 
 void logiAqualinkMsg(unsigned char *packet_buffer, int packet_length) {

@@ -3,6 +3,8 @@
 
 #include <confuse.h>
 #include <stdbool.h>
+
+#include "logging/logging_levels.h"
 #include "config.h"
 
 // This is the "global" configuration parameter store (initialised in config.c).
@@ -23,9 +25,9 @@ const char* CFG_SerialPort()
 	return cfg_getstr(_config_parameters, CONFIG_STR_SERIAL_PORT);
 }
 
-const int CFG_LogLevel()
+const LoggingLevels CFG_LogLevel()
 {
-	return cfg_getint(_config_parameters, CONFIG_INT_LOG_LEVEL);
+	return (LoggingLevels) cfg_getint(_config_parameters, CONFIG_INT_LOG_LEVEL);
 }
 
 const int CFG_SocketPort()
@@ -45,7 +47,7 @@ const char* CFG_WebDirectory()
 
 const bool CFG_Insecure()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_INSECURE);
+	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_INSECURE));
 }
 
 const int CFG_DeviceId()
@@ -55,7 +57,7 @@ const int CFG_DeviceId()
 
 const bool CFG_OverrideFreezeProtect()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_OVERRIDE_FREEZE_PROTECT);
+	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_OVERRIDE_FREEZE_PROTECT));
 }
 
 const char* CFG_MqttDzSubTopic()
@@ -150,7 +152,7 @@ const int CFG_LightProgrammingButtonSpa()
 
 const bool CFG_NoDaemonize()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_NO_DAEMONIZE);
+	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_NO_DAEMONIZE));
 }
 
 const char* CFG_LogFile()
@@ -160,47 +162,47 @@ const char* CFG_LogFile()
 
 const bool CFG_PdaMode()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_PDA_MODE);
+	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_PDA_MODE));
 }
 
 const bool CFG_PdaSleepMode()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_PDA_SLEEP_MODE);
+	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_PDA_SLEEP_MODE));
 }
 
 const bool CFG_ConvertMqttTemp()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_CONVERT_MQTT_TEMP_TO_C);
+	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_CONVERT_MQTT_TEMP_TO_C));
 }
 
 const bool CFG_ConvertDzTemp()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_CONVERT_DZ_TEMP_TO_C);
+	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_CONVERT_DZ_TEMP_TO_C));
 }
 
 const bool CFG_ReportZeroPoolTemp()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_REPORT_ZERO_POOL_TEMP);
+	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_REPORT_ZERO_POOL_TEMP));
 }
 
 const bool CFG_ReportZeroSpaTemp()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_REPORT_ZERO_SPA_TEMP);
+	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_REPORT_ZERO_SPA_TEMP));
 }
 
 const bool CFG_ReadAllDevices()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_READ_ALL_DEVICES);
+	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_READ_ALL_DEVICES));
 }
 
 const bool CFG_UsePanelAuxLabels()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_USE_PANEL_AUX_LABELS);
+	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_USE_PANEL_AUX_LABELS));
 }
 
 const bool CFG_ForceSwg()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_FORCE_SWG);
+	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_FORCE_SWG));
 }
 
 const int CFG_SwgZeroIgnore()
@@ -210,22 +212,22 @@ const int CFG_SwgZeroIgnore()
 
 const bool CFG_ReadPentairPackets()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_READ_PENTAIR_PACKETS);
+	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_READ_PENTAIR_PACKETS));
 }
 
 const bool CFG_DisplayWarningsWeb()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_DISPLAY_WARNINGS_IN_WEB);
+	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_DISPLAY_WARNINGS_IN_WEB));
 }
 
 const bool CFG_DebugRsProtocolPackets()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_DEBUG_RSPROTOCOL_PACKETS);
+	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_DEBUG_RSPROTOCOL_PACKETS));
 }
 
 const bool CFG_LogRawRsBytes()
 {
-	return cfg_getbool(_config_parameters, CONFIG_BOOL_LOG_RAW_RS_BYTES);
+	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_LOG_RAW_RS_BYTES));
 }
 
 const char* CFG_LogRawRsBytes_LogFile()
@@ -314,14 +316,14 @@ void CFG_Set_SerialPort(const char* serialPort)
 	cfg_setstr(_config_parameters, CONFIG_STR_SERIAL_PORT, serialPort);
 }
 
-void CFG_Set_LogLevel(int logLevel)
+void CFG_Set_LogLevel(LoggingLevels logLevel)
 {
-	cfg_setint(_config_parameters, CONFIG_INT_LOG_LEVEL, logLevel);
+	cfg_setint(_config_parameters, CONFIG_INT_LOG_LEVEL, (int)logLevel);
 }
 
 void CFG_Set_Insecure(bool insecure)
 {
-	cfg_setbool(_config_parameters, CONFIG_BOOL_INSECURE, insecure);
+	cfg_setbool(_config_parameters, CONFIG_BOOL_INSECURE, (insecure) ? cfg_true : cfg_false);
 }
 
 void CFG_Set_DeviceId(int deviceId)
@@ -331,7 +333,7 @@ void CFG_Set_DeviceId(int deviceId)
 
 void CFG_Set_NoDaemonize(bool daemonize)
 {
-	cfg_setbool(_config_parameters, CONFIG_BOOL_NO_DAEMONIZE, daemonize);
+	cfg_setbool(_config_parameters, CONFIG_BOOL_NO_DAEMONIZE, (daemonize) ? cfg_true : cfg_false);
 }
 
 void CFG_Set_LogFile(const char* logFile)
@@ -341,12 +343,12 @@ void CFG_Set_LogFile(const char* logFile)
 
 void CFG_Set_DebugRsProtocolPackets(bool debugRsProtocolPackets)
 {
-	cfg_setbool(_config_parameters, CONFIG_BOOL_DEBUG_RSPROTOCOL_PACKETS, debugRsProtocolPackets);
+	cfg_setbool(_config_parameters, CONFIG_BOOL_DEBUG_RSPROTOCOL_PACKETS, (debugRsProtocolPackets) ? cfg_true : cfg_false);
 }
 
 void CFG_Set_LogRawRsBytes(bool logRawRsBytes)
 {
-	cfg_setbool(_config_parameters, CONFIG_BOOL_LOG_RAW_RS_BYTES, logRawRsBytes);
+	cfg_setbool(_config_parameters, CONFIG_BOOL_LOG_RAW_RS_BYTES, (logRawRsBytes) ? cfg_true : cfg_false);
 }
 
 void CFG_Set_LogRawRsBytes_LogFile(const char* logRawRsBytes_LogFile)

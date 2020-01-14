@@ -1,20 +1,19 @@
 #include "hardware_device_registry.h"
-#include "hardware_device_utils.h"
 
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "hardware_device_registry_helpers.h"
+#include "hardware/devices/hardware_device_registry_helpers.h"
+#include "hardware/devices/hardware_device_registry_private.h"
+#include "hardware/devices/hardware_device_utils.h"
 #include "logging/logging.h"
-
-DevicesRegistry aqualink_master_controller_device_registry;
 
 bool hardware_registry_does_device_exist(HardwareDevice* device)
 {
 	assert(0 != device);
 
-	const DeviceId desired_device_id = extract_device_id_from_device_structure(device);
+	const HardwareDeviceId desired_device_id = extract_device_id_from_device_structure(device);
 
 	bool device_exists = false;
 
@@ -29,8 +28,8 @@ bool hardware_registry_does_device_exist(HardwareDevice* device)
 
 		for (device_index = 0; device_index < aqualink_master_controller_device_registry.device_count; ++device_index)
 		{
-			const DeviceId current_device_id = extract_device_id_from_device_structure(device_node->device);
-			if (current_device_id == desired_device_id)
+			const HardwareDeviceId current_device_id = extract_device_id_from_device_structure(device_node->device);
+			if ((current_device_id.Type == desired_device_id.Type) && ((current_device_id.Instance == desired_device_id.Instance)))
 			{
 				TRACE("Desired device (0x%02x) already exists in device registry", desired_device_id);
 				device_exists = true;
@@ -38,11 +37,9 @@ bool hardware_registry_does_device_exist(HardwareDevice* device)
 				// Terminate the search loop.
 				break;
 			}
-			else
-			{
-				// Still not yet found so increment to the next node
-				device_node = device_node->next;
-			}
+			
+			// Still not yet found so increment to the next node
+			device_node = device_node->next;
 		}
 
 		TRACE("Desired device (0x%02x) was %s in the device registry", desired_device_id, (device_exists) ? "found" : "NOT found");
@@ -129,7 +126,8 @@ void hardware_registry_destroy()
 				DEBUG("Came across an invalid device at index %d while attempting to destroy the registry", device_index);
 				break;
 			}
-			else if (0 == device_node->device)
+			
+			if (0 == device_node->device)
 			{
 				DEBUG("Device information structure for device index %d was invalid; will ignore it", device_index);
 			}
@@ -138,7 +136,6 @@ void hardware_registry_destroy()
 				TRACE("Destroying device information structure for device index %d", device_index);
 				device_registry_destroy_entry(device_node->device);
 			}
-
 
 			// Now de-allocate the structural node component but remember
 			// to store the pointer to the next node before de-allocating 

@@ -11,9 +11,10 @@
 #include "cross-platform/threads.h"
 #include "logging/logging.h"
 #include "threads/thread_utils.h"
+#include "utility/utils.h"
+
 #include "aq_web_authentication.h"
 #include "aq_web_connection_handler.h"
-#include "utils.h"
 
 static void webserver_panichandler(void* cls, const char* file, unsigned int line, const char* reason)
 {

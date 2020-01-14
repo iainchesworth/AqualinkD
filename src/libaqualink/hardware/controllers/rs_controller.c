@@ -6,12 +6,14 @@
 #include "hardware/buttons/rs_buttons.h"
 #include "hardware/devices/hardware_device_registry.h"
 #include "hardware/devices/hardware_device_registry_private.h"
+#include "hardware/simulators/onetouch/onetouch_simulator_private.h"
 #include "hardware/simulators/onetouch_simulator.h"
+#include "hardware/simulators/pda/pda_simulator_private.h"
 #include "hardware/simulators/pda_simulator.h"
 #include "hardware/simulators/rs_keypadsimulator.h"
 #include "hardware/simulators/simulator_private.h"
 #include "logging/logging.h"
-#include "serial/serializers/aq_serial_message_probe_serializer.h"
+#include "messages/message-serializers/aq_serial_message_probe_serializer.h"
 #include "serial/aq_serial_types.h"
 
 AqualinkRS aqualink_master_controller =
@@ -50,8 +52,8 @@ AqualinkRS aqualink_master_controller =
 
 	.LastMessage =
 	{
-		.Type = 0xFF,
-		.Destination = 0xFF,
+		.Type = CMD_UNKNOWN,
+		.Destination = { .Type = UnknownDevice, .Instance = Instance_0}, // INVALID_DEVICE_ID
 		.Timestamp = 0
 	}
 };
@@ -130,9 +132,14 @@ void rs_controller_initialise(AqualinkRS_Variants variant)
 	aqualink_master_controller.State = Auto;
 	aqualink_master_controller.Mode = Pool;
 
-	aqualink_master_controller.RS6_KeypadSimulator->Id	= Keypad_0;		 ///FIXME
-	aqualink_master_controller.PDA_Simulator->Id		= PDA_Remote_0;	 ///FIXME
-	aqualink_master_controller.OneTouch_Simulator->Id	= OneTouch_1;	 ///FIXME
+	aqualink_master_controller.RS6_KeypadSimulator->Id.Type		= Keypad;		///FIXME
+	aqualink_master_controller.RS6_KeypadSimulator->Id.Instance = Instance_0;	///FIXME
+	
+	aqualink_master_controller.PDA_Simulator->Id.Type			= PDA_Remote;	///FIXME
+	aqualink_master_controller.PDA_Simulator->Id.Instance		= Instance_0;	///FIXME
+
+	aqualink_master_controller.OneTouch_Simulator->Id.Type		= OneTouch;		///FIXME
+	aqualink_master_controller.OneTouch_Simulator->Id.Instance	= Instance_1;	///FIXME
 
 	rs_controller_configure_buttons();
 
@@ -163,7 +170,7 @@ void rs_controller_destroy()
 	hardware_registry_destroy();
 }
 
-void rs_controller_record_message_event(SerialData_Commands command, DeviceId destination)
+void rs_controller_record_message_event(SerialData_Commands command, HardwareDeviceId destination)
 {
 	const time_t now = time(0);
 
@@ -179,7 +186,7 @@ SerialData_Commands rs_controller_get_last_message_type()
 	return aqualink_master_controller.LastMessage.Type;
 }
 
-DeviceId rs_controller_get_last_message_destination()
+HardwareDeviceId rs_controller_get_last_message_destination()
 {
 	return aqualink_master_controller.LastMessage.Destination;
 }
@@ -248,14 +255,14 @@ bool rs_controller_disable_rs6_simulator()
 	return rs_keypadsimulator_disable();
 }
 
-bool rs_controller_was_packet_to_or_from_rs6_simulator(DeviceId device_id)
+bool rs_controller_was_packet_to_or_from_rs6_simulator(HardwareDeviceId device_id)
 {
 	if (0 == aqualink_master_controller.RS6_KeypadSimulator)
 	{
 		return false;
 	}
 
-	return (aqualink_master_controller.RS6_KeypadSimulator->Id == device_id);
+	return ((aqualink_master_controller.RS6_KeypadSimulator->Id.Type == device_id.Type) && (aqualink_master_controller.RS6_KeypadSimulator->Id.Instance == device_id.Instance));
 }
 
 bool rs_controller_rs6_simulator_handle_ack_packet(AQ_Ack_Packet* probePacketforSimulator)
@@ -385,14 +392,14 @@ bool rs_controller_disable_pda_simulator()
 	return pda_simulator_disable();
 }
 
-bool rs_controller_was_packet_to_or_from_pda_simulator(DeviceId device_id)
+bool rs_controller_was_packet_to_or_from_pda_simulator(HardwareDeviceId device_id)
 {
 	if (0 == aqualink_master_controller.PDA_Simulator)
 	{
 		return false;
 	}
 
-	return (aqualink_master_controller.PDA_Simulator->Id == device_id);
+	return ((aqualink_master_controller.PDA_Simulator->Id.Type == device_id.Type) && (aqualink_master_controller.PDA_Simulator->Id.Instance == device_id.Instance));
 }
 
 bool rs_controller_pda_simulator_handle_ack_packet(AQ_Ack_Packet* probePacketforSimulator)
@@ -524,14 +531,14 @@ bool rs_controller_disable_onetouch_simulator()
 	return onetouch_simulator_disable();
 }
 
-bool rs_controller_was_packet_to_or_from_onetouch_simulator(DeviceId device_id)
+bool rs_controller_was_packet_to_or_from_onetouch_simulator(HardwareDeviceId device_id)
 {
 	if (0 == aqualink_master_controller.OneTouch_Simulator)
 	{
 		return false;
 	}
 
-	return (aqualink_master_controller.OneTouch_Simulator->Id == device_id);
+	return ((aqualink_master_controller.OneTouch_Simulator->Id.Type == device_id.Type) && (aqualink_master_controller.OneTouch_Simulator->Id.Instance == device_id.Instance));
 }
 
 bool rs_controller_onetouch_simulator_handle_ack_packet(AQ_Ack_Packet* probePacketforSimulator)

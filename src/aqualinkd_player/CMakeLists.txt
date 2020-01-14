@@ -1,5 +1,5 @@
 ﻿cmake_minimum_required(VERSION 3.12)
-project(aqualinkd_player C)
+project(aqualinkd_player CXX)
 
 set(SOURCE_FILES 
   # NOTHING HERE

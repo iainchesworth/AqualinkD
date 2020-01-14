@@ -28,9 +28,9 @@
 #include "config/config.h"
 #include "hardware/buttons/rs_buttons.h"
 #include "logging/logging.h"
+#include "utility/utils.h"
 #include "version/version.h"
 #include "aqualink.h"
-#include "utils.h"
 
 /*
 const char* getStatus(struct aqualinkdata* aqdata)

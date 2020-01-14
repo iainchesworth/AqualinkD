@@ -3,9 +3,9 @@
 
 #include "logging/logging.h"
 
-DeviceId extract_device_id_from_device_structure(HardwareDevice* device)
+HardwareDeviceId extract_device_id_from_device_structure(HardwareDevice* device)
 {
-	DeviceId device_id = 0xFF;
+	HardwareDeviceId device_id = INVALID_DEVICE_ID;
 
 	switch (device->Type)
 	{

@@ -34,11 +34,11 @@
 #include "serial/aq_serial_threaded.h"
 #include "string/string_utils.h"
 #include "threads/thread_utils.h"
+#include "utility/utils.h"
 #include "version/version.h"
 #include "web/aq_web.h"
 
 #include "options.h"
-#include "utils.h"
 
 static bool main_loop()
 {
@@ -170,7 +170,7 @@ int main(int argc, char* argv[])
 		NOTICE("Ignore SWG 0 msg count   = %d", CFG_SwgZeroIgnore());
 	}
 
-	int button_index, pump_index;
+	int button_index;
 
 	for (button_index = FilterPump; button_index < ButtonTypeCount; ++button_index)
 	{

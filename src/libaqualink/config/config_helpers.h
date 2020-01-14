@@ -3,10 +3,12 @@
 
 #include <stdbool.h>
 
+#include "logging/logging_levels.h"
+
 const char* CFG_ConfigFile();
 const char* CFG_PidFile();
 const char* CFG_SerialPort();
-const int CFG_LogLevel();
+const LoggingLevels CFG_LogLevel();
 const int CFG_SocketPort();
 const int CFG_SslSocketPort();
 const char* CFG_WebDirectory();
@@ -73,7 +75,7 @@ const char* CFG_ButtonSolarHeaterLabel();
 void CFG_Set_ConfigFile(const char* configFile);
 void CFG_Set_PidFile(const char* pidFile);
 void CFG_Set_SerialPort(const char* serialPort);
-void CFG_Set_LogLevel(int logLevel);
+void CFG_Set_LogLevel(LoggingLevels logLevel);
 void CFG_Set_Insecure(bool insecure);
 void CFG_Set_DeviceId(int deviceId);
 void CFG_Set_NoDaemonize(bool daemonize);

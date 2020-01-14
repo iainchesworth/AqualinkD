@@ -4,13 +4,14 @@
 #include <microhttpd.h>
 
 #include "logging/logging.h"
+#include "utility/utils.h"
+
 #include "aq_web.h"
 #include "aq_web_error_methodnotallowed.h"
 #include "aq_web_error_notfound.h"
 #include "aq_web_page_controller.h"
 #include "aq_web_page_simple.h"
 #include "aq_web_websockets.h"
-#include "utils.h"
 
 int aq_web_connection_handler(struct MHD_Connection* connection, conn_t* conn, const char* url)
 {

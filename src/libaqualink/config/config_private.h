@@ -1,11 +1,13 @@
 #ifndef AQ_CONFIG_PRIVATE_H_
 #define AQ_CONFIG_PRIVATE_H_
 
+#include <confuse.h>
+
 #define DEFAULT_LOG_LEVEL		5 
 #define DEFAULT_WEBPORT			80
 #define DEFAULT_SSL_WEBPORT		443
 #define DEFAULT_WEBROOT			"./"
-#define DEFAULT_INSECURE		false
+#define DEFAULT_INSECURE		cfg_false
 #define DEFAULT_CONFIG_FILE		"./aqualinkd.conf"
 #define DEFAULT_PID_FILE		"/var/run/aqualinkd.pid"
 #define DEFAULT_SERIALPORT		"/dev/ttyUSB0"
@@ -21,7 +23,7 @@
 #define TEMP_UNKNOWN			-999
 
 // Set this high, as people are confused about SWG bouncing to zero on some panels, just stop the questions
-#define DEFAILT_SWG_ZERO_IGNORE_COUNT 20
+#define DEFAULT_SWG_ZERO_IGNORE_COUNT 20
 
 #define MQTT_ID_LEN 18 // 20 seems to kill mosquitto 1.6
 

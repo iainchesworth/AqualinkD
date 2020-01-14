@@ -221,21 +221,4 @@ typedef enum {
 	P_UNKNOWN
 } protocolType;
 
-
-void set_pda_mode(bool mode);
-bool pda_mode();
-protocolType getProtocolType(const unsigned char* packet);
-void send_ack(SerialDevice serial_device, unsigned char command);
-void send_extended_ack(SerialDevice serial_device, unsigned char ack_type, unsigned char command);
-int get_packet(SerialDevice serial_device, unsigned char* packet);
-int get_packet_lograw(SerialDevice serial_device, unsigned char* packet);
-
-void process_status(unsigned char* ptr);
-const char* get_packet_type(unsigned char* packet, int length);
-
-
-void send_jandy_command(SerialDevice serial_device, const unsigned char* packet_buffer, int size);
-void send_pentair_command(SerialDevice serial_device, const unsigned char* packet_buffer, int size);
-void send_command(SerialDevice serial_device, const unsigned char* packet_buffer, int size);
-
 #endif // AQ_SERIAL_LEGACY_TYPES_H_

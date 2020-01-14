@@ -10,7 +10,7 @@
 #include "hardware/devices/hardware_device_registry_private.h"
 #include "hardware/devices/hardware_device_types.h"
 
-void device_registry_add_generic_device(const DeviceId device_id)
+void device_registry_add_generic_device(const HardwareDeviceId device_id)
 {
 	HardwareDevice* this_device = (HardwareDevice*)malloc(sizeof(HardwareDevice));
 
@@ -33,7 +33,7 @@ void device_registry_add_generic_device(const DeviceId device_id)
 
 static const char PDA_REMOTE_DEVICE_NAME[] = "PDA Remote";
 
-void device_registry_add_pda_remote(const DeviceId device_id)
+void device_registry_add_pda_remote(const HardwareDeviceId device_id)
 {
 	HardwareDevice* this_device = (HardwareDevice*)malloc(sizeof(HardwareDevice));
 

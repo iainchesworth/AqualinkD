@@ -6,8 +6,8 @@
 
 #include "cross-platform/threads.h"
 #include "logging/logging.h"
-#include "serial/message-processors/aq_serial_message_ack.h"
-#include "serial/serializers/aq_serial_message_probe_serializer.h"
+#include "messages/aq_serial_message_ack.h"
+#include "messages/message-serializers/aq_serial_message_probe_serializer.h"
 #include "serial/aq_serial_types.h"
 
 Aqualink_RS6KeypadSimulator aqualink_keypad_simulator =
@@ -19,7 +19,7 @@ Aqualink_RS6KeypadSimulator aqualink_keypad_simulator =
 	},
 
 	.IsEnabled = false,
-	.Id = 0xFF,
+	.Id = {.Type = Keypad, .Instance = Instance_0 },
 
 	.FunctionKeypad = { FilterPump, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 },
 	.MenuKeypad = { Back, 1, 2, 3, 4, 5, 6 },

@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 #include <cross-platform/threads.h>
-#include "serial/serializers/aq_serial_message_ack_serializer.h"
+#include "messages/message-serializers/aq_serial_message_ack_serializer.h"
 
 typedef struct tagSerialWriter_SendQueueEntry
 {

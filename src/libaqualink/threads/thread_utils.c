@@ -6,7 +6,7 @@
 
 #include "cross-platform/threads.h"
 #include "logging/logging.h"
-#include "utils.h"
+#include "utility/utils.h"
 
 static cnd_t termination_cv;
 static mtx_t termination_mtx;

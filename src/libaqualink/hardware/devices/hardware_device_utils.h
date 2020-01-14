@@ -3,6 +3,6 @@
 
 #include "hardware_device.h"
 
-DeviceId extract_device_id_from_device_structure(HardwareDevice* device);
+HardwareDeviceId extract_device_id_from_device_structure(HardwareDevice* device);
 
 #endif // AQ_HARDWARE_DEVICES_UTILS_H_

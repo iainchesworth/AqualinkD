@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "string/string_utils.h"
-#include "utils.h"
+#include "utility/utils.h"
 
 const char LOGGING_LEVEL_TRACE[] = "Trace";
 const char LOGGING_LEVEL_DEBUG[] = "Debug";

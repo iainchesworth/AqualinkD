@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 #include "logging/logging.h"
-#include "utils.h"
+#include "utility/utils.h"
 
 int generate_jandy_checksum(const unsigned char* packet, const int length)
 {

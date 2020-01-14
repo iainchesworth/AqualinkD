@@ -6,7 +6,7 @@
 #include "cross-platform/threads.h"
 #include "hardware/buttons/rs_buttons.h"
 #include "hardware/devices/hardware_device_types.h"
-#include "serial/serializers/aq_serial_message_probe_serializer.h"
+#include "messages/message-serializers/aq_serial_message_probe_serializer.h"
 
 #include "simulator_types.h"
 
@@ -21,7 +21,7 @@ typedef struct tagAqualinkRS_KeypadSimulator
 
 	bool IsEnabled;
 
-	DeviceId Id;
+	HardwareDeviceId Id;
 
 	AqualinkRS_ButtonTypes FunctionKeypad[ButtonTypeCount];					///FIXME - this is NOT a structure suitable for the button functions.
 	AqualinkRS_KeypadMenuButtonTypes MenuKeypad[KeypadMenuButtonTypeCount];	///FIXME - this is NOT a structure suitable for the button functions.

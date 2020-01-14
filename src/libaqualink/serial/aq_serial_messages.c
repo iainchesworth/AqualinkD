@@ -3,14 +3,14 @@
 #include <assert.h>
 
 #include "logging/logging.h"
-#include "serial/message-processors/aq_serial_message_ack.h"
-#include "serial/message-processors/aq_serial_message_msg_long.h"
-#include "serial/message-processors/aq_serial_message_probe.h"
-#include "serial/message-processors/aq_serial_message_status.h"
-#include "serial/message-processors/aq_serial_message_unknown.h"
+#include "messages/message-processors/aq_serial_message_ack_handler.h"
+#include "messages/message-processors/aq_serial_message_msg_long_handler.h"
+#include "messages/message-processors/aq_serial_message_probe_handler.h"
+#include "messages/message-processors/aq_serial_message_status_handler.h"
+#include "messages/message-processors/aq_serial_message_unknown_handler.h"
+#include "utility/utils.h"
 #include "aq_serial.h"
 #include "aq_serial_types.h"
-#include "utils.h"
 
 bool process_aqualink_packet(unsigned char* rawPacket, unsigned int length)
 {
@@ -99,5 +99,5 @@ bool process_aqualink_packet(unsigned char* rawPacket, unsigned int length)
 		break;
 	}
 
-	return true;
+	return returnCode;
 }

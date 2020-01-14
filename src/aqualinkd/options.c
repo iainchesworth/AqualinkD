@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include "config/config_helpers.h"
 #include "logging/logging.h"
+#include "utility/utils.h"
 #include "version/version.h"
-#include "utils.h"
 
 void printHelp()
 {
