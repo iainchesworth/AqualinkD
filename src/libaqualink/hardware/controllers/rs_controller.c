@@ -196,7 +196,7 @@ void rs_controller_print_detected_devices()
 	assert(0 != aqualink_master_controller.Devices);
 
 	DevicesRegistry_ListNode* device_node = aqualink_master_controller.Devices->head;
-	int device_index;
+	unsigned int device_index;
 
 	for (device_index = 0; device_index < aqualink_master_controller.Devices->device_count; ++device_index)
 	{

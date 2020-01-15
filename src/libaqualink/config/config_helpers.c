@@ -125,7 +125,7 @@ const int CFG_DzIdxSwgStatus()
 	return cfg_getint(_config_parameters, CONFIG_INT_DZIDX_SWG_STATUS);
 }
 
-const float CFG_LightProgrammingMode()
+const double CFG_LightProgrammingMode()
 {
 	return cfg_getfloat(_config_parameters, CONFIG_FLOAT_LIGHT_PROGRAMMING_MODE);
 }

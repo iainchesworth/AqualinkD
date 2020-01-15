@@ -30,7 +30,7 @@ Aqualink_OneTouchSimulator aqualink_onetouch_simulator =
 	.UnknownMessageHandler = 0
 };
 
-static bool onetouch_simulator_initmutex()
+bool onetouch_simulator_initmutex()
 {
 	TRACE("Initialising Aqualink OneTouch Simulator mutex");
 

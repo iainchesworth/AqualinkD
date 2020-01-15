@@ -30,3 +30,4 @@ target_link_libraries(aqualinkd
 )
 
 include(${CMAKE_SOURCE_DIR}/cmake/valgrind/valgrind.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/perfprofile/perfprofile.cmake)

@@ -100,7 +100,7 @@ void log_serial_packet(const unsigned char* packet_buffer, unsigned int packet_b
 
 	DEBUG_TO(&aq_serial_data_logger, "%s%8.8s Packet | HEX: ", PACKET_IS_BAD, "JANDY");
 
-	int buffer_index;
+	unsigned int buffer_index;
 
 	for (buffer_index = 0; buffer_index < packet_buffer_length; ++buffer_index)
 	{

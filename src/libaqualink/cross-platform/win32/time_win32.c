@@ -46,7 +46,7 @@ int nanosleep(const struct timespec* requested_delay, struct timespec* remaining
 			// (or maybe more if the system is loaded), we subtract 10 ms.
 			int sleep_millis = (int)requested_delay->tv_nsec / 1000000 - 10;
 
-			LONGLONG wait_ticks = requested_delay->tv_nsec * ticks_per_nanosecond;
+			LONGLONG wait_ticks = (LONGLONG)(requested_delay->tv_nsec * ticks_per_nanosecond);
 			LARGE_INTEGER counter_before;
 
 			if (QueryPerformanceCounter(&counter_before))
@@ -73,7 +73,8 @@ int nanosleep(const struct timespec* requested_delay, struct timespec* remaining
 	}
 
 	// Implementation for long delays and as fallback.
-	Sleep(requested_delay->tv_sec * 1000 + requested_delay->tv_nsec / 1000000);
+	DWORD dwTimeToSleep = (DWORD)(requested_delay->tv_sec * 1000) + (requested_delay->tv_nsec / 1000000);
+	Sleep(dwTimeToSleep);
 
 done:
 	if (NULL != remaining_delay)

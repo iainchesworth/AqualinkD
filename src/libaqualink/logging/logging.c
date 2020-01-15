@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 void initialize_logging(Logger* logger)
@@ -48,7 +49,7 @@ void shutdown_logging(Logger* logger)
 	assert(0 != logger);
 
 	LoggingSink_ListNode* node = logger->Sinks.head;
-	int sink_index;
+	unsigned int sink_index;
 
 	for (sink_index = 0; sink_index < logger->Sinks.sink_count; ++sink_index)
 	{
@@ -76,54 +77,63 @@ void log_message(Logger* logger, LoggingLevels logLevel, const char file[], cons
 	}
 	else
 	{
-		unsigned int MAX_MESSAGE_BUFFER_LEN = 1024, MAX_FORMAT_BUFFER_LEN = 256;
-		char message_buffer[MAX_MESSAGE_BUFFER_LEN], format_buffer[MAX_FORMAT_BUFFER_LEN];
+		const unsigned int MAX_MESSAGE_BUFFER_LEN = 1024, MAX_FORMAT_BUFFER_LEN = 256;
 
-		memset(message_buffer, 0, MAX_MESSAGE_BUFFER_LEN);
-		memset(format_buffer, 0, MAX_FORMAT_BUFFER_LEN);
+		char* message_buffer = (char*)malloc(MAX_MESSAGE_BUFFER_LEN);
+		char* format_buffer = (char*)malloc(MAX_FORMAT_BUFFER_LEN);
 
-		va_list args;
-		va_start(args, fmt);
-
-		LoggingMessage message;
-		message.LoggerName = logger->Name;
-		message.Level = logLevel;
-		message.Payload.File = file;
-		message.Payload.Function = function;
-		message.Payload.Line = line;
-		message.Payload.Format = fmt;
-		message.Message = message_buffer;
-		
-		logger->Formatter(format_buffer, MAX_FORMAT_BUFFER_LEN, message);
-		vsnprintf(message_buffer, MAX_MESSAGE_BUFFER_LEN, format_buffer, args);
-	
-		LoggingSink_ListNode* node = logger->Sinks.head;
-		int sink_index;
-
-		for (sink_index = 0; sink_index < logger->Sinks.sink_count; ++sink_index)
+		if ((0 == message_buffer) || (0 == format_buffer))
 		{
-			if ((0 != node) && (0 != node->sink))
-			{
-				mtx_t* sink_writer_mutex = &(node->sink->Config.SinkWriterMutex);
-
-				// Lock the writer mutex...  Note that we don't check for errors because it would all go 
-				// wrong (in an error handling case) as we would need to log a message (and get infinite 
-				// recursion).
-				mtx_lock(sink_writer_mutex);
-
-				// Sink mutex is locked...write the message to the sink.
-				node->sink->Writer(node->sink, message);
-
-				// Unlock the writer mutex...  Note that we don't check for errors because it would all go 
-				// wrong (in an error handling case) as we would need to log a message (and get infinite 
-				// recursion).
-				mtx_unlock(sink_writer_mutex);
-				
-				// Increment the pointer to the next sink.
-				node = node->next;
-			}
+			// Failed to allocate memory...don't do anything here because we will recurse...and that's bad!
 		}
+		else
+		{
+			memset(message_buffer, 0, MAX_MESSAGE_BUFFER_LEN);
+			memset(format_buffer, 0, MAX_FORMAT_BUFFER_LEN);
 
-		va_end(args);
+			va_list args;
+			va_start(args, fmt);
+
+			LoggingMessage message;
+			message.LoggerName = logger->Name;
+			message.Level = logLevel;
+			message.Payload.File = file;
+			message.Payload.Function = function;
+			message.Payload.Line = line;
+			message.Payload.Format = fmt;
+			message.Message = message_buffer;
+
+			logger->Formatter(format_buffer, MAX_FORMAT_BUFFER_LEN, message);
+			vsnprintf(message_buffer, MAX_MESSAGE_BUFFER_LEN, format_buffer, args);
+
+			LoggingSink_ListNode* node = logger->Sinks.head;
+			unsigned int sink_index;
+
+			for (sink_index = 0; sink_index < logger->Sinks.sink_count; ++sink_index)
+			{
+				if ((0 != node) && (0 != node->sink))
+				{
+					mtx_t* sink_writer_mutex = &(node->sink->Config.SinkWriterMutex);
+
+					// Lock the writer mutex...  Note that we don't check for errors because it would all go 
+					// wrong (in an error handling case) as we would need to log a message (and get infinite 
+					// recursion).
+					mtx_lock(sink_writer_mutex);
+
+					// Sink mutex is locked...write the message to the sink.
+					node->sink->Writer(node->sink, message);
+
+					// Unlock the writer mutex...  Note that we don't check for errors because it would all go 
+					// wrong (in an error handling case) as we would need to log a message (and get infinite 
+					// recursion).
+					mtx_unlock(sink_writer_mutex);
+
+					// Increment the pointer to the next sink.
+					node = node->next;
+				}
+			}
+
+			va_end(args);
+		}
 	}
 }

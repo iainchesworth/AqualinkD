@@ -31,7 +31,7 @@ const int CFG_DzIdxSwgPercent();
 const int CFG_DzIdxSwgPpm();
 const int CFG_DzIdxSwgStatus();
 
-const float CFG_LightProgrammingMode();
+const double CFG_LightProgrammingMode();
 const int CFG_LightProgrammingInitialOn();
 const int CFG_LightProgrammingInitialOff();
 const int CFG_LightProgrammingButtonPool();

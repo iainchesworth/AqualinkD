@@ -40,7 +40,7 @@ bool serial_writer_send_queue_initialise(const unsigned int maximum_size)
 	}
 	else
 	{
-		int slot_index;
+		unsigned int slot_index;
 
 		for (slot_index = 0; slot_index < maximum_size; ++slot_index)
 		{

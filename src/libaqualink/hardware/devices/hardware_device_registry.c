@@ -24,7 +24,7 @@ bool hardware_registry_does_device_exist(HardwareDevice* device)
 	else
 	{
 		DevicesRegistry_ListNode* device_node = aqualink_master_controller_device_registry.head;
-		int device_index;
+		unsigned int device_index;
 
 		for (device_index = 0; device_index < aqualink_master_controller_device_registry.device_count; ++device_index)
 		{
@@ -116,7 +116,7 @@ void hardware_registry_destroy()
 	else
 	{
 		DevicesRegistry_ListNode* device_node = aqualink_master_controller_device_registry.head, * prev_device_node;
-		int device_index;
+		unsigned int device_index;
 
 		for (device_index = 0; device_index < aqualink_master_controller_device_registry.device_count; ++device_index)
 		{

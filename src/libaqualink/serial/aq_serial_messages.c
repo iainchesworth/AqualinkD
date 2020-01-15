@@ -14,11 +14,9 @@
 
 bool process_aqualink_packet(unsigned char* rawPacket, unsigned int length)
 {
-	static const int DESTINATION_BYTE_LOCATION = 2;
-	static const int COMMAND_ID_BYTE_LOCATION = 3;
+	const unsigned int COMMAND_ID_BYTE_LOCATION = 3;
 
 	assert(0 != rawPacket);
-	assert(DESTINATION_BYTE_LOCATION < length);
 	assert(COMMAND_ID_BYTE_LOCATION < length);
 
 	bool returnCode = false;

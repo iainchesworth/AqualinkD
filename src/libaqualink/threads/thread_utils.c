@@ -1,7 +1,6 @@
 #include "thread_utils.h"
 
 #include <signal.h>
-#include <stdatomic.h>
 #include <stdbool.h>
 
 #include "cross-platform/threads.h"
@@ -11,8 +10,8 @@
 static cnd_t termination_cv;
 static mtx_t termination_mtx;
 
-static _Atomic bool termination_inited = false;
-static _Atomic bool aqualink_is_stopping = false;
+static bool termination_inited = false;
+static bool aqualink_is_stopping = false;
 
 bool initialise_termination_handler()
 {

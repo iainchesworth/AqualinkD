@@ -172,7 +172,7 @@ bool text2bool(const char* str)
 {
 	assert(NULL != str);
 
-	const int strLength = strlen(str);
+	const size_t strLength = strlen(str);
 	int firstCharPos = -1, i;
 
 	// Find the first non-whitespace char and "next" whitespace char after that.
@@ -198,7 +198,7 @@ bool request2bool(const char* str)
 {
 	assert(NULL != str);
 
-	const int strLength = strlen(str);
+	const size_t strLength = strlen(str);
 	int firstCharPos = -1, i;
 
 	// Find the first non-whitespace char and "next" whitespace char after that.
@@ -226,14 +226,14 @@ const char* bool2text(bool val)
 }
 
 // (50°F - 32) x .5556 = 10°C
-float degFtoC(float degF)
+double degFtoC(double degF)
 {
-	return ((degF - 32) / 1.8);
+	return ((degF - 32.0f) / 1.8f);
 }
 // 30°C x 1.8 + 32 = 86°F 
-float degCtoF(float degC)
+double degCtoF(double degC)
 {
-	return (degC * 1.8 + 32);
+	return ((degC * 1.8f) + 32.0f);
 }
 
 static const unsigned int MICROSECONDS_PER_SECOND = 1000000;
