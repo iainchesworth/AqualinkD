@@ -36,7 +36,7 @@
 #include "threads/thread_utils.h"
 #include "utility/utils.h"
 #include "version/version.h"
-#include "web/aq_web.h"
+#include "web/aq_web_threaded.h"
 
 #include "options.h"
 

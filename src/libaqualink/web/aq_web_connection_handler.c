@@ -1,77 +1,74 @@
 #include "aq_web_connection_handler.h"
 
 #include <assert.h>
-#include <microhttpd.h>
+#include <libwebsockets.h>
 
 #include "logging/logging.h"
 #include "utility/utils.h"
 
-#include "aq_web.h"
 #include "aq_web_error_methodnotallowed.h"
 #include "aq_web_error_notfound.h"
 #include "aq_web_page_controller.h"
 #include "aq_web_page_simple.h"
 #include "aq_web_websockets.h"
 
-int aq_web_connection_handler(struct MHD_Connection* connection, conn_t* conn, const char* url)
+int aq_web_connection_handler(struct lws* wsi, enum lws_callback_reasons reason, void* user, void* in, size_t len)
 {
-	assert(0 != connection);
-	assert(0 != conn);
-	assert(0 != url);
+	assert(0 != wsi);
 
-	static const char UPGRADE_HEADER_KEY[] = "Upgrade";
-	const char* upgrade_header_value = "";
-
-	int ret = MHD_NO;
-
-	switch (conn->method_id)
+	switch (reason)
 	{
-	case WEBSOCKET:
-		DEBUG("WEBSOCKET");
+	case LWS_CALLBACK_PROTOCOL_INIT:
+		TRACE("LWS_CALLBACK_PROTOCOL_INIT");
 		{
+
 		}
 		break;
 
-	case HTTP_GET:
-		DEBUG("HTTP_GET");
+	case LWS_CALLBACK_ESTABLISHED:
+		TRACE("LWS_CALLBACK_ESTABLISHED");
 		{
-			if (0 == url)
-			{
-				WARN("No URL string provided...cannot return sensible response");
-			}
-			else if (0 != (upgrade_header_value = MHD_lookup_connection_value(connection, MHD_HEADER_KIND, UPGRADE_HEADER_KEY)))
-			{
-				INFO("Upgrading connection to websockets");
-				ret = handle_websocket_upgrade(connection);
-			}
-			else if (0 == strcmp(url, AQ_WEB_PAGE_SIMPLE_URL))
-			{
-				ret = aq_web_page_simple(connection);
-			}
-			else if (0 == strcmp(url, AQ_WEB_PAGE_SIMPLE_URL))
-			{
-				ret = aq_web_page_controller(connection);
-			}
-			else
-			{
-				// The client requested a url that we don't support, return the NOT FOUND error page.
-				DEBUG("NOT FOUND (404) - Client requested a URL that does not exist");
-				ret = aq_web_error_notfound(connection);
-			}
+
 		}
 		break;
 
-	case HTTP_PUT:
-	case HTTP_DELETE:
-	case HTTP_POST:
+	case LWS_CALLBACK_CLOSED:
+		TRACE("LWS_CALLBACK_CLOSED");
+		{
+
+		}
+		break;
+
+	case LWS_CALLBACK_SERVER_WRITEABLE:
+		TRACE("LWS_CALLBACK_SERVER_WRITEABLE");
+		{
+
+		}
+		break;
+
+	case LWS_CALLBACK_RECEIVE:
+		TRACE("LWS_CALLBACK_RECEIVE");
+		{
+
+		}
+		break;
+
+	case LWS_CALLBACK_CLIENT_WRITEABLE:
+		TRACE("LWS_CALLBACK_CLIENT_WRITEABLE");
+		{
+			void* universal_response = "Hello, World!";
+			lws_write(wsi, universal_response, strlen(universal_response), LWS_WRITE_HTTP);
+		}
+		break;
+
+	case LWS_CALLBACK_HTTP:
+		TRACE("LWS_CALLBACK_HTTP");
+		break;
+
 	default:
-		DEBUG("METHOD NOT ALLOWED (405) - Client requested a HTTP method that is not supported");
-		{
-			// The client requested a method that we don't support, return the METHOD NOT ALLOWED error page.
-			ret = aq_web_error_methodnotallowed(connection);
-		}
 		break;
+
 	}
 
-	return ret;
+	return 0;
 }

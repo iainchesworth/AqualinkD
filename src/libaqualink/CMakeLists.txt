@@ -91,13 +91,13 @@ set(SOURCE_FILES
   string/string_utils.c
   threads/thread_utils.c
   utility/utils.c 
-  web/aq_web.c
   web/aq_web_authentication.c
   web/aq_web_connection_handler.c
   web/aq_web_error_methodnotallowed.c
   web/aq_web_error_notfound.c
   web/aq_web_page_controller.c
   web/aq_web_page_simple.c
+  web/aq_web_threaded.c
   web/aq_web_websockets.c
 )
 

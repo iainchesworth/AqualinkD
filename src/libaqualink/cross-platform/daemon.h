@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-typedef bool(*main_function_t)(void);
+typedef bool(*main_function_t)();
 
 bool daemonize(main_function_t main_function);
 

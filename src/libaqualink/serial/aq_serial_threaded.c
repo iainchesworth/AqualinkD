@@ -26,6 +26,8 @@ int serial_thread(void* termination_handler_ptr)
 	SerialThread_States state = ST_INIT;
 	SerialDevice serial_device = SERIALDEVICE_INVALID;
 
+	return 0;
+
 	int returnCode = 0;
 
 	do

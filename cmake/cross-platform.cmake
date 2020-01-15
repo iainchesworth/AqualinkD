@@ -4,6 +4,7 @@
 
 find_package(Threads REQUIRED)
 find_package(libmicrohttpd REQUIRED)
+find_package(libwebsockets REQUIRED)
 
 link_libraries(
   Threads::Threads
@@ -39,7 +40,7 @@ if(WIN32)
   if(LIBMICROHTTPD_LIBRARIES)
     link_libraries(${LIBMICROHTTPD_LIBRARIES})
   else()
-    message(ERROR "Can not find microhttpd library for Windows.")
+    message(ERROR "Can not find libmicrohttpd library for Windows.")
   endif()
 
   # Add support for the Win32 socket libraries
@@ -55,6 +56,7 @@ if(WIN32)
   
   link_libraries(
 	${LIBMICROHTTPD_LIBRARIES}
+    ${LIBWEBSOCKETS_LIBRARIES}
     json-c::json-c
     unofficial::libconfuse::libconfuse
   )
@@ -70,6 +72,7 @@ else(WIN32)
     ${LIBCONFUSE_LIBRARY}
     ${LIBJSON_C_LIBRARIES}
     ${LIBM_LIBRARIES}
+    ${LIBWEBSOCKETS_LIBRARIES}
   )
 
 endif(WIN32)
