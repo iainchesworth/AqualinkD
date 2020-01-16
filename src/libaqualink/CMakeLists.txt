@@ -6,6 +6,7 @@ set(SOURCE_FILES
   config/config_helpers.c
   config/config_parsers.c
   config/config_private.c
+  config/config_private_defaults.c
   config/config_validators.c
   cross-platform/linux/daemon_linux.c
   cross-platform/linux/process_linux.c

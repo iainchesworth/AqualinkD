@@ -3,25 +3,6 @@
 
 #include <confuse.h>
 
-#define DEFAULT_LOG_LEVEL		5 
-#define DEFAULT_WEBPORT			80
-#define DEFAULT_SSL_WEBPORT		443
-#define DEFAULT_WEBROOT			"./"
-#define DEFAULT_INSECURE		cfg_false
-#define DEFAULT_CONFIG_FILE		"./aqualinkd.conf"
-#define DEFAULT_PID_FILE		"/var/run/aqualinkd.pid"
-#define DEFAULT_SERIALPORT		"/dev/ttyUSB0"
-#define DEFAULT_DEVICE_ID		"0x0a"
-#define DEFAULT_LOG_FILE		0
-#define DEFAULT_RS485_LOG_FILE	"/tmp/RS485.log"
-#define DEFAULT_MQTT_DZ_IN		0
-#define DEFAULT_MQTT_DZ_OUT		0
-#define DEFAULT_MQTT_AQ_TP		0
-#define DEFAULT_MQTT_SERVER		0
-#define DEFAULT_MQTT_USER		0
-#define DEFAULT_MQTT_PASSWD		0
-#define TEMP_UNKNOWN			-999
-
 // Set this high, as people are confused about SWG bouncing to zero on some panels, just stop the questions
 #define DEFAULT_SWG_ZERO_IGNORE_COUNT 20
 
@@ -76,10 +57,11 @@ extern const char CONFIG_BOOL_FORCE_SWG[];
 extern const char CONFIG_INT_SWG_ZERO_IGNORE[];
 extern const char CONFIG_BOOL_READ_PENTAIR_PACKETS[];
 extern const char CONFIG_BOOL_DISPLAY_WARNINGS_IN_WEB[];
-extern const char CONFIG_BOOL_DEBUG_RSPROTOCOL_PACKETS[];
-extern const char CONFIG_BOOL_LOG_RAW_RS_BYTES[];
-extern const char CONFIG_STR_LOG_RAW_RS_BYTES_LOGFILE[];
 
+extern const char CONFIG_BOOL_PLAYBACK_MODE[];
+extern const char CONFIG_BOOL_RECORD_MODE[];
+extern const char CONFIG_STR_RAW_SERIAL_LOG_FILE[];
+ 
 extern const char CONFIG_STR_BUTTON_FILTERPUMP_LABEL[];
 extern const char CONFIG_STR_BUTTON_SPAMODE_LABEL[];
 extern const char CONFIG_STR_BUTTON_AUX1_LABEL[];

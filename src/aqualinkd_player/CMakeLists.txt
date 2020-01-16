@@ -25,4 +25,3 @@ target_link_libraries(aqualinkd_player
 	${LIBM_LIBRARIES}
     Threads::Threads
 )
-

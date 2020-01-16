@@ -4,6 +4,7 @@
 #include <confuse.h>
 #include <stdbool.h>
 
+#include "hardware/devices/hardware_device_types.h"
 #include "logging/logging_levels.h"
 #include "config.h"
 
@@ -27,7 +28,7 @@ const char* CFG_SerialPort()
 
 const LoggingLevels CFG_LogLevel()
 {
-	return (LoggingLevels) cfg_getint(_config_parameters, CONFIG_INT_LOG_LEVEL);
+	return (LoggingLevels)cfg_getint(_config_parameters, CONFIG_INT_LOG_LEVEL);
 }
 
 const int CFG_SocketPort()
@@ -50,9 +51,15 @@ const bool CFG_Insecure()
 	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_INSECURE));
 }
 
-const int CFG_DeviceId()
+const HardwareDeviceId CFG_DeviceId()
 {
-	return cfg_getint(_config_parameters, CONFIG_INT_DEVICE_ID);
+	unsigned char calculated_device_id = (unsigned char)cfg_getint(_config_parameters, CONFIG_INT_DEVICE_ID);
+	HardwareDeviceId device_id;
+
+	device_id.Type = (HardwareDeviceTypes)(calculated_device_id & 0xFC);
+	device_id.Instance = (HardwareDeviceInstanceTypes)(calculated_device_id & 0x03);
+
+	return device_id;
 }
 
 const bool CFG_OverrideFreezeProtect()
@@ -220,19 +227,19 @@ const bool CFG_DisplayWarningsWeb()
 	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_DISPLAY_WARNINGS_IN_WEB));
 }
 
-const bool CFG_DebugRsProtocolPackets()
+const bool CFG_PlaybackMode()
 {
-	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_DEBUG_RSPROTOCOL_PACKETS));
+	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_PLAYBACK_MODE));
 }
 
-const bool CFG_LogRawRsBytes()
+const bool CFG_RecordMode()
 {
-	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_LOG_RAW_RS_BYTES));
+	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_RECORD_MODE));
 }
 
-const char* CFG_LogRawRsBytes_LogFile()
+const char* CFG_RawSerial_LogFile()
 {
-	return cfg_getstr(_config_parameters, CONFIG_STR_LOG_RAW_RS_BYTES_LOGFILE);
+	return cfg_getstr(_config_parameters, CONFIG_STR_RAW_SERIAL_LOG_FILE);
 }
 
 const char* CFG_ButtonFilterPumpLabel()
@@ -326,9 +333,10 @@ void CFG_Set_Insecure(bool insecure)
 	cfg_setbool(_config_parameters, CONFIG_BOOL_INSECURE, (insecure) ? cfg_true : cfg_false);
 }
 
-void CFG_Set_DeviceId(int deviceId)
+void CFG_Set_DeviceId(HardwareDeviceId deviceId)
 {
-	cfg_setint(_config_parameters, CONFIG_INT_DEVICE_ID, deviceId);
+	unsigned char calculated_id = ((deviceId.Type & deviceId.Instance) & 0xFF);
+	cfg_setint(_config_parameters, CONFIG_INT_DEVICE_ID, (int)calculated_id);
 }
 
 void CFG_Set_NoDaemonize(bool daemonize)
@@ -341,17 +349,17 @@ void CFG_Set_LogFile(const char* logFile)
 	cfg_setstr(_config_parameters, CONFIG_STR_LOG_FILE, logFile);
 }
 
-void CFG_Set_DebugRsProtocolPackets(bool debugRsProtocolPackets)
+void CFG_Set_PlaybackMode(bool modeIsEnabled)
 {
-	cfg_setbool(_config_parameters, CONFIG_BOOL_DEBUG_RSPROTOCOL_PACKETS, (debugRsProtocolPackets) ? cfg_true : cfg_false);
+	cfg_setbool(_config_parameters, CONFIG_BOOL_PLAYBACK_MODE, (modeIsEnabled) ? cfg_true : cfg_false);
 }
 
-void CFG_Set_LogRawRsBytes(bool logRawRsBytes)
+void CFG_Set_RecordMode(bool modeIsEnabled)
 {
-	cfg_setbool(_config_parameters, CONFIG_BOOL_LOG_RAW_RS_BYTES, (logRawRsBytes) ? cfg_true : cfg_false);
+	cfg_setbool(_config_parameters, CONFIG_BOOL_RECORD_MODE, (modeIsEnabled) ? cfg_true : cfg_false);
 }
 
-void CFG_Set_LogRawRsBytes_LogFile(const char* logRawRsBytes_LogFile)
+void CFG_Set_RawSerial_LogFile(const char* logfile)
 {
-	cfg_setstr(_config_parameters, CONFIG_STR_LOG_RAW_RS_BYTES_LOGFILE, logRawRsBytes_LogFile);
+	cfg_setstr(_config_parameters, CONFIG_STR_RAW_SERIAL_LOG_FILE, logfile);
 }

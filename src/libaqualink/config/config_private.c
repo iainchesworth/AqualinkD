@@ -49,9 +49,10 @@ const char CONFIG_BOOL_FORCE_SWG[] = "force_swg";
 const char CONFIG_INT_SWG_ZERO_IGNORE[] = "swg_zero_ignore";
 const char CONFIG_BOOL_READ_PENTAIR_PACKETS[] = "read_pentair_packets";
 const char CONFIG_BOOL_DISPLAY_WARNINGS_IN_WEB[] = "display_warnings_in_web";
-const char CONFIG_BOOL_DEBUG_RSPROTOCOL_PACKETS[] = "debug_RSProtocol_packets";
-const char CONFIG_BOOL_LOG_RAW_RS_BYTES[] = "log_raw_RS_bytes";
-const char CONFIG_STR_LOG_RAW_RS_BYTES_LOGFILE[] = "log_raw_RS_bytes_logfile";
+
+const char CONFIG_BOOL_PLAYBACK_MODE[] = "playback_mode";
+const char CONFIG_BOOL_RECORD_MODE[] = "record_mode";
+const char CONFIG_STR_RAW_SERIAL_LOG_FILE[] = "raw_serial_log_file";
 
 const char CONFIG_STR_BUTTON_FILTERPUMP_LABEL[] = "button_01_label";
 const char CONFIG_STR_BUTTON_SPAMODE_LABEL[] = "button_02_label";

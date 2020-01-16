@@ -55,7 +55,7 @@ int serial_thread(void* termination_handler_ptr)
 				else
 				{
 					// Initialise the serial data logger, if required.
-					if (CFG_LogRawRsBytes())
+					if (CFG_RecordMode())
 					{
 						aq_serial_logger_initialise();
 					}
@@ -153,7 +153,7 @@ int serial_thread(void* termination_handler_ptr)
 	while ((ST_TERMINATE != state) && (!test_for_termination()));
 	
 	// Destory the serial data logger if it was created.
-	if (CFG_LogRawRsBytes())
+	if (CFG_RecordMode())
 	{
 		shutdown_logging(&aq_serial_data_logger);
 	}

@@ -49,7 +49,7 @@ Logger aq_serial_data_logger =
 
 void aq_serial_logger_initialise()
 {
-	aq_serial_data_logger_file_sink_user_data.Filename = CFG_LogRawRsBytes_LogFile();
+	aq_serial_data_logger_file_sink_user_data.Filename = CFG_RawSerial_LogFile();
 	register_logging_sink(&aq_serial_data_logger.Sinks, &aq_serial_data_logger_file_sink);
 }
 

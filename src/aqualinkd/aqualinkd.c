@@ -161,9 +161,24 @@ int main(int argc, char* argv[])
 	NOTICE("Config file              = %s", CFG_ConfigFile());
 	NOTICE("Config light_pgm_mode    = %.2f", CFG_LightProgrammingMode());
 	NOTICE("Log file                 = %s", CFG_LogFile());
-	NOTICE("Debug RS485 protocol     = %s", bool2text(CFG_DebugRsProtocolPackets()));
 	NOTICE("Read Pentair Packets     = %s", bool2text(CFG_ReadPentairPackets()));
 	NOTICE("Display warnings in web  = %s", bool2text(CFG_DisplayWarningsWeb()));
+
+	if (CFG_PlaybackMode())
+	{
+		NOTICE("Operating mode           = Playback");
+		NOTICE("Raw serial source file   = %s", CFG_RawSerial_LogFile());
+	}
+	else if (CFG_RecordMode())
+	{
+		NOTICE("Operating mode           = Recording");
+		NOTICE("Raw serial source file   = %s", CFG_RawSerial_LogFile());
+	}
+	else
+	{
+		// Normal mode i.e. not playback or recording
+		NOTICE("Operating mode           = Normal");
+	}
 
 	if (CFG_SwgZeroIgnore() > 0)
 	{

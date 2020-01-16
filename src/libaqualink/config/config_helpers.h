@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 
+#include "hardware/devices/hardware_device_types.h"
 #include "logging/logging_levels.h"
 
 const char* CFG_ConfigFile();
@@ -13,7 +14,7 @@ const int CFG_SocketPort();
 const int CFG_SslSocketPort();
 const char* CFG_WebDirectory();
 const bool CFG_Insecure();
-const int CFG_DeviceId();
+const HardwareDeviceId CFG_DeviceId();
 const bool CFG_OverrideFreezeProtect();
 
 const char* CFG_MqttDzSubTopic();
@@ -53,9 +54,10 @@ const bool CFG_ForceSwg();
 const int CFG_SwgZeroIgnore();
 const bool CFG_ReadPentairPackets();
 const bool CFG_DisplayWarningsWeb();
-const bool CFG_DebugRsProtocolPackets();
-const bool CFG_LogRawRsBytes();
-const char* CFG_LogRawRsBytes_LogFile();
+
+const bool CFG_PlaybackMode();
+const bool CFG_RecordMode();
+const char* CFG_RawSerial_LogFile();
 
 const char* CFG_ButtonFilterPumpLabel();
 const char* CFG_ButtonSpaModeLabel();
@@ -77,11 +79,11 @@ void CFG_Set_PidFile(const char* pidFile);
 void CFG_Set_SerialPort(const char* serialPort);
 void CFG_Set_LogLevel(LoggingLevels logLevel);
 void CFG_Set_Insecure(bool insecure);
-void CFG_Set_DeviceId(int deviceId);
+void CFG_Set_DeviceId(HardwareDeviceId deviceId);
 void CFG_Set_NoDaemonize(bool daemonize);
 void CFG_Set_LogFile(const char* logFile);
-void CFG_Set_DebugRsProtocolPackets(bool debugRsProtocolPackets);
-void CFG_Set_LogRawRsBytes(bool logRawRsBytes);
-void CFG_Set_LogRawRsBytes_LogFile(const char* logRawRsBytes_LogFile);
+void CFG_Set_PlaybackMode(bool modeIsEnabled);
+void CFG_Set_RecordMode(bool modeIsEnabled);
+void CFG_Set_RawSerial_LogFile(const char* logfile);
 
 #endif // AQ_CONFIG_HELPERS_H_

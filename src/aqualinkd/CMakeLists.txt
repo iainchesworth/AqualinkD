@@ -29,5 +29,10 @@ target_link_libraries(aqualinkd
     # Nothing here
 )
 
-include(${CMAKE_SOURCE_DIR}/cmake/valgrind/valgrind.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/perfprofile/perfprofile.cmake)
+install(TARGETS aqualinkd 
+  RUNTIME DESTINATION "${PROJECT_NAME}"
+)
+
+include(${CMAKE_SOURCE_DIR}/cmake/tools/perfprofile/perfprofile.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/tools/valgrind/valgrind.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/packaging/packaging.cmake)
