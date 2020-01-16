@@ -173,7 +173,8 @@ bool text2bool(const char* str)
 	assert(NULL != str);
 
 	const size_t strLength = strlen(str);
-	int firstCharPos = -1, i;
+	int firstCharPos = -1;
+	size_t i;
 
 	// Find the first non-whitespace char and "next" whitespace char after that.
 	for (i = 0; i < strLength; ++i)
@@ -199,7 +200,8 @@ bool request2bool(const char* str)
 	assert(NULL != str);
 
 	const size_t strLength = strlen(str);
-	int firstCharPos = -1, i;
+	int firstCharPos = -1;
+	size_t i;
 
 	// Find the first non-whitespace char and "next" whitespace char after that.
 	for (i = 0; i < strLength; ++i)

@@ -1,5 +1,5 @@
 ﻿cmake_minimum_required(VERSION 3.12)
-project(log_reader CXX)
+project(log_reader C)
 
 set(SOURCE_FILES 
   log_reader.c

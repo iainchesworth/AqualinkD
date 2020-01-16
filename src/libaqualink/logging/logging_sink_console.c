@@ -8,6 +8,8 @@
 #include "logging_levels.h"
 #include "logging_sink.h"
 
+#include "aqualink.h"
+
 void logging_sink_console_initialise(LoggingSink* thisSink)
 {
 	assert(0 != thisSink);
@@ -39,6 +41,8 @@ void logging_sink_console_formatter(LoggingSink* thisSink)
 
 void logging_sink_console_pattern(LoggingSink* thisSink, const char* pattern)
 {
+	UNREFERENCED_PARAMETER(pattern);
+
 	assert(0 != thisSink);
 
 	if (thisSink->Config.SinkIsInitialised)
@@ -61,7 +65,7 @@ void logging_sink_console_writer(LoggingSink* thisSink, LoggingMessage message)
 	}
 	else
 	{
-		const char* message_colour;
+		const char* message_colour = terminal_dim();
 		FILE* output_location = stdout;
 
 		switch (message.Level)

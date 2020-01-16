@@ -5,9 +5,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "config/config_helpers.h"
+#include "hardware/devices/hardware_device_types.h"
 #include "logging/logging.h"
 #include "utility/utils.h"
-#include "version/version.h"
+
+#include "../aqualinkd-version.h"
 
 void printHelp()
 {
@@ -111,10 +113,12 @@ void handleOptions(int argc, char* argv[])
 			break;
 
 		case OPTION_FLAG_ID: // short option 'i' / long option "id"
-			HardwareDeviceId deviceId;
-			deviceId.Type = (HardwareDeviceTypes)(atoi(optarg) & 0xFC);
-			deviceId.Instance = (HardwareDeviceInstanceTypes)(atoi(optarg) & 0x03);
-			CFG_Set_DeviceId(deviceId);
+			{
+				HardwareDeviceId deviceId;
+				deviceId.Type = (HardwareDeviceTypes)(atoi(optarg) & 0xFC);
+				deviceId.Instance = (HardwareDeviceInstanceTypes)(atoi(optarg) & 0x03);
+				CFG_Set_DeviceId(deviceId);
+			}
 			break;
 
 		case OPTION_FLAG_INSECURE: // long option "insecure"

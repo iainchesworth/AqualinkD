@@ -1,28 +1,14 @@
 #ifndef AQ_TIME_H_
 #define AQ_TIME_H_
 
-#if defined (WIN32)
-
 #include <time.h>
+
+#if defined (WIN32)
 
 char* strptime(const char* s, const char* format, struct tm* tm);
 int nanosleep(const struct timespec* requested_delay, struct timespec* remaining_delay);
 
 #else // defined (WIN32)
-
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE 1
-#endif // _GNU_SOURCE
-
-#ifndef _XOPEN_SOURCE
-#define _XOPEN_SOURCE 1
-#endif // _XOPEN_SOURCE
-
-#ifndef __USE_XOPEN
-#define __USE_XOPEN 1
-#endif // __USE_XOPEN
-
-#include <time.h>
 
 // strptime() is available on Linux systems
 // nanosleep() is available on Linux systems

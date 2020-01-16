@@ -5,7 +5,7 @@
 
 #include "pda_simulator_types.h"
 
-bool pda_simulator_initmutex();
+bool pda_simulator_initmutex(void);
 
 extern Aqualink_PDASimulator aqualink_pda_simulator;
 

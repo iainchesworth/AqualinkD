@@ -6,6 +6,5 @@ else()
 
   # Enable clang-tidy on non-Windows platforms
   set(CMAKE_C_CLANG_TIDY clang-tidy -checks=-*,readability-*,warnings-as-errors=*)
-  set(CMAKE_CXX_CLANG_TIDY clang-tidy -checks=-*,readability-*,warnings-as-errors=*;)
 
 endif()

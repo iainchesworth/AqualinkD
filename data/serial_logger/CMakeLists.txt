@@ -1,5 +1,5 @@
 ﻿cmake_minimum_required(VERSION 3.12)
-project(serial_logger CXX)
+project(serial_logger C)
 
 set(SOURCE_FILES 
   serial-processor/serial_processor.c

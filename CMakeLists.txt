@@ -1,26 +1,32 @@
-﻿cmake_minimum_required(VERSION 3.12)
+﻿# 
+# CMake options
+# 
+
+# CMake version
+cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
+
+#
+# Configure CMake environment
+#
+
+# Register general cmake commands
+include(cmake/modules/Custom.cmake)
 
 # Set policies
 cmake_policy(SET CMP0042 NEW) # ENABLE CMP0042: MACOSX_RPATH is enabled by default.
-cmake_policy(SET CMP0048 NEW) # ENABLE CMP0048: Enable PROJECT_VERSION_XXXX variables.
 cmake_policy(SET CMP0054 NEW) # ENABLE CMP0054: Only interpret if() arguments as variables or keywords when unquoted.
 cmake_policy(SET CMP0063 NEW) # ENABLE CMP0063: Honor visibility properties for all target types.
 cmake_policy(SET CMP0077 NEW) # ENABLE CMP0077: option() honors normal variables
 
-if(WIN32)
-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-    add_definitions(-DWIN32_LEAN_AND_MEAN)
-    add_definitions(-DNOGDI)
-    add_definitions(-DNOGDICAPMASKS)
-    add_definitions(-DNOMINMAX)
-	add_definitions(-D_WIN32_WINNT=0x0A00)
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-endif()
+if (${CMAKE_VERSION} GREATER_EQUAL 3.15)
+cmake_policy(SET CMP0092 NEW) # ENABLE CMP0077: SVC warning flags are not in CMAKE_<LANG>_FLAGS by default.
+endif ()
 
 # Include cmake modules
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 
 # Include custom cmake modules
+include(cmake/modules/Coverage.cmake)
 include(cmake/modules/GetGitRevisionDescription.cmake)
 include(cmake/modules/Healthcheck.cmake)
 
@@ -37,7 +43,7 @@ endif()
 
 # Meta information about the project
 set(META_PROJECT_NAME        "aqualinkd")
-set(META_PROJECT_DESCRIPTION "")
+set(META_PROJECT_DESCRIPTION "A daemon to control Jandy Aqualink RS pool equipment from any home automation hub.")
 set(META_AUTHOR_ORGANIZATION "")
 set(META_AUTHOR_DOMAIN       "")
 set(META_AUTHOR_MAINTAINER   "")
@@ -61,7 +67,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(IDE_FOLDER "")
 
 # Declare project
-project(${META_PROJECT_NAME} C CXX)
+project(${META_PROJECT_NAME} C)
 
 # Set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
@@ -75,16 +81,13 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 # Configure health check tools
 enable_cppcheck(ON)
 enable_clang_tidy(ON)
-#enable_coverage(ON)
 
 # 
 # Compiler settings and options
 # 
 
 include(cmake/compiler-options.cmake)
-include(cmake/cross-platform.cmake)
-include(cmake/tools/Tools.cmake)
-
+include(cmake/tools/tools.cmake)
 
 # 
 # Deployment/installation setup

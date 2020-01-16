@@ -9,6 +9,8 @@
 
 bool onetouch_simulator_statusmessagehandler(AQ_Status_Packet* packet)
 {
+	UNREFERENCED_PARAMETER(packet);
+
 	bool handled_status_message = false;
 
 	if ((!aqualink_onetouch_simulator.Config.IsInitialised) && (!onetouch_simulator_initmutex()))

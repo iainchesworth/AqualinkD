@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(aqualinkd_tests CXX)
+project(aqualinkd_tests C)
 
 if(WIN32)
 

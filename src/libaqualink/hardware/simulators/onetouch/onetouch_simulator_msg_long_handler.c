@@ -7,8 +7,12 @@
 #include "messages/message-processors/aq_serial_message_ack_handler.h"
 #include "messages/aq_serial_message_msg_long.h"
 
+#include "aqualink.h"
+
 bool onetouch_simulator_msglongmessagehandler(AQ_Msg_Long_Packet* packet)
 {
+	UNREFERENCED_PARAMETER(packet);
+
 	bool handled_msglong_message = false;
 
 	if ((!aqualink_onetouch_simulator.Config.IsInitialised) && (!onetouch_simulator_initmutex()))

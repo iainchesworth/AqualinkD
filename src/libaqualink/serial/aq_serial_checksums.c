@@ -6,7 +6,7 @@
 #include "logging/logging.h"
 #include "utility/utils.h"
 
-int generate_jandy_checksum(const unsigned char* packet, const int length)
+unsigned char generate_jandy_checksum(const unsigned char* packet, const int length)
 {
 	assert(0 != packet);
 
@@ -25,11 +25,13 @@ int generate_jandy_checksum(const unsigned char* packet, const int length)
 		checksum += (unsigned int) packet[current_byte];
 	}
 
-	return(checksum & 0xff);
+	return (unsigned char)(checksum & 0xFF);
 }
 
 void generate_pentair_checksum(unsigned char* packet, const int length)
 {
+	UNREFERENCED_PARAMETER(length);
+
 	assert(0 != packet);
 
 	int i, sum, n;

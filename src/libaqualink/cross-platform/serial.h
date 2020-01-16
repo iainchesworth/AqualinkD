@@ -16,7 +16,7 @@ typedef int SerialDevice;
 
 extern const SerialDevice SERIALDEVICE_INVALID;
 
-SerialDevice initialise_serial_device();
+SerialDevice initialise_serial_device(void);
 bool set_interface_attributes(SerialDevice serial_device);
 int read_from_serial_device(SerialDevice serial_device, unsigned char buffer[], unsigned int buffer_length);
 int write_to_serial_device(SerialDevice serial_device, const unsigned char buffer[], unsigned int buffer_length);

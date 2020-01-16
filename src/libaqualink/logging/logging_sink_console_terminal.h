@@ -5,23 +5,23 @@
 extern "C" {
 #endif // __cplusplus
 
-const char* terminal_black();
-const char* terminal_red();
-const char* terminal_green();
-const char* terminal_yellow();
-const char* terminal_blue();
-const char* terminal_purple();
-const char* terminal_cyan();
-const char* terminal_light_gray();
-const char* terminal_white();
-const char* terminal_light_red();
+const char* terminal_black(void);
+const char* terminal_red(void);
+const char* terminal_green(void);
+const char* terminal_yellow(void);
+const char* terminal_blue(void);
+const char* terminal_purple(void);
+const char* terminal_cyan(void);
+const char* terminal_light_gray(void);
+const char* terminal_white(void);
+const char* terminal_light_red(void);
 
-const char* terminal_dim();
+const char* terminal_dim(void);
 
-const char* terminal_bold();
-const char* terminal_underline();
+const char* terminal_bold(void);
+const char* terminal_underline(void);
 
-const char* terminal_reset();
+const char* terminal_reset(void);
 
 #ifdef __cplusplus
 }

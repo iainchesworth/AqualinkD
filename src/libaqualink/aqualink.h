@@ -1,6 +1,8 @@
 #ifndef AQUALINK_H_
 #define AQUALINK_H_
 
+#define UNREFERENCED_PARAMETER(P) (P)
+
 /*
 #include <stdbool.h>
 

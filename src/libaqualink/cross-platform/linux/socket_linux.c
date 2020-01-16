@@ -3,9 +3,11 @@
 #if !defined (WIN32)
 
 #include <sys/ioctl.h>
+#include <sys/socket.h>
 #include <netinet/ip.h>
 #include <net/if.h>
 #include <net/if_arp.h>
+#include <linux/if.h>
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>

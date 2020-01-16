@@ -7,8 +7,12 @@
 #include "messages/message-processors/aq_serial_message_ack_handler.h"
 #include "messages/aq_serial_message_msg_long.h"
 
+#include "aqualink.h"
+
 bool pda_simulator_msglongmessagehandler(AQ_Msg_Long_Packet* packet)
 {
+	UNREFERENCED_PARAMETER(packet);
+
 	bool handled_msglong_message = false;
 
 	if ((!aqualink_pda_simulator.Config.IsInitialised) && (!pda_simulator_initmutex()))

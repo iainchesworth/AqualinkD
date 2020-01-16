@@ -10,10 +10,10 @@
 
 #define UNREFERENCED_PARAMETER(P) (P)		// Prevent unused parameter warnings
 
-typedef void (*worker_termination_handler_t)();	
+typedef void (*worker_termination_handler_t)(void);	
 
 void setLoggingPrms(int level, bool deamonized, const char* log_file, const char* error_messages);
-int getLogLevel();
+int getLogLevel(void);
 int count_characters(const char* str, char character);
 char* cleanwhitespace(char* str);
 char* chopwhitespace(char* str);
@@ -30,10 +30,10 @@ float degFtoC(float degF);
 float degCtoF(float degC);
 int ascii(char* destination, const char* source);
 char* prettyString(char* str);
-void startInlineDebug();
-void stopInlineDebug();
-void cleanInlineDebug();
-char* getInlineLogFName();
-bool islogFileReady();
+void startInlineDebug(void);
+void stopInlineDebug(void);
+void cleanInlineDebug(void);
+char* getInlineLogFName(void);
+bool islogFileReady(void);
 
 #endif /* UTILS_H_ */

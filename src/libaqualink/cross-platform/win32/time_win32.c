@@ -10,6 +10,10 @@ enum { BILLION = 1000 * 1000 * 1000 };
 
 char* strptime(const char* s, const char* format, struct tm* tm)
 {
+	UNREFERENCED_PARAMETER(s);
+	UNREFERENCED_PARAMETER(format);
+	UNREFERENCED_PARAMETER(tm);
+
 	return 0;
 }
 

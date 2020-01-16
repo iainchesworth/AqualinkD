@@ -1,7 +1,14 @@
-﻿cmake_minimum_required(VERSION 3.12)
-project(aqualinkd)
+﻿# 
+# Configuration for all sub-projects
+# 
 
-configure_file("${CMAKE_SOURCE_DIR}/cmake/version/version.h.in" "${PROJECT_SOURCE_DIR}/libaqualink/version/version.h")
+# Generate version-header
+configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/${META_PROJECT_NAME}-version.h @ONLY)
 
+# 
+# Sub-projects
+# 
+
+set(IDE_FOLDER "")
 add_subdirectory(libaqualink)
 add_subdirectory(aqualinkd)

@@ -19,6 +19,8 @@
 
 int serial_thread(void* termination_handler_ptr)
 {
+	UNREFERENCED_PARAMETER(termination_handler_ptr);
+
 	TRACE("Serial worker thread is starting");
 	
 	const int MAXIMUM_NUMBER_OF_WRITER_ENTRIES = 10;

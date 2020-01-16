@@ -22,7 +22,7 @@ typedef struct DevicesRegistry DevicesRegistry;
 
 bool hardware_registry_does_device_exist(HardwareDevice* device);
 bool hardware_registry_add_device(HardwareDevice* device);
-unsigned int hardware_registry_get_device_count();
-void hardware_registry_destroy();
+unsigned int hardware_registry_get_device_count(void);
+void hardware_registry_destroy(void);
 
 #endif // AQ_HARDWARE_DEVICE_REGISTRY_H_

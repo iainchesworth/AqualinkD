@@ -8,7 +8,7 @@
 
 extern Logger aq_serial_data_logger;
 
-void aq_serial_logger_initialise();
+void aq_serial_logger_initialise(void);
 void aq_serial_data_logger_error_handler(const char error_message[]);
 void aq_serial_data_logger_formatter(char buffer[], unsigned int buffer_length, LoggingMessage logMessage);
 

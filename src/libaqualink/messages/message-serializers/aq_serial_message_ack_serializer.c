@@ -15,7 +15,7 @@ void serialize_ack_packet(const AQ_Ack_Packet * const packet, unsigned char outb
 
 	outbound_buffer[0] = packet->Header.DLE;
 	outbound_buffer[1] = packet->Header.STX;
-	outbound_buffer[2] = packet->Destination.Type & packet->Destination.Instance;
+	outbound_buffer[2] = (unsigned char)((packet->Destination.Type & packet->Destination.Instance) & 0xFF);
 	outbound_buffer[3] = packet->Command;
 	outbound_buffer[4] = packet->AckType;
 	outbound_buffer[5] = packet->CommandBeingAcked;

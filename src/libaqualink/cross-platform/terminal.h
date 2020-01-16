@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-bool terminal_supports_colour();
+bool terminal_supports_colour(void);
 
 #if defined (WIN32)
 

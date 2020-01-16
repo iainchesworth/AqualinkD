@@ -10,13 +10,11 @@ set_target_properties(pack PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)
 # Install additional runtime dependencies
 include(${PROJECT_SOURCE_DIR}/cmake/modules/RuntimeDependencies.cmake)
 
-
 # 
 # Packages
 # 
 
-include(packages/pack-${META_PROJECT_NAME}.cmake)
-
+include(${CMAKE_CURRENT_LIST_DIR}/packaging/pack-${META_PROJECT_NAME}.cmake)
 
 #
 # Target 'component_install'

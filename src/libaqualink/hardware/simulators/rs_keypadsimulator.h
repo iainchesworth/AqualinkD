@@ -37,12 +37,12 @@ Aqualink_RS6KeypadSimulator;
 
 // Simulator functions
 
-bool rs_keypadsimulator_enable();
-bool rs_keypadsimulator_disable();
+bool rs_keypadsimulator_enable(void);
+bool rs_keypadsimulator_disable(void);
 
 // Simulator message handlers
 
-bool rs_keypadsimulator_initialise();
+bool rs_keypadsimulator_initialise(void);
 bool rs_keypadsimulator_probemessagehandler(AQ_Probe_Packet* packet);
 
 // Simulator message builders

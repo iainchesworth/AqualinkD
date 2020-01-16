@@ -1,6 +1,6 @@
 
-include(${CMAKE_CURRENT_LIST_DIR}/CppCheck.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/ClangTidy.cmake)
+include(cmake/tools/cppcheck.cmake)
+include(cmake/tools/clangtidy.cmake)
 
 set(OPTION_CPPCHECK_ENABLED Off)
 set(OPTION_CLANG_TIDY_ENABLED Off)

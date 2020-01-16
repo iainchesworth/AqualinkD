@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "aqualink.h"
+
 void initialize_logging(Logger* logger)
 {
 	assert(0 != logger);
@@ -22,6 +24,8 @@ void disable_backtrace(Logger* logger)
 
 void enable_backtrace(Logger* logger, unsigned int messageCount)
 {
+	UNREFERENCED_PARAMETER(messageCount);
+
 	assert(0 != logger);
 }
 
@@ -41,6 +45,8 @@ void set_verbosity(Logger* logger, LoggingLevels logLevel)
 
 void set_pattern(Logger* logger, const char* pattern)
 {
+	UNREFERENCED_PARAMETER(pattern);
+
 	assert(0 != logger);
 }
 

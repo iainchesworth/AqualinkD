@@ -5,7 +5,7 @@
 
 #include "onetouch_simulator_types.h"
 
-bool onetouch_simulator_initmutex();
+bool onetouch_simulator_initmutex(void);
 
 extern Aqualink_OneTouchSimulator aqualink_onetouch_simulator;
 

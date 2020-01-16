@@ -5,8 +5,8 @@
 
 // Simulator functions
 
-bool onetouch_simulator_enable();
-bool onetouch_simulator_disable();
-bool onetouch_simulator_initialise();
+bool onetouch_simulator_enable(void);
+bool onetouch_simulator_disable(void);
+bool onetouch_simulator_initialise(void);
 
 #endif // AQ_ONETOUCH_SIMULATOR_H_

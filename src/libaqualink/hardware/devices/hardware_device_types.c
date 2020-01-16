@@ -25,7 +25,7 @@ const char* const P_CTL = " <-- Pool controller (EasyTouch)";
 
 const char* const UNKNOWN = " <-- Unknown Device";
 
-const char* const device_id_to_string(HardwareDeviceId device_id)
+const char* device_id_to_string(HardwareDeviceId device_id)
 {
     switch (device_id.Type)
     {

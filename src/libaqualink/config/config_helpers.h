@@ -6,71 +6,71 @@
 #include "hardware/devices/hardware_device_types.h"
 #include "logging/logging_levels.h"
 
-const char* CFG_ConfigFile();
-const char* CFG_PidFile();
-const char* CFG_SerialPort();
-const LoggingLevels CFG_LogLevel();
-const int CFG_SocketPort();
-const int CFG_SslSocketPort();
-const char* CFG_WebDirectory();
-const bool CFG_Insecure();
-const HardwareDeviceId CFG_DeviceId();
-const bool CFG_OverrideFreezeProtect();
+const char* CFG_ConfigFile(void);
+const char* CFG_PidFile(void);
+const char* CFG_SerialPort(void);
+LoggingLevels CFG_LogLevel(void);
+int CFG_SocketPort(void);
+int CFG_SslSocketPort(void);
+const char* CFG_WebDirectory(void);
+bool CFG_Insecure(void);
+HardwareDeviceId CFG_DeviceId(void);
+bool CFG_OverrideFreezeProtect(void);
 
-const char* CFG_MqttDzSubTopic();
-const char* CFG_MqttDzPubTopic();
-const char* CFG_MqttAqTopic();
-const char* CFG_MqttServer();
-const char* CFG_MqttUser();
-const char* CFG_MqttPassword();
-const char* CFG_MqttId();
+const char* CFG_MqttDzSubTopic(void);
+const char* CFG_MqttDzPubTopic(void);
+const char* CFG_MqttAqTopic(void);
+const char* CFG_MqttServer(void);
+const char* CFG_MqttUser(void);
+const char* CFG_MqttPassword(void);
+const char* CFG_MqttId(void);
 
-const int CFG_DzIdxAirTemp();
-const int CFG_DzIdxPoolWaterTemp();
-const int CFG_DzIdxSpaWaterTemp();
-const int CFG_DzIdxSwgPercent();
-const int CFG_DzIdxSwgPpm();
-const int CFG_DzIdxSwgStatus();
+int CFG_DzIdxAirTemp(void);
+int CFG_DzIdxPoolWaterTemp(void);
+int CFG_DzIdxSpaWaterTemp(void);
+int CFG_DzIdxSwgPercent(void);
+int CFG_DzIdxSwgPpm(void);
+int CFG_DzIdxSwgStatus(void);
 
-const double CFG_LightProgrammingMode();
-const int CFG_LightProgrammingInitialOn();
-const int CFG_LightProgrammingInitialOff();
-const int CFG_LightProgrammingButtonPool();
-const int CFG_LightProgrammingButtonSpa();
+double CFG_LightProgrammingMode(void);
+int CFG_LightProgrammingInitialOn(void);
+int CFG_LightProgrammingInitialOff(void);
+int CFG_LightProgrammingButtonPool(void);
+int CFG_LightProgrammingButtonSpa(void);
 
-const bool CFG_NoDaemonize();
-const char* CFG_LogFile();
+bool CFG_NoDaemonize(void);
+const char* CFG_LogFile(void);
 
-const bool CFG_PdaMode();
-const bool CFG_PdaSleepMode();
+bool CFG_PdaMode(void);
+bool CFG_PdaSleepMode(void);
 
-const bool CFG_ConvertMqttTemp();
-const bool CFG_ConvertDzTemp();
-const bool CFG_ReportZeroPoolTemp();
-const bool CFG_ReportZeroSpaTemp();
-const bool CFG_ReadAllDevices();
-const bool CFG_UsePanelAuxLabels();
-const bool CFG_ForceSwg();
-const int CFG_SwgZeroIgnore();
-const bool CFG_ReadPentairPackets();
-const bool CFG_DisplayWarningsWeb();
+bool CFG_ConvertMqttTemp(void);
+bool CFG_ConvertDzTemp(void);
+bool CFG_ReportZeroPoolTemp(void);
+bool CFG_ReportZeroSpaTemp(void);
+bool CFG_ReadAllDevices(void);
+bool CFG_UsePanelAuxLabels(void);
+bool CFG_ForceSwg(void);
+int CFG_SwgZeroIgnore(void);
+bool CFG_ReadPentairPackets(void);
+bool CFG_DisplayWarningsWeb(void);
 
-const bool CFG_PlaybackMode();
-const bool CFG_RecordMode();
-const char* CFG_RawSerial_LogFile();
+bool CFG_PlaybackMode(void);
+bool CFG_RecordMode(void);
+const char* CFG_RawSerial_LogFile(void);
 
-const char* CFG_ButtonFilterPumpLabel();
-const char* CFG_ButtonSpaModeLabel();
-const char* CFG_ButtonAux1Label();
-const char* CFG_ButtonAux2Label();
-const char* CFG_ButtonAux3Label();
-const char* CFG_ButtonAux4Label();
-const char* CFG_ButtonAux5Label();
-const char* CFG_ButtonAux6Label();
-const char* CFG_ButtonAux7Label();
-const char* CFG_ButtonPoolHeaterLabel();
-const char* CFG_ButtonSpaHeaterLabel();
-const char* CFG_ButtonSolarHeaterLabel();
+const char* CFG_ButtonFilterPumpLabel(void);
+const char* CFG_ButtonSpaModeLabel(void);
+const char* CFG_ButtonAux1Label(void);
+const char* CFG_ButtonAux2Label(void);
+const char* CFG_ButtonAux3Label(void);
+const char* CFG_ButtonAux4Label(void);
+const char* CFG_ButtonAux5Label(void);
+const char* CFG_ButtonAux6Label(void);
+const char* CFG_ButtonAux7Label(void);
+const char* CFG_ButtonPoolHeaterLabel(void);
+const char* CFG_ButtonSpaHeaterLabel(void);
+const char* CFG_ButtonSolarHeaterLabel(void);
 
 // Setters
 

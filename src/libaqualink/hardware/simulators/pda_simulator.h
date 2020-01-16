@@ -5,8 +5,8 @@
 
 // Simulator functions
 
-bool pda_simulator_initialise();
-bool pda_simulator_enable();
-bool pda_simulator_disable();
+bool pda_simulator_initialise(void);
+bool pda_simulator_enable(void);
+bool pda_simulator_disable(void);
 
 #endif // AQ_PDA_SIMULATOR_H_

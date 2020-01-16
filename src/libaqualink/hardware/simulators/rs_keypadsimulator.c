@@ -11,6 +11,8 @@
 #include "messages/message-serializers/aq_serial_message_probe_serializer.h"
 #include "serial/aq_serial_types.h"
 
+#include "aqualink.h"
+
 Aqualink_RS6KeypadSimulator aqualink_keypad_simulator =
 {
 	.Config =
@@ -104,6 +106,8 @@ bool rs_keypadsimulator_initialise()
 
 bool rs_keypadsimulator_probemessagehandler(AQ_Probe_Packet* packet)
 {
+	UNREFERENCED_PARAMETER(packet);
+
 	bool handled_probe_message = false;
 
 	if ((!aqualink_keypad_simulator.Config.IsInitialised) && (!rs_keypadsimulator_initmutex()))

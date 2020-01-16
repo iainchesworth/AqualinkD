@@ -55,6 +55,8 @@ void aq_serial_logger_initialise()
 
 void aq_serial_data_logger_error_handler(const char error_message[])
 {
+	UNREFERENCED_PARAMETER(error_message);
+
 	///FIXME
 }
 

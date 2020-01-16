@@ -26,17 +26,17 @@ const char* CFG_SerialPort()
 	return cfg_getstr(_config_parameters, CONFIG_STR_SERIAL_PORT);
 }
 
-const LoggingLevels CFG_LogLevel()
+LoggingLevels CFG_LogLevel()
 {
 	return (LoggingLevels)cfg_getint(_config_parameters, CONFIG_INT_LOG_LEVEL);
 }
 
-const int CFG_SocketPort()
+int CFG_SocketPort()
 {
 	return cfg_getint(_config_parameters, CONFIG_INT_SOCKET_PORT);
 }
 
-const int CFG_SslSocketPort()
+int CFG_SslSocketPort()
 {
 	return cfg_getint(_config_parameters, CONFIG_INT_SSL_SOCKET_PORT);
 }
@@ -46,12 +46,12 @@ const char* CFG_WebDirectory()
 	return cfg_getstr(_config_parameters, CONFIG_STR_WEB_DIRECTORY);
 }
 
-const bool CFG_Insecure()
+bool CFG_Insecure()
 {
 	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_INSECURE));
 }
 
-const HardwareDeviceId CFG_DeviceId()
+HardwareDeviceId CFG_DeviceId()
 {
 	unsigned char calculated_device_id = (unsigned char)cfg_getint(_config_parameters, CONFIG_INT_DEVICE_ID);
 	HardwareDeviceId device_id;
@@ -62,7 +62,7 @@ const HardwareDeviceId CFG_DeviceId()
 	return device_id;
 }
 
-const bool CFG_OverrideFreezeProtect()
+bool CFG_OverrideFreezeProtect()
 {
 	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_OVERRIDE_FREEZE_PROTECT));
 }
@@ -102,62 +102,62 @@ const char* CFG_MqttId()
 	return cfg_getstr(_config_parameters, CONFIG_STR_MQTT_ID);
 }
 
-const int CFG_DzIdxAirTemp()
+int CFG_DzIdxAirTemp()
 {
 	return cfg_getint(_config_parameters, CONFIG_INT_DZIDX_AIR_TEMP);
 }
 
-const int CFG_DzIdxPoolWaterTemp()
+int CFG_DzIdxPoolWaterTemp()
 {
 	return cfg_getint(_config_parameters, CONFIG_INT_DZIDX_POOL_WATER_TEMP);
 }
 
-const int CFG_DzIdxSpaWaterTemp()
+int CFG_DzIdxSpaWaterTemp()
 {
 	return cfg_getint(_config_parameters, CONFIG_INT_DZIDX_SPA_WATER_TEMP);
 }
 
-const int CFG_DzIdxSwgPercent()
+int CFG_DzIdxSwgPercent()
 {
 	return cfg_getint(_config_parameters, CONFIG_INT_DZIDX_SWG_PERCENT);
 }
 
-const int CFG_DzIdxSwgPpm()
+int CFG_DzIdxSwgPpm()
 {
 	return cfg_getint(_config_parameters, CONFIG_INT_DZIDX_SWG_PPM);
 }
 
-const int CFG_DzIdxSwgStatus()
+int CFG_DzIdxSwgStatus()
 {
 	return cfg_getint(_config_parameters, CONFIG_INT_DZIDX_SWG_STATUS);
 }
 
-const double CFG_LightProgrammingMode()
+double CFG_LightProgrammingMode()
 {
 	return cfg_getfloat(_config_parameters, CONFIG_FLOAT_LIGHT_PROGRAMMING_MODE);
 }
 
-const int CFG_LightProgrammingInitialOn()
+int CFG_LightProgrammingInitialOn()
 {
 	return cfg_getint(_config_parameters, CONFIG_INT_LIGHT_PROGRAMMING_INITIAL_ON);
 }
 
-const int CFG_LightProgrammingInitialOff()
+int CFG_LightProgrammingInitialOff()
 {
 	return cfg_getint(_config_parameters, CONFIG_INT_LIGHT_PROGRAMMING_INITIAL_OFF);
 }
 
-const int CFG_LightProgrammingButtonPool()
+int CFG_LightProgrammingButtonPool()
 {
 	return cfg_getint(_config_parameters, CONFIG_INT_LIGHT_PROGRAMMING_BUTTON_POOL);
 }
 
-const int CFG_LightProgrammingButtonSpa()
+int CFG_LightProgrammingButtonSpa()
 {
 	return cfg_getint(_config_parameters, CONFIG_INT_LIGHT_PROGRAMMING_BUTTON_SPA);
 }
 
-const bool CFG_NoDaemonize()
+bool CFG_NoDaemonize()
 {
 	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_NO_DAEMONIZE));
 }
@@ -167,72 +167,72 @@ const char* CFG_LogFile()
 	return cfg_getstr(_config_parameters, CONFIG_STR_LOG_FILE);
 }
 
-const bool CFG_PdaMode()
+bool CFG_PdaMode()
 {
 	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_PDA_MODE));
 }
 
-const bool CFG_PdaSleepMode()
+bool CFG_PdaSleepMode()
 {
 	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_PDA_SLEEP_MODE));
 }
 
-const bool CFG_ConvertMqttTemp()
+bool CFG_ConvertMqttTemp()
 {
 	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_CONVERT_MQTT_TEMP_TO_C));
 }
 
-const bool CFG_ConvertDzTemp()
+bool CFG_ConvertDzTemp()
 {
 	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_CONVERT_DZ_TEMP_TO_C));
 }
 
-const bool CFG_ReportZeroPoolTemp()
+bool CFG_ReportZeroPoolTemp()
 {
 	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_REPORT_ZERO_POOL_TEMP));
 }
 
-const bool CFG_ReportZeroSpaTemp()
+bool CFG_ReportZeroSpaTemp()
 {
 	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_REPORT_ZERO_SPA_TEMP));
 }
 
-const bool CFG_ReadAllDevices()
+bool CFG_ReadAllDevices()
 {
 	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_READ_ALL_DEVICES));
 }
 
-const bool CFG_UsePanelAuxLabels()
+bool CFG_UsePanelAuxLabels()
 {
 	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_USE_PANEL_AUX_LABELS));
 }
 
-const bool CFG_ForceSwg()
+bool CFG_ForceSwg()
 {
 	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_FORCE_SWG));
 }
 
-const int CFG_SwgZeroIgnore()
+int CFG_SwgZeroIgnore()
 {
 	return cfg_getint(_config_parameters, CONFIG_INT_SWG_ZERO_IGNORE);
 }
 
-const bool CFG_ReadPentairPackets()
+bool CFG_ReadPentairPackets()
 {
 	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_READ_PENTAIR_PACKETS));
 }
 
-const bool CFG_DisplayWarningsWeb()
+bool CFG_DisplayWarningsWeb()
 {
 	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_DISPLAY_WARNINGS_IN_WEB));
 }
 
-const bool CFG_PlaybackMode()
+bool CFG_PlaybackMode()
 {
 	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_PLAYBACK_MODE));
 }
 
-const bool CFG_RecordMode()
+bool CFG_RecordMode()
 {
 	return (cfg_true == cfg_getbool(_config_parameters, CONFIG_BOOL_RECORD_MODE));
 }

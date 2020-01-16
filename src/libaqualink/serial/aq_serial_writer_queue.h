@@ -32,15 +32,15 @@ typedef struct tagSerialWriter_SendQueue
 SerialWriter_SendQueue;
 
 bool serial_writer_send_queue_initialise(const unsigned int maximum_size);
-void serial_writer_send_queue_destroy();
+void serial_writer_send_queue_destroy(void);
 
 // Utility functions
-int serial_writer_send_queue_used_entries();
-int serial_writer_send_queue_empty_entries();
-int serial_writer_send_queue_total_entries();
+int serial_writer_send_queue_used_entries(void);
+int serial_writer_send_queue_empty_entries(void);
+int serial_writer_send_queue_total_entries(void);
 
 // Slot functions - dequeue
-unsigned char serial_writer_dequeue_message_get_next_byte();
+unsigned char serial_writer_dequeue_message_get_next_byte(void);
 
 // Slot functions - enqueue
 bool serial_writer_enqueue_ack_message(AQ_Ack_Packet* ackPacket);

@@ -6,6 +6,8 @@
 
 #include "logging/logging.h"
 
+#include "aqualink.h"
+
 void logging_sink_basic_file_initialise(LoggingSink* thisSink)
 {
 	assert(0 != thisSink);
@@ -56,6 +58,8 @@ void logging_sink_basic_file_formatter(LoggingSink* thisSink)
 
 void logging_sink_basic_file_pattern(LoggingSink* thisSink, const char* pattern)
 {
+	UNREFERENCED_PARAMETER(pattern);
+
 	assert(0 != thisSink);
 
 	if (thisSink->Config.SinkIsInitialised)
@@ -66,6 +70,8 @@ void logging_sink_basic_file_pattern(LoggingSink* thisSink, const char* pattern)
 
 void logging_sink_basic_file_writer(LoggingSink* thisSink, LoggingMessage message)
 {
+	UNREFERENCED_PARAMETER(message);
+
 	assert(0 != thisSink);
 
 	if (thisSink->Config.SinkIsInitialised)

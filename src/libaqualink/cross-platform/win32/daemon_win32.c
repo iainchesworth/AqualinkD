@@ -3,7 +3,8 @@
 #if defined (WIN32)
 
 #include "logging/logging.h"
-#include "version/version.h"
+
+#include "aqualinkd-version.h"
 
 bool daemonize(main_function_t main_function)
 {

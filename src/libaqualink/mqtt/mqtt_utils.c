@@ -6,9 +6,10 @@
 #include "cross-platform/process.h"
 #include "cross-platform/socket.h"
 #include "utility/utils.h"
-#include "version/version.h"
 
-char* generate_mqtt_id(char* buf, int len) 
+#include "aqualinkd-version.h"
+
+char* generate_mqtt_id(char* buf, unsigned int len)
 {
 	strncpy(buf, AQUALINKD_NAME, len);
 	

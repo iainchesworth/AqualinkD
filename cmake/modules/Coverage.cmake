@@ -1,5 +1,5 @@
 
-include(${CMAKE_CURRENT_LIST_DIR}/Gcov.cmake)
+include(cmake/tools/gcov.cmake)
 
 set(OPTION_COVERAGE_ENABLED OFF)
 

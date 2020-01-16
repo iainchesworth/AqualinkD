@@ -35,12 +35,12 @@
 #include "string/string_utils.h"
 #include "threads/thread_utils.h"
 #include "utility/utils.h"
-#include "version/version.h"
 #include "web/aq_web_threaded.h"
 
 #include "options.h"
+#include "../aqualinkd-version.h"
 
-static bool main_loop()
+static bool main_loop(void)
 {
 	thrd_t serial_worker_thread, webserver_worker_thread;
 	bool ran_successfully = false;

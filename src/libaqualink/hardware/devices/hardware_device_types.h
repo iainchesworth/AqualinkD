@@ -44,6 +44,6 @@ HardwareDeviceId;
 
 extern const HardwareDeviceId INVALID_DEVICE_ID;
 
-const char* const device_id_to_string(HardwareDeviceId device_id);
+const char* device_id_to_string(HardwareDeviceId device_id);
 
 #endif // AQ_HARDWARE_DEVICE_TYPES_H_

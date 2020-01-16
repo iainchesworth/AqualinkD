@@ -93,17 +93,17 @@ typedef struct tagAqualinkRS
 AqualinkRS;
 
 void rs_controller_initialise(AqualinkRS_Variants variant);
-void rs_controller_destroy();
+void rs_controller_destroy(void);
 
 void rs_controller_record_message_event(SerialData_Commands command, HardwareDeviceId destination);
-SerialData_Commands rs_controller_get_last_message_type();
-HardwareDeviceId rs_controller_get_last_message_destination();
+SerialData_Commands rs_controller_get_last_message_type(void);
+HardwareDeviceId rs_controller_get_last_message_destination(void);
 
-void rs_controller_print_detected_devices();
+void rs_controller_print_detected_devices(void);
 
 // RS6 Keypad Simulator
-bool rs_controller_enable_rs6_simulator();
-bool rs_controller_disable_rs6_simulator();
+bool rs_controller_enable_rs6_simulator(void);
+bool rs_controller_disable_rs6_simulator(void);
 bool rs_controller_was_packet_to_or_from_rs6_simulator(HardwareDeviceId device_id);
 bool rs_controller_rs6_simulator_handle_ack_packet(AQ_Ack_Packet* probePacketforSimulator);
 bool rs_controller_rs6_simulator_handle_msg_long_packet(AQ_Msg_Long_Packet* probePacketforSimulator);
@@ -112,8 +112,8 @@ bool rs_controller_rs6_simulator_handle_probe_packet(AQ_Probe_Packet* probePacke
 bool rs_controller_rs6_simulator_handle_unknown_packet(AQ_Unknown_Packet* probePacketforSimulator);
 
 // PDA Simulator
-bool rs_controller_enable_pda_simulator(); 
-bool rs_controller_disable_pda_simulator();
+bool rs_controller_enable_pda_simulator(void); 
+bool rs_controller_disable_pda_simulator(void);
 bool rs_controller_was_packet_to_or_from_pda_simulator(HardwareDeviceId device_id);
 bool rs_controller_pda_simulator_handle_ack_packet(AQ_Ack_Packet* probePacketforSimulator);
 bool rs_controller_pda_simulator_handle_msg_long_packet(AQ_Msg_Long_Packet* probePacketforSimulator);
@@ -122,8 +122,8 @@ bool rs_controller_pda_simulator_handle_probe_packet(AQ_Probe_Packet* probePacke
 bool rs_controller_pda_simulator_handle_unknown_packet(AQ_Unknown_Packet* probePacketforSimulator);
 
 // OneTouch Simulator
-bool rs_controller_enable_onetouch_simulator();
-bool rs_controller_disable_onetouch_simulator();
+bool rs_controller_enable_onetouch_simulator(void);
+bool rs_controller_disable_onetouch_simulator(void);
 bool rs_controller_was_packet_to_or_from_onetouch_simulator(HardwareDeviceId device_id);
 bool rs_controller_onetouch_simulator_handle_ack_packet(AQ_Ack_Packet* probePacketforSimulator);
 bool rs_controller_onetouch_simulator_handle_msg_long_packet(AQ_Msg_Long_Packet* probePacketforSimulator);
