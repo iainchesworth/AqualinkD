@@ -48,9 +48,9 @@ endif()
 # Meta information about the project
 set(META_PROJECT_NAME        "aqualinkd")
 set(META_PROJECT_DESCRIPTION "A daemon to control Jandy Aqualink RS pool equipment from any home automation hub.")
-set(META_AUTHOR_ORGANIZATION "")
-set(META_AUTHOR_DOMAIN       "")
-set(META_AUTHOR_MAINTAINER   "")
+set(META_AUTHOR_ORGANIZATION "https://github.com/sfeakes/AqualinkD")
+set(META_AUTHOR_DOMAIN       "https://github.com/sfeakes")
+set(META_AUTHOR_MAINTAINER   "sfeakes")
 set(META_VERSION_MAJOR       "1")
 set(META_VERSION_MINOR       "4")
 set(META_VERSION_PATCH       "0")
@@ -119,7 +119,7 @@ add_subdirectory(deploy)
 install(FILES "${PROJECT_BINARY_DIR}/VERSION" DESTINATION ${INSTALL_ROOT} COMPONENT runtime)
 
 # Install cmake find script for the project
-install(FILES ${META_PROJECT_NAME}-config.cmake DESTINATION ${INSTALL_ROOT} COMPONENT dev)
+#install(FILES ${META_PROJECT_NAME}-config.cmake DESTINATION ${INSTALL_ROOT} COMPONENT dev)
 
 # Install the project meta files
 install(FILES AUTHORS   DESTINATION ${INSTALL_ROOT} COMPONENT runtime)
@@ -127,4 +127,4 @@ install(FILES LICENSE   DESTINATION ${INSTALL_ROOT} COMPONENT runtime)
 install(FILES README.md DESTINATION ${INSTALL_ROOT} COMPONENT runtime)
 
 # Install runtime data
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/data DESTINATION ${INSTALL_DATA} COMPONENT runtime)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/data/ DESTINATION ${INSTALL_DATA} COMPONENT runtime)

@@ -7,6 +7,7 @@
 
 # Find depencencies
 include(CMakeFindDependencyMacro)
+find_dependency(libwebsockets)
 
 # List of modules
 set(MODULE_NAMES
