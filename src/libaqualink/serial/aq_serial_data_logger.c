@@ -11,6 +11,8 @@
 #include "logging/logging_sink.h"
 #include "logging/logging_sink_basic_file.h"
 
+#include "aqualink.h"
+
 const char AQUALINK_SERIAL_DATA_LOGGER_NAME[] = "Aqualink Serial Data Logger";
 const char INDIVIDUAL_BYTE_OUTPUT_FORMAT[] = "0x%02hhx|";
 

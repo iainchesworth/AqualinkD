@@ -12,3 +12,10 @@ configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/${META_PROJECT_NAME}-ver
 set(IDE_FOLDER "")
 add_subdirectory(libaqualink)
 add_subdirectory(aqualinkd)
+
+# 
+# Deployment
+# 
+
+# Deploy generated headers
+#install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${META_PROJECT_NAME} DESTINATION include COMPONENT dev)

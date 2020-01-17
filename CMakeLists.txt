@@ -9,6 +9,10 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 # Configure CMake environment
 #
 
+if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+  set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+endif()
+
 # Register general cmake commands
 include(cmake/modules/Custom.cmake)
 
@@ -74,6 +78,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
+# Create version file
+file(WRITE "${PROJECT_BINARY_DIR}/VERSION" "${META_NAME_VERSION}")
+
 #
 # Project Health Check Setup
 #
@@ -81,6 +88,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 # Configure health check tools
 enable_cppcheck(ON)
 enable_clang_tidy(ON)
+enable_coverage(ON)
 
 # 
 # Compiler settings and options

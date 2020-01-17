@@ -12,7 +12,7 @@
 
 void logging_sink_console_initialise(LoggingSink* thisSink)
 {
-	assert(0 != thisSink);
+	assert(NULL != thisSink);
 
 	if (thisSink->Config.SinkIsInitialised)
 	{
@@ -31,7 +31,7 @@ void logging_sink_console_initialise(LoggingSink* thisSink)
 
 void logging_sink_console_formatter(LoggingSink* thisSink)
 {
-	assert(0 != thisSink);
+	assert(NULL != thisSink);
 
 	if (thisSink->Config.SinkIsInitialised)
 	{
@@ -43,7 +43,7 @@ void logging_sink_console_pattern(LoggingSink* thisSink, const char* pattern)
 {
 	UNREFERENCED_PARAMETER(pattern);
 
-	assert(0 != thisSink);
+	assert(NULL != thisSink);
 
 	if (thisSink->Config.SinkIsInitialised)
 	{
@@ -53,7 +53,7 @@ void logging_sink_console_pattern(LoggingSink* thisSink, const char* pattern)
 
 void logging_sink_console_writer(LoggingSink* thisSink, LoggingMessage message)
 {
-	assert(0 != thisSink);
+	assert(NULL != thisSink);
 
 	if (!thisSink->Config.SinkIsInitialised)
 	{
@@ -91,7 +91,6 @@ void logging_sink_console_writer(LoggingSink* thisSink, LoggingMessage message)
 			break;
 
 		case Off:
-		default:
 			break;
 		}
 
@@ -101,12 +100,12 @@ void logging_sink_console_writer(LoggingSink* thisSink, LoggingMessage message)
 
 void logging_sink_console_flush(LoggingSink* thisSink)
 {
-	assert(0 != thisSink);
+	assert(NULL != thisSink);
 }
 
 void logging_sink_console_close(LoggingSink* thisSink)
 {
-	assert(0 != thisSink);
+	assert(NULL != thisSink);
 
 	if (thisSink->Config.SinkIsInitialised)
 	{
