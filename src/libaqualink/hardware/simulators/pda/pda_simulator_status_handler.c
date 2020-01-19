@@ -27,10 +27,6 @@ bool pda_simulator_statusmessagehandler(AQ_Status_Packet* packet)
 	{
 		WARN("Aqualink PDA Simulator is DISABLED but was asked to ACK a STATUS request");
 	}
-	else if (!send_ack_packet(ACK_NORMAL, CMD_STATUS))
-	{
-		WARN("Aqualink PDA Simulator failed to send an ACK response to STATUS request");
-	}
 	else
 	{
 		DEBUG("Aqualink PDA Simulator transmitted ACK response to STATUS request");

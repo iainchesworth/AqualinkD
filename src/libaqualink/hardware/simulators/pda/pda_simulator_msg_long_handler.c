@@ -27,10 +27,6 @@ bool pda_simulator_msglongmessagehandler(AQ_Msg_Long_Packet* packet)
 	{
 		WARN("Aqualink PDA Simulator is DISABLED but was asked to handle a MSG LONG message");
 	}
-	else if (!send_ack_packet(ACK_NORMAL, CMD_MSG_LONG))
-	{
-		WARN("Aqualink PDA Simulator failed to send an ACK response to MSG LONG request");
-	}
 	else
 	{
 		DEBUG("Aqualink PDA Simulator successfully handled MSG LONG message");

@@ -6,6 +6,7 @@
 #include "cross-platform/threads.h"
 #include "hardware/devices/hardware_device_types.h"
 #include "hardware/simulators/simulator_types.h"
+#include "messages/message-bus/aq_serial_message_bus.h"
 
 typedef struct tagAqualink_OneTouchSimulator
 {

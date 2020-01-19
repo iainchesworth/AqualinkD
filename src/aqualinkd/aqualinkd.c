@@ -114,10 +114,17 @@ int main(int argc, char* argv[])
 			// will implicitly initialise the sink.
 
 			LoggingSinkBasicFileUserData* aqualink_basic_file_user_data = (LoggingSinkBasicFileUserData*)malloc(sizeof(LoggingSinkBasicFileUserData));
-			aqualink_basic_file_user_data->Filename = CFG_ConfigFile();
+			if (0 == aqualink_basic_file_user_data)
+			{
+				WARN("Failed to allocate memory for the logging sink user data");
+			}
+			else
+			{
+				aqualink_basic_file_user_data->Filename = CFG_ConfigFile();
 
-			aqualink_default_logger_sink_file.UserData = aqualink_basic_file_user_data;
-			register_logging_sink(&aqualink_default_logger.Sinks, &aqualink_default_logger_sink_file);
+				aqualink_default_logger_sink_file.UserData = aqualink_basic_file_user_data;
+				register_logging_sink(&aqualink_default_logger.Sinks, &aqualink_default_logger_sink_file);
+			}
 		}
 	}
 

@@ -48,6 +48,8 @@ AqualinkRS aqualink_master_controller =
 
 	.OneTouch_Simulator = &aqualink_onetouch_simulator,
 
+	// .Simulator_MessageBus
+
 	.Devices = &aqualink_master_controller_device_registry,
 
 	.LastMessage =
@@ -141,21 +143,23 @@ void rs_controller_initialise(AqualinkRS_Variants variant)
 	aqualink_master_controller.OneTouch_Simulator->Id.Type		= OneTouch;		///FIXME
 	aqualink_master_controller.OneTouch_Simulator->Id.Instance	= Instance_1;	///FIXME
 
+	messagebus_init(&(aqualink_master_controller.Simulator_MessageBus));
+
 	rs_controller_configure_buttons();
 
 	if (0 != aqualink_master_controller.RS6_KeypadSimulator->Initialise)
 	{
-		aqualink_master_controller.RS6_KeypadSimulator->Initialise();
+		aqualink_master_controller.RS6_KeypadSimulator->Initialise(&(aqualink_master_controller.Simulator_MessageBus));
 	}
 
 	if (0 != aqualink_master_controller.PDA_Simulator->Initialise)
 	{
-		aqualink_master_controller.PDA_Simulator->Initialise();
+		aqualink_master_controller.PDA_Simulator->Initialise(&(aqualink_master_controller.Simulator_MessageBus));
 	}
 
 	if (0 != aqualink_master_controller.OneTouch_Simulator->Initialise)
 	{
-		aqualink_master_controller.OneTouch_Simulator->Initialise();
+		aqualink_master_controller.OneTouch_Simulator->Initialise(&(aqualink_master_controller.Simulator_MessageBus));
 	}
 }
 
@@ -189,6 +193,11 @@ SerialData_Commands rs_controller_get_last_message_type()
 HardwareDeviceId rs_controller_get_last_message_destination()
 {
 	return aqualink_master_controller.LastMessage.Destination;
+}
+
+MessageBus* rs_controller_get_simulator_message_bus()
+{
+	return &(aqualink_master_controller.Simulator_MessageBus);
 }
 
 void rs_controller_print_detected_devices()
@@ -255,116 +264,6 @@ bool rs_controller_disable_rs6_simulator()
 	return rs_keypadsimulator_disable();
 }
 
-bool rs_controller_was_packet_to_or_from_rs6_simulator(HardwareDeviceId device_id)
-{
-	if (0 == aqualink_master_controller.RS6_KeypadSimulator)
-	{
-		return false;
-	}
-
-	return ((aqualink_master_controller.RS6_KeypadSimulator->Id.Type == device_id.Type) && (aqualink_master_controller.RS6_KeypadSimulator->Id.Instance == device_id.Instance));
-}
-
-bool rs_controller_rs6_simulator_handle_ack_packet(AQ_Ack_Packet* probePacketforSimulator)
-{
-	assert(0 != probePacketforSimulator);
-
-	bool handled_message = false;
-
-	if (0 == aqualink_master_controller.RS6_KeypadSimulator->AckMessageHandler)
-	{
-		TRACE("ACK message for RS6 Keypad Simulator but no handler is configured...doing nothing");
-		handled_message = true;
-	}
-	else
-	{
-		TRACE("ACK message for RS6 Keypad Simulator...calling simulator handler function");
-		handled_message = aqualink_master_controller.RS6_KeypadSimulator->AckMessageHandler(probePacketforSimulator);
-	}
-
-	return handled_message;
-}
-
-bool rs_controller_rs6_simulator_handle_msg_long_packet(AQ_Msg_Long_Packet* probePacketforSimulator)
-{
-	assert(0 != probePacketforSimulator);
-
-	bool handled_message = false;
-
-	if (0 == aqualink_master_controller.RS6_KeypadSimulator->MsgLongMessageHandler)
-	{
-		TRACE("MSG LONG message for RS6 Keypad Simulator but no handler is configured...doing nothing");
-		handled_message = true;
-	}
-	else
-	{
-		TRACE("MSG LONG message for RS6 Keypad Simulator...calling simulator handler function");
-		handled_message = aqualink_master_controller.RS6_KeypadSimulator->MsgLongMessageHandler(probePacketforSimulator);
-	}
-
-	return handled_message;
-}
-
-bool rs_controller_rs6_simulator_handle_probe_packet(AQ_Probe_Packet* probePacketforSimulator)
-{
-	assert(0 != probePacketforSimulator);
-
-	bool handled_message = false;
-
-	if (0 == aqualink_master_controller.RS6_KeypadSimulator->ProbeMessageHandler)
-	{
-		TRACE("PROBE message for RS6 Keypad Simulator but no handler is configured...doing nothing");
-		handled_message = true;
-	}
-	else
-	{
-		TRACE("PROBE message for RS6 Keypad Simulator...calling simulator handler function");
-		handled_message = aqualink_master_controller.RS6_KeypadSimulator->ProbeMessageHandler(probePacketforSimulator);
-	}
-	
-	return handled_message;
-}
-
-bool rs_controller_rs6_simulator_handle_status_packet(AQ_Status_Packet* probePacketforSimulator)
-{
-	assert(0 != probePacketforSimulator);
-
-	bool handled_message = false;
-
-	if (0 == aqualink_master_controller.RS6_KeypadSimulator->StatusMessageHandler)
-	{
-		TRACE("STATUS message for RS6 Keypad Simulator but no handler is configured...doing nothing");
-		handled_message = true;
-	}
-	else
-	{
-		TRACE("STATUS message for RS6 Keypad Simulator...calling simulator handler function");
-		handled_message = aqualink_master_controller.RS6_KeypadSimulator->StatusMessageHandler(probePacketforSimulator);
-	}
-
-	return handled_message;
-}
-
-bool rs_controller_rs6_simulator_handle_unknown_packet(AQ_Unknown_Packet* probePacketforSimulator)
-{
-	assert(0 != probePacketforSimulator);
-
-	bool handled_message = false;
-
-	if (0 == aqualink_master_controller.RS6_KeypadSimulator->UnknownMessageHandler)
-	{
-		TRACE("UNKNOWN message for RS6 Keypad Simulator but no handler is configured...doing nothing");
-		handled_message = true;
-	}
-	else
-	{
-		TRACE("UNKNOWN message for RS6 Keypad Simulator...calling simulator handler function");
-		handled_message = aqualink_master_controller.RS6_KeypadSimulator->UnknownMessageHandler(probePacketforSimulator);
-	}
-
-	return handled_message;
-}
-
 //=============================================================================
 //
 // PDA Simulator functions
@@ -391,118 +290,6 @@ bool rs_controller_disable_pda_simulator()
 
 	return pda_simulator_disable();
 }
-
-bool rs_controller_was_packet_to_or_from_pda_simulator(HardwareDeviceId device_id)
-{
-	if (0 == aqualink_master_controller.PDA_Simulator)
-	{
-		return false;
-	}
-
-	return ((aqualink_master_controller.PDA_Simulator->Id.Type == device_id.Type) && (aqualink_master_controller.PDA_Simulator->Id.Instance == device_id.Instance));
-}
-
-bool rs_controller_pda_simulator_handle_ack_packet(AQ_Ack_Packet* probePacketforSimulator)
-{
-	assert(0 != probePacketforSimulator);
-
-	bool handled_message = false;
-
-	if (0 == aqualink_master_controller.PDA_Simulator->AckMessageHandler)
-	{
-		TRACE("ACK message for PDA Simulator but no handler is configured...doing nothing");
-		handled_message = true;
-	}
-	else
-	{
-		TRACE("ACK message for PDA Simulator...calling simulator handler function");
-		handled_message = aqualink_master_controller.PDA_Simulator->AckMessageHandler(probePacketforSimulator);
-	}
-
-	return handled_message;
-}
-
-bool rs_controller_pda_simulator_handle_msg_long_packet(AQ_Msg_Long_Packet* probePacketforSimulator)
-{
-	assert(0 != probePacketforSimulator);
-
-	bool handled_message = false;
-
-	if (0 == aqualink_master_controller.PDA_Simulator->MsgLongMessageHandler)
-	{
-		TRACE("MSG LONG message for PDA Simulator but no handler is configured...doing nothing");
-		handled_message = true;
-	}
-	else
-	{
-		TRACE("MSG LONG message for PDA Simulator...calling simulator handler function");
-		handled_message = aqualink_master_controller.PDA_Simulator->MsgLongMessageHandler(probePacketforSimulator);
-	}
-
-	return handled_message;
-}
-
-bool rs_controller_pda_simulator_handle_probe_packet(AQ_Probe_Packet* probePacketforSimulator)
-{
-	assert(0 != probePacketforSimulator);
-
-	bool handled_message = false;
-
-	if (0 == aqualink_master_controller.PDA_Simulator->ProbeMessageHandler)
-	{
-		TRACE("PROBE message for PDA Simulator but no handler is configured...doing nothing");
-		handled_message = true;
-	}
-	else
-	{
-		TRACE("PROBE message for PDA Simulator...calling simulator handler function");
-		handled_message = aqualink_master_controller.PDA_Simulator->ProbeMessageHandler(probePacketforSimulator);
-	}
-
-	return handled_message;
-}
-
-bool rs_controller_pda_simulator_handle_status_packet(AQ_Status_Packet* probePacketforSimulator)
-{
-	assert(0 != probePacketforSimulator);
-
-	bool handled_message = false;
-
-	if (0 == aqualink_master_controller.PDA_Simulator->StatusMessageHandler)
-	{
-		TRACE("STATUS message for PDA Simulator but no handler is configured...doing nothing");
-		handled_message = true;
-	}
-	else
-	{
-		TRACE("STATUS message for PDA Simulator...calling simulator handler function");
-		handled_message = aqualink_master_controller.PDA_Simulator->StatusMessageHandler(probePacketforSimulator);
-	}
-
-	return handled_message;
-}
-
-bool rs_controller_pda_simulator_handle_unknown_packet(AQ_Unknown_Packet* probePacketforSimulator)
-{
-	assert(0 != probePacketforSimulator);
-
-	bool handled_message = false;
-
-	if (0 == aqualink_master_controller.PDA_Simulator->UnknownMessageHandler)
-	{
-		TRACE("UNKNOWN message for PDA Simulator but no handler is configured...doing nothing");
-		handled_message = true;
-	}
-	else
-	{
-		TRACE("UNKNOWN message for PDA Simulator...calling simulator handler function");
-		handled_message = aqualink_master_controller.PDA_Simulator->UnknownMessageHandler(probePacketforSimulator);
-	}
-
-	return handled_message;
-}
-
-
 
 //=============================================================================
 //
@@ -539,104 +326,4 @@ bool rs_controller_was_packet_to_or_from_onetouch_simulator(HardwareDeviceId dev
 	}
 
 	return ((aqualink_master_controller.OneTouch_Simulator->Id.Type == device_id.Type) && (aqualink_master_controller.OneTouch_Simulator->Id.Instance == device_id.Instance));
-}
-
-bool rs_controller_onetouch_simulator_handle_ack_packet(AQ_Ack_Packet* probePacketforSimulator)
-{
-	assert(0 != probePacketforSimulator);
-
-	bool handled_message = false;
-
-	if (0 == aqualink_master_controller.OneTouch_Simulator->AckMessageHandler)
-	{
-		TRACE("ACK message for OneTouch Simulator but no handler is configured...doing nothing");
-		handled_message = true;
-	}
-	else
-	{
-		TRACE("ACK message for OneTouch Simulator...calling simulator handler function");
-		handled_message = aqualink_master_controller.OneTouch_Simulator->AckMessageHandler(probePacketforSimulator);
-	}
-
-	return handled_message;
-}
-
-bool rs_controller_onetouch_simulator_handle_msg_long_packet(AQ_Msg_Long_Packet* probePacketforSimulator)
-{
-	assert(0 != probePacketforSimulator);
-
-	bool handled_message = false;
-
-	if (0 == aqualink_master_controller.OneTouch_Simulator->MsgLongMessageHandler)
-	{
-		TRACE("MSG LONG message for OneTouch Simulator but no handler is configured...doing nothing");
-		handled_message = true;
-	}
-	else
-	{
-		TRACE("MSG LONG message for OneTouch Simulator...calling simulator handler function");
-		handled_message = aqualink_master_controller.OneTouch_Simulator->MsgLongMessageHandler(probePacketforSimulator);
-	}
-
-	return handled_message;
-}
-
-bool rs_controller_onetouch_simulator_handle_probe_packet(AQ_Probe_Packet* probePacketforSimulator)
-{
-	assert(0 != probePacketforSimulator);
-
-	bool handled_message = false;
-
-	if (0 == aqualink_master_controller.OneTouch_Simulator->ProbeMessageHandler)
-	{
-		TRACE("PROBE message for OneTouch Simulator but no handler is configured...doing nothing");
-		handled_message = true;
-	}
-	else
-	{
-		TRACE("PROBE message for OneTouch Simulator...calling simulator handler function");
-		handled_message = aqualink_master_controller.OneTouch_Simulator->ProbeMessageHandler(probePacketforSimulator);
-	}
-
-	return handled_message;
-}
-
-bool rs_controller_onetouch_simulator_handle_status_packet(AQ_Status_Packet* probePacketforSimulator)
-{
-	assert(0 != probePacketforSimulator);
-
-	bool handled_message = false;
-
-	if (0 == aqualink_master_controller.OneTouch_Simulator->StatusMessageHandler)
-	{
-		TRACE("STATUS message for OneTouch Simulator but no handler is configured...doing nothing");
-		handled_message = true;
-	}
-	else
-	{
-		TRACE("STATUS message for OneTouch Simulator...calling simulator handler function");
-		handled_message = aqualink_master_controller.OneTouch_Simulator->StatusMessageHandler(probePacketforSimulator);
-	}
-
-	return handled_message;
-}
-
-bool rs_controller_onetouch_simulator_handle_unknown_packet(AQ_Unknown_Packet* probePacketforSimulator)
-{
-	assert(0 != probePacketforSimulator);
-
-	bool handled_message = false;
-
-	if (0 == aqualink_master_controller.OneTouch_Simulator->UnknownMessageHandler)
-	{
-		TRACE("UNKNOWN message for OneTouch Simulator but no handler is configured...doing nothing");
-		handled_message = true;
-	}
-	else
-	{
-		TRACE("UNKNOWN message for OneTouch Simulator...calling simulator handler function");
-		handled_message = aqualink_master_controller.OneTouch_Simulator->UnknownMessageHandler(probePacketforSimulator);
-	}
-
-	return handled_message;
 }

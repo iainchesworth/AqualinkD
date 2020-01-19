@@ -17,7 +17,6 @@
 int aq_web_connection_handler(struct lws* wsi, enum lws_callback_reasons reason, void* user, void* in, size_t len)
 {
 	UNREFERENCED_PARAMETER(user);
-	UNREFERENCED_PARAMETER(in);
 	UNREFERENCED_PARAMETER(len);
 
 	assert(0 != wsi);

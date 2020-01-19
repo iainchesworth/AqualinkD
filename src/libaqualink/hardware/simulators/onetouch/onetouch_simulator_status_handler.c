@@ -27,13 +27,9 @@ bool onetouch_simulator_statusmessagehandler(AQ_Status_Packet* packet)
 	{
 		WARN("Aqualink OneTouch Simulator is DISABLED but was asked to ACK a STATUS request");
 	}
-	else if (!send_ack_packet(ACK_NORMAL, CMD_STATUS))
-	{
-		WARN("Aqualink OneTouch Simulator failed to send an ACK response to STATUS request");
-	}
 	else
 	{
-		DEBUG("Aqualink OneTouch Simulator transmitted ACK response to STATUS request");
+		DEBUG("Simulator successfully handled STATUS message");
 		handled_status_message = true;
 	}
 

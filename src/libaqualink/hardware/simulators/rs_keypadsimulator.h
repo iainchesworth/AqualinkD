@@ -6,6 +6,7 @@
 #include "cross-platform/threads.h"
 #include "hardware/buttons/rs_buttons.h"
 #include "hardware/devices/hardware_device_types.h"
+#include "messages/message-bus/aq_serial_message_bus.h"
 #include "messages/message-serializers/aq_serial_message_probe_serializer.h"
 
 #include "simulator_types.h"
@@ -42,7 +43,7 @@ bool rs_keypadsimulator_disable(void);
 
 // Simulator message handlers
 
-bool rs_keypadsimulator_initialise(void);
+bool rs_keypadsimulator_initialise(MessageBus* simulator_message_bus);
 bool rs_keypadsimulator_probemessagehandler(AQ_Probe_Packet* packet);
 
 // Simulator message builders

@@ -1,6 +1,7 @@
 #include "aq_serial_data_logger.h"
 
 #include <assert.h>
+#include <stdlib.h>
 
 #include "config/config_helpers.h"
 #include "logging/logging.h"
@@ -37,13 +38,13 @@ LoggingSink aq_serial_data_logger_file_sink =
 	.Flush = &logging_sink_basic_file_flush,			// DEFAULT - Basic File Sink
 	.Close = &logging_sink_basic_file_close,			// DEFAULT - Basic File Sink
 
-	.UserData = 0
+	.UserData = &aq_serial_data_logger_file_sink_user_data
 };
 
 Logger aq_serial_data_logger =
 {
 	.Name = AQUALINK_SERIAL_DATA_LOGGER_NAME,
-	.Verbosity = Debug,
+	.Verbosity = Trace,
 	.Sinks = { 0, 0, 0 },
 	.ErrorHandler = &aq_serial_data_logger_error_handler,
 	.Formatter = &aq_serial_data_logger_formatter
@@ -69,23 +70,7 @@ void aq_serial_data_logger_formatter(char buffer[], unsigned int buffer_length, 
 	switch(logMessage.Level)
 	{
 	case Trace:
-		{
-			// NOTE: Logging here is the "RAW BYTES"
-			//
-			// Format - 0x00|0x01|0x02|0x03|0x04......
-			snprintf(buffer, buffer_length, "%s", INDIVIDUAL_BYTE_OUTPUT_FORMAT);  // Overwrite the provided format string (whatever it was)
-		}
-		break;
-
 	case Debug:
-		{
-			// NOTE: Logging here is the "packet" of data...
-			//
-			// Format - ["BAD_PACKET" or ""]["   JANDY" or " Pentair"] | HEX: 0x00|0x01|0x02|0x03|0x04......
-			snprintf(buffer, buffer_length, "%s", logMessage.Payload.Format);
-		}
-		break;
-
 	case Info:
 	case Notice:
 	case Warning:
@@ -93,21 +78,43 @@ void aq_serial_data_logger_formatter(char buffer[], unsigned int buffer_length, 
 	case Critical:
 	case Off:
 	default:
-		// Don't log anything at this logging level.
+		{
+			// NOTE: Logging here is the "RAW BYTES"
+			//
+			// Format - 0x00|0x01|0x02|0x03|0x04......
+			snprintf(buffer, buffer_length, "%s", INDIVIDUAL_BYTE_OUTPUT_FORMAT);  // Overwrite the provided format string (whatever it was)
+		}
 		break;
 	}	
 }
 
 void log_serial_packet(const unsigned char* packet_buffer, unsigned int packet_buffer_length, bool packet_is_bad)
 {
-	const char* PACKET_IS_BAD = (packet_is_bad) ? "BAD PACKET" : "";
+	const unsigned int decoded_packet_buffer_length = (packet_buffer_length * 5) + 1;  // Each serial byte decodes into five when printed i.e. "0x00|".
+	char* decoded_packet_buffer = (char*)malloc(decoded_packet_buffer_length);
 
-	DEBUG_TO(&aq_serial_data_logger, "%s%8.8s Packet | HEX: ", PACKET_IS_BAD, "JANDY");
-
-	unsigned int buffer_index;
-
-	for (buffer_index = 0; buffer_index < packet_buffer_length; ++buffer_index)
+	if (0 == decoded_packet_buffer)
 	{
-		DEBUG_TO(&aq_serial_data_logger, INDIVIDUAL_BYTE_OUTPUT_FORMAT, packet_buffer[buffer_index]);
+		WARN("Failed to allocate memory for decoded packet buffer in serial data logger");
+	}
+	else
+	{
+		memset(decoded_packet_buffer, 0, decoded_packet_buffer_length);
+
+		unsigned int buffer_index;
+
+		for (buffer_index = 0; buffer_index < packet_buffer_length; ++buffer_index)
+		{
+			sprintf(&(decoded_packet_buffer[5 * buffer_index]), INDIVIDUAL_BYTE_OUTPUT_FORMAT, packet_buffer[buffer_index]);
+		}
+
+		const char* PACKET_IS_BAD = (packet_is_bad) ? "BAD PACKET" : "";
+		
+		DEBUG("%s%8.8s Packet | HEX: %s", PACKET_IS_BAD, "JANDY", decoded_packet_buffer);
+	}
+
+	if (0 != decoded_packet_buffer)
+	{
+		free(decoded_packet_buffer);
 	}
 }

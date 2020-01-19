@@ -27,13 +27,9 @@ bool onetouch_simulator_probemessagehandler(AQ_Probe_Packet* packet)
 	{
 		WARN("Aqualink OneTouch Simulator is DISABLED but was asked to ACK a PROBE request");
 	}
-	else if (!send_ack_packet(ACK_NORMAL, CMD_PROBE))
-	{
-		WARN("Aqualink OneTouch Simulator failed to send an ACK response to PROBE request");
-	}
 	else
 	{
-		DEBUG("Aqualink OneTouch Simulator transmitted ACK response to PROBE request");
+		DEBUG("Simulator successfully handled PROBE message");
 		handled_probe_message = true;
 	}
 

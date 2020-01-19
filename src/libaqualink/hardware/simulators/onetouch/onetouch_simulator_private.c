@@ -10,6 +10,7 @@
 #include "hardware/devices/hardware_device_types.h"
 #include "hardware/simulators/onetouch_simulator.h"
 #include "logging/logging.h"
+#include "messages/message-bus/aq_serial_message_bus.h"
 
 Aqualink_OneTouchSimulator aqualink_onetouch_simulator =
 {
@@ -26,9 +27,13 @@ Aqualink_OneTouchSimulator aqualink_onetouch_simulator =
 	.AckMessageHandler = 0,
 	.MsgLongMessageHandler = &onetouch_simulator_msglongmessagehandler,
 	.ProbeMessageHandler = &onetouch_simulator_probemessagehandler,
-	.StatusMessageHandler = 0,
+	.StatusMessageHandler = &onetouch_simulator_statusmessagehandler,
 	.UnknownMessageHandler = 0
 };
+
+unsigned char onetouch_simulator_messagetopic_buffer[TOPIC_MAX_MSG_LENGTH];
+MessageBus_Topic onetouch_simulator_messagetopic;
+thrd_t onetouch_simulator_thread;
 
 bool onetouch_simulator_initmutex()
 {

@@ -11,16 +11,17 @@
 
 int serial_sendnextpacket(SerialDevice serial_device)
 {
-	assert((SERIALDEVICE_INVALID != serial_device));	// Look for a "valid" file descriptor
+	assert(SERIALDEVICE_INVALID != serial_device);	// Look for a "valid" file descriptor
 
-	static const int ERROR_WHILE_SENDING_PACKET = 0;
+	static const int ERROR_WHILE_SENDING_PACKET = -1;
+	static const int MAXIMUM_RETRY_WRITE_COUNT = 5;
 	static const unsigned char NUL_BYTE_TO_SEND = NUL;
 
-	int bytesSent, returnCodeOrBytesSent = ERROR_WHILE_SENDING_PACKET;
+	int bytesSent, retryCount = 0, returnCodeOrBytesSent = ERROR_WHILE_SENDING_PACKET;
 
 	SerialThread_WriteStates state = ST_SEND_PACKETPAYLOAD;
 
-	unsigned char prevByte = 0;
+	unsigned char prevByte = 0, byte;
 
 	do
 	{
@@ -40,7 +41,7 @@ int serial_sendnextpacket(SerialDevice serial_device)
 				else
 				{
 					// Get the next byte that is available to be sent.
-					unsigned char byte = serial_writer_dequeue_message_get_next_byte();
+					byte = serial_writer_dequeue_message_get_next_byte();
 
 					///FIXME what if there's no bytes to send?
 
@@ -122,17 +123,20 @@ int serial_sendnextpacket(SerialDevice serial_device)
 					}
 					else
 					{
-						///FIXME log_serial_packet(rawPacketBytes, AQ_MAXPKTLEN, true);
-
 						// Something unexpected/unplanned has happened....log and transition to error.
 						WARN("Unknown/unexpected error occured in ST_SEND_PACKETPAYLOAD");
 						WARN("Write error: %d - %s", errno, strerror(errno));
 
-						DEBUG("             %d bytes written in last write", bytesSent);
-						DEBUG("             0x%02x written in last write", byte);
+						DEBUG_IF((0 <= bytesSent), "             %d bytes written in last write", bytesSent);
+						DEBUG_IF((0 < bytesSent), "             0x%02x written in last write", byte);
 
-						TRACE("Transition: ST_SEND_PACKETPAYLOAD --> ST_WRITEERROR_OCCURRED");
-						state = ST_WRITEERROR_OCCURRED;
+						INFO("Attempting retry...");
+
+						// Clear the prevByte buffer to prevent data carry-over issues.
+						retryCount = 0;
+
+						TRACE("Transition: ST_SEND_PACKETPAYLOAD --> ST_RETRY_SENDPAYLOAD");
+						state = ST_RETRY_SENDPAYLOAD;
 					}
 				}
 			}
@@ -141,6 +145,59 @@ int serial_sendnextpacket(SerialDevice serial_device)
 		case ST_RETRY_SENDPAYLOAD:
 			TRACE("ST_RETRY_SENDPAYLOAD");
 			{
+				// Increment the retry count...make sure that we've not exceeded the maximum permitted.
+				if (MAXIMUM_RETRY_WRITE_COUNT <= ++retryCount)
+				{
+					ERROR("Too many retries while attemping to send data...giving up.");
+
+					TRACE("Transition: ST_RETRY_SENDPAYLOAD --> ST_WRITEERROR_OCCURRED");
+					state = ST_WRITEERROR_OCCURRED;
+				}
+				else 
+				{
+					// Get the next byte....note that this is blocking and wait for data to send.
+					bytesSent = write_to_serial_device(serial_device, &byte, 1);
+
+					if ((bytesSent < 0) && (EBADF == errno))
+					{
+						// The file descriptor seems to have closed...that's bad but nothing can be done.
+						TRACE("Transition: ST_RETRY_SENDPAYLOAD --> ST_WRITEERROR_OCCURRED");
+						state = ST_WRITEERROR_OCCURRED;
+					}
+					else if ((1 == bytesSent) && (DLE == byte))
+					{
+						// Log the raw byte (which will go out to file if initialised)...
+						TRACE_TO(&aq_serial_data_logger, "%d", byte);
+
+						TRACE("ST_RETRY_SENDPAYLOAD - DLE - 0x%02x", byte);
+
+						// This might be the first/last-but-one byte of the current packet...wait and check for the STX/ETX byte.
+						prevByte = byte;
+					}
+					else if (1 == bytesSent)
+					{
+						// Log the raw byte (which will go out to file if initialised)...
+						TRACE_TO(&aq_serial_data_logger, "%d", byte);
+
+						TRACE("ST_RETRY_SENDPAYLOAD - 0x%02x", byte);
+
+						if (serial_writer_send_queue_total_entries() == serial_writer_send_queue_empty_entries())
+						{
+							// There are no more packets (or bytes) to send so finish writing data.
+							TRACE("Transition: ST_RETRY_SENDPAYLOAD --> ST_TERMINATE_WRITEPACKET");
+							state = ST_TERMINATE_WRITEPACKET;
+						}
+
+						// Record the number of bytes sent (incrementally).
+						returnCodeOrBytesSent += bytesSent;
+					}
+					else
+					{
+						// The error doesn't appear to have gone away...do nothing.
+						WARN("Unknown/unexpected error occured in ST_RETRY_SENDPAYLOAD");
+						WARN("Write error: %d - %s", errno, strerror(errno));
+					}
+				}
 			}
 			break;
 

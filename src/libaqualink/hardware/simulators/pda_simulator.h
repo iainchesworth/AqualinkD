@@ -3,9 +3,11 @@
 
 #include <stdbool.h>
 
+#include "messages/message-bus/aq_serial_message_bus.h"
+
 // Simulator functions
 
-bool pda_simulator_initialise(void);
+bool pda_simulator_initialise(MessageBus* simulator_message_bus);
 bool pda_simulator_enable(void);
 bool pda_simulator_disable(void);
 

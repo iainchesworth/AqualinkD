@@ -1,5 +1,6 @@
 #include "onetouch_simulator_msg_long_handler.h"
 #include "onetouch_simulator_private.h"
+#include "onetouch_simulator_screen.h"
 
 #include <stdbool.h>
 
@@ -27,12 +28,10 @@ bool onetouch_simulator_msglongmessagehandler(AQ_Msg_Long_Packet* packet)
 	{
 		WARN("Aqualink OneTouch Simulator is DISABLED but was asked to handle a MSG LONG message");
 	}
-	else if (!send_ack_packet(ACK_NORMAL, CMD_MSG_LONG))
-	{
-		WARN("Aqualink OneTouch Simulator failed to send an ACK response to MSG LONG request");
-	}
 	else
 	{
+		onetouch_screen_write_page_line(OneTouch_Screen_Page1, ((OneTouch_ScreenLines)packet->LineNumber), packet->Message);
+		
 		DEBUG("Simulator successfully handled MSG LONG message");
 		handled_msglong_message = true;
 	}

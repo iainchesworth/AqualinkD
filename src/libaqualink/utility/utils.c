@@ -182,7 +182,7 @@ bool text2bool(const char* str)
 		if ((-1 == firstCharPos) && (0 == isspace(str[i])))
 		{
 			// First non-whitespace char
-			firstCharPos = i;
+			firstCharPos = (int)i;
 
 			// Done...exit the for loop.
 			break;
@@ -209,7 +209,7 @@ bool request2bool(const char* str)
 		if ((-1 == firstCharPos) && (0 == isspace(str[i])))
 		{
 			// First non-whitespace char
-			firstCharPos = i;
+			firstCharPos = (int)i;
 
 			// Done...exit the for loop.
 			break;

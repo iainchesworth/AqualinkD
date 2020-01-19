@@ -8,20 +8,39 @@
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING  0x0004
 #endif
 
+static bool terminal_colour_is_initialised = false;
+static bool terminal_colour_enabled = false;
+
 bool terminal_supports_colour()
 {
-	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (hOut != INVALID_HANDLE_VALUE)
+	if (terminal_colour_is_initialised)
 	{
-		DWORD dwMode = 0;
+		// We've previously set the console mode so it's all good...do nothing
+	}
+	else
+	{
+		// Need to work out if the terminal supports colour...
 
-		GetConsoleMode(hOut, &dwMode);
-		dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+		HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+		if (INVALID_HANDLE_VALUE != hOut)
+		{
+			DWORD dwMode = 0;
 
-		return SetConsoleMode(hOut, dwMode) != 0;
+			GetConsoleMode(hOut, &dwMode);
+			dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+
+			terminal_colour_enabled = (0 != SetConsoleMode(hOut, dwMode));
+		}
+		else
+		{
+			terminal_colour_enabled = false;
+		}
+
+		// Okay, now that the support is/isn't determined, never repeat the check.
+		terminal_colour_is_initialised = true;
 	}
 
-	return false;
+	return terminal_colour_enabled;
 }
 
 #endif // defined WIN32

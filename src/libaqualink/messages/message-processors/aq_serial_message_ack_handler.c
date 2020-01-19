@@ -53,14 +53,6 @@ bool handle_ack_packet(AQ_Ack_Packet processedPacket)
 	{
 		TRACE("Received ACK...no preceding message was received (are we starting up?) so this ACK will be ignored");
 	}
-	else if (rs_controller_was_packet_to_or_from_rs6_simulator(external_device))
-	{
-		TRACE("Received ACK from the Aqualink RS6 Keypad Simulator so this ACK will be ignored");
-	}
-	else if (rs_controller_was_packet_to_or_from_pda_simulator(external_device))
-	{
-		TRACE("Received ACK from the Aqualink PDA Simulator so this ACK will be ignored");
-	}
 	else
 	{
 		switch (processedPacket.Destination.Type)

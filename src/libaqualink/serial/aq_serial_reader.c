@@ -93,9 +93,13 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 
 					// It was a valid byte but since we are waiting for a packet start...do nothing.
 					TRACE("ST_WAITFOR_PACKETSTART - Ignored Byte - 0x%02x", byte);
+
+					// Store the last byte (which prevents the DLE --> bytes --> ETX matching bug
+					prevByte = 0;
 				}
 				else
 				{
+					// There shouldn't be anything in the buffer but dump it out anyway.
 					log_serial_packet(rawPacketBytes, AQ_MAXPKTLEN, true);
 
 					// Something unexpected/unplanned has happened....log and transition to error.
@@ -184,6 +188,24 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 					// Clear the prevByte buffer to prevent data carry-over issues.
 					prevByte = 0;
 				}
+				else if ((1 == bytesRead) && (STX == byte) && (DLE == prevByte))
+				{
+					// Log the raw byte (which will go out to file if initialised)...
+					TRACE_TO(&aq_serial_data_logger, "%d", byte);
+
+					TRACE("ST_RECEIVE_PACKETPAYLOAD - STX - 0x%02x", byte);
+					
+					// Valid packet start...transition and receive the packet payload and terminators.
+					TRACE("Valid packet start detected; restarting packet (possible master controller framing issue)");
+
+					memset(&rawPacketBytes, 0, AQ_MAXPKTLEN); // The buffer is actually a fixed length of AQ_MAXPKTLEN (64) bytes
+					rawPacketBytes[0] = DLE;
+					rawPacketBytes[1] = STX;
+					packetPayloadBytesRead = 0; // Ignore the DLE + STX start bytes 
+
+					// Clear the prevByte buffer to prevent data carry-over issues.
+					prevByte = 0;
+				}
 				else if ((1 == bytesRead) && (MAXIMUM_PAYLOAD_LENGTH > packetPayloadBytesRead))
 				{
 					// Log the raw byte (which will go out to file if initialised)...
@@ -194,10 +216,13 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 					// A payload byte was received - store it away (in the payload section).
 					rawPacketBytes[packetPayloadBytesRead + 2] = byte;
 					++packetPayloadBytesRead;
+
+					// Store the last byte (which prevents the DLE --> bytes --> ETX matching bug
+					prevByte = byte;
 				}
 				else if (MAXIMUM_PAYLOAD_LENGTH <= packetPayloadBytesRead)
 				{
-					log_serial_packet(rawPacketBytes, AQ_MAXPKTLEN, true);
+					log_serial_packet(rawPacketBytes, packetPayloadBytesRead, true);
 
 					DEBUG_TO(&aq_serial_data_logger, "BAD PACKET %8.8s Packet | HEX: ", "", "");
 
@@ -208,7 +233,7 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 				}
 				else
 				{
-					log_serial_packet(rawPacketBytes, AQ_MAXPKTLEN, true);
+					log_serial_packet(rawPacketBytes, packetPayloadBytesRead, true);
 
 					// Something unexpected/unplanned has happened....log and transition to error.
 					WARN("Unknown/unexpected error occured in ST_RECEIVE_PACKETPAYLOAD");
@@ -230,7 +255,7 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 
 				if (MAXIMUM_RETRY_COUNT <= retryCounter)
 				{
-					log_serial_packet(rawPacketBytes, AQ_MAXPKTLEN, true);
+					log_serial_packet(rawPacketBytes, packetPayloadBytesRead, true);
 					WARN("Serial read too short");
 					TRACE("Transition: ST_RETRY_RECEIVEPAYLOAD --> ST_READERROR_OCCURRED");
 					state = ST_READERROR_OCCURRED;
@@ -253,7 +278,7 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 
 				if (MINIMUM_PAYLOAD_LENGTH > packetPayloadBytesRead)
 				{
-					log_serial_packet(rawPacketBytes, AQ_MAXPKTLEN, true);
+					log_serial_packet(rawPacketBytes, packetPayloadBytesRead, true);
 
 					// The packet is too small...something has gone wrong so reject it.
 					WARN("Serial read too short");
@@ -262,7 +287,7 @@ int serial_getnextpacket(SerialDevice serial_device, unsigned char* packet)
 				}
 				else if (!checksumIsValid)
 				{
-					log_serial_packet(rawPacketBytes, AQ_MAXPKTLEN, true);
+					log_serial_packet(rawPacketBytes, packetPayloadBytesRead, true);
 
 					// The checksum for the packet is incorrect...something has gone wrong so reject it.
 					WARN((isPentairPacket) ? "Serial read bad Pentair checksum, ignoring" : "Serial read bad Jandy checksum, ignoring");

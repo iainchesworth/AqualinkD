@@ -35,8 +35,11 @@ typedef enum tagSerialData_Commands
 	CMD_PDA_HIGHLIGHTCHARS = 0x10,
 
 	/* iAqualink */
-	CMD_IAQ_MSG = 0x25,
-	CMD_IAQ_MENU_MSG = 0x24,
+	CMD_IAQ_0x23 = 0x23,		// 8 bytes
+	CMD_IAQ_MENU_MSG = 0x24,	// ????
+	CMD_IAQ_MSG = 0x25,			// ????
+	CMD_IAQ_0x28 = 0x28,		// 12 bytes
+	CMD_IAQ_0x2d = 0x2d,		// 22 bytes
 
 	CMD_UNKNOWN = 0xFF
 }

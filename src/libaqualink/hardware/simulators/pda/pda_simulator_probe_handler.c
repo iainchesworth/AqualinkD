@@ -27,10 +27,6 @@ bool pda_simulator_probemessagehandler(AQ_Probe_Packet* packet)
 	{
 		WARN("Aqualink PDA Simulator is DISABLED but was asked to ACK a PROBE request");
 	}
-	else if (!send_ack_packet(ACK_PDA, CMD_PROBE))
-	{
-		WARN("Aqualink PDA Simulator failed to send an ACK response to PROBE request");
-	}
 	else
 	{
 		DEBUG("Aqualink PDA Simulator transmitted ACK response to PROBE request");

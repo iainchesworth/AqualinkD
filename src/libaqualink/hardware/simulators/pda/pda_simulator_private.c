@@ -30,6 +30,10 @@ Aqualink_PDASimulator aqualink_pda_simulator =
 	.UnknownMessageHandler = 0
 };
 
+MessageBus_Topic pda_simulator_messagetopic;
+unsigned char pda_simulator_messagetopic_buffer[TOPIC_MAX_MSG_LENGTH];
+thrd_t pda_simulator_thread;
+
 bool pda_simulator_initmutex()
 {
 	TRACE("Initialising Aqualink PDA Simulator mutex");

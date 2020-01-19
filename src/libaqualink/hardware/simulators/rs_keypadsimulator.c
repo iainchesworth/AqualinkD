@@ -7,11 +7,16 @@
 #include "cross-platform/threads.h"
 #include "logging/logging.h"
 #include "messages/aq_serial_message_ack.h"
+#include "messages/message-bus/aq_serial_message_bus.h"
 #include "messages/message-processors/aq_serial_message_ack_handler.h"
 #include "messages/message-serializers/aq_serial_message_probe_serializer.h"
 #include "serial/aq_serial_types.h"
 
 #include "aqualink.h"
+
+unsigned char rs6_keypadsimulator_messagetopic_buffer[TOPIC_MAX_MSG_LENGTH];
+MessageBus_Topic rs6_keypadsimulator_messagetopic;
+const char RS6_KEYPADSIMULATOR_TOPIC_NAME[] = "RS6KEYPAD_TOPIC";
 
 Aqualink_RS6KeypadSimulator aqualink_keypad_simulator =
 {
@@ -92,13 +97,20 @@ bool rs_keypadsimulator_disable()
 	return (false == aqualink_keypad_simulator.IsEnabled);
 }
 
-bool rs_keypadsimulator_initialise()
+bool rs_keypadsimulator_initialise(MessageBus* simulator_message_bus)
 {
+	assert(0 != simulator_message_bus);
+
 	TRACE("Initialising Aqualink RS Keypad Simulator");
 
 	if ((!aqualink_keypad_simulator.Config.IsInitialised) && (!rs_keypadsimulator_initmutex()))
 	{
 		ERROR("Failed to initialise Aqualink RS Keypad Simulator mutex");
+	}
+	else
+	{
+		messagebus_topic_init(&rs6_keypadsimulator_messagetopic, rs6_keypadsimulator_messagetopic_buffer, TOPIC_MAX_MSG_LENGTH);
+		messagebus_advertise_topic_by_type(simulator_message_bus, &rs6_keypadsimulator_messagetopic, aqualink_keypad_simulator.Id.Type);
 	}
 
 	return aqualink_keypad_simulator.Config.IsInitialised;

@@ -39,17 +39,21 @@ set(SOURCE_FILES
   hardware/simulators/onetouch/onetouch_simulator_private.c
   hardware/simulators/onetouch/onetouch_simulator_probe_handler.c
   hardware/simulators/onetouch/onetouch_simulator_status_handler.c
+  hardware/simulators/onetouch/onetouch_simulator_screen.c
+  hardware/simulators/onetouch/onetouch_simulator_thread.c
   hardware/simulators/onetouch/onetouch_simulator_types.c
   hardware/simulators/onetouch_simulator.c
   hardware/simulators/pda/pda_simulator_msg_long_handler.c
   hardware/simulators/pda/pda_simulator_private.c
   hardware/simulators/pda/pda_simulator_probe_handler.c
   hardware/simulators/pda/pda_simulator_status_handler.c
+  hardware/simulators/pda/pda_simulator_thread.c
   hardware/simulators/pda/pda_simulator_types.c
   hardware/simulators/pda_simulator.c
   hardware/simulators/rs_keypadsimulator.c
   hardware/simulators/simulator_private.c
   hardware/simulators/simulator_types.c
+  profiling/profiling.c
   json/json_messages.c
   json/json_serializer.c
   json/json_string_utils.c
@@ -65,6 +69,7 @@ set(SOURCE_FILES
   logging/logging_sink_console_terminal.c
   logging/logging_sink_registry.c
   logging/logging_utils.c
+  messages/message-bus/aq_serial_message_bus.c
   messages/message-processors/aq_serial_message_ack_handler.c
   messages/message-processors/aq_serial_message_msg_long_handler.c
   messages/message-processors/aq_serial_message_probe_handler.c
@@ -133,6 +138,7 @@ target_include_directories(${target}
 
     PUBLIC
     ${DEFAULT_INCLUDE_DIRECTORIES}
+    ${VTune_INCLUDE_DIRS}/
 
     INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
@@ -195,6 +201,7 @@ target_link_libraries(${target}
     ${DEFAULT_LIBRARIES}
     Threads::Threads
     ${LIBWEBSOCKETS_LIBRARIES}
+    ${VTune_LIBRARIES}
 
     INTERFACE
 )

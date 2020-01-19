@@ -69,23 +69,29 @@ bool serial_writer_send_queue_initialise(const unsigned int maximum_size)
 
 void serial_writer_send_queue_destroy()
 {
-	if (thrd_error == mtx_lock(&serial_device_send_queue.SlotMutex))
+	if (0 == serial_device_send_queue.SendSlots)
 	{
-		ERROR("Failed to lock the serial writer send queue slot mutex...cannot destroy queue");
+		TRACE("The serial writer send queue slots have not been initialised so don't do anything... ");
 	}
 	else
 	{
-		free(serial_device_send_queue.SendSlots);
-		serial_device_send_queue.SendSlots = 0;
+		if (thrd_error == mtx_lock(&serial_device_send_queue.SlotMutex))
+		{
+			ERROR("Failed to lock the serial writer send queue slot mutex...cannot destroy queue");
+		}
+		else
+		{
+			free(serial_device_send_queue.SendSlots);
+			serial_device_send_queue.SendSlots = 0;
 		
-		TRACE("Successfully destroyed serial writer send queue slots");
-	}
+			TRACE("Successfully destroyed serial writer send queue slots");
+		}
 
-	if (thrd_error == mtx_unlock(&serial_device_send_queue.SlotMutex))
-	{
-		ERROR("Failed to unlock serial writer send queue slot mutex");
+		if (thrd_error == mtx_unlock(&serial_device_send_queue.SlotMutex))
+		{
+			ERROR("Failed to unlock serial writer send queue slot mutex");
+		}
 	}
-
 }
 
 int serial_writer_send_queue_used_entries()
