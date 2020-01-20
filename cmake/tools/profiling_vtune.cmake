@@ -34,11 +34,7 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(VTune DEFAULT_MSG VTune_LIBRARIES VTune_INCLUDE_DIRS)
 
 if (VTune_FOUND)
-  message(STATUS "Found VTune")
   set(DEFAULT_COMPILE_DEFINITIONS ${DEFAULT_COMPILE_DEFINITIONS}
     VTUNE_SUPPORT_ENABLED
   )
-else(VTune_FOUND)
-  # Don't set anything here because VTune is not available.
-  message(STATUS "Could NOT find VTune")
 endif(VTune_FOUND)

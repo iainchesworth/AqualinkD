@@ -138,7 +138,8 @@ target_include_directories(${target}
 
     PUBLIC
     ${DEFAULT_INCLUDE_DIRECTORIES}
-    ${VTune_INCLUDE_DIRS}/
+
+    $<$<BOOL:${VTune_FOUND}>:${VTune_INCLUDE_DIRS}>
 
     INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
@@ -201,7 +202,8 @@ target_link_libraries(${target}
     ${DEFAULT_LIBRARIES}
     Threads::Threads
     ${LIBWEBSOCKETS_LIBRARIES}
-    ${VTune_LIBRARIES}
+
+    $<$<BOOL:${VTune_FOUND}>:${VTune_LIBRARIES}>
 
     INTERFACE
 )
