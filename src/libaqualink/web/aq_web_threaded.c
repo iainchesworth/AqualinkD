@@ -42,12 +42,12 @@ static const struct lws_protocols protocols[] =
 	}
 };
 
-static const struct lws_http_mount mount = 
+static struct lws_http_mount mount_http_api =
 {
 	.mount_next = 0,
-	.mountpoint = "/",
-	.origin = "./mount-origin",
-	.def = "index.html",
+	.mountpoint = "/api",
+	.origin = "INVALID_INVALID_INVALID",
+	.def = "",
 	.protocol = 0,
 	.cgienv = 0,
 	.extra_mimetypes = 0,
@@ -58,9 +58,30 @@ static const struct lws_http_mount mount =
 	.cache_reusable = 0,
 	.cache_revalidate = 0,
 	.cache_intermediaries = 0,
-	.origin_protocol = LWSMPRO_FILE,
-	.mountpoint_len = 1,
+	.origin_protocol = LWSMPRO_CALLBACK,
+	.mountpoint_len = 4,
 	.basic_auth_login_file = 0,
+};
+
+static struct lws_http_mount mount_http = 
+{
+	.mount_next				= &mount_http_api,
+	.mountpoint				= "/",
+	.origin					= "INVALID_INVALID_INVALID",
+	.def					= "index.html",
+	.protocol				= 0,
+	.cgienv					= 0,
+	.extra_mimetypes		= 0,
+	.interpret				= 0,
+	.cgi_timeout			= 0,
+	.cache_max_age			= 0,
+	.auth_mask				= 0,
+	.cache_reusable			= 0,
+	.cache_revalidate		= 0,
+	.cache_intermediaries	= 0,
+	.origin_protocol		= LWSMPRO_FILE,
+	.mountpoint_len			= 1,
+	.basic_auth_login_file	= 0,
 };
 
 int webserver_thread(void* termination_handler_ptr)
@@ -75,8 +96,20 @@ int webserver_thread(void* termination_handler_ptr)
 	memset(&info, 0, sizeof info);
 	info.options = LWS_SERVER_OPTION_HTTP_HEADERS_SECURITY_BEST_PRACTICES_ENFORCE;
 	info.port = CFG_SocketPort();
-	info.mounts = &mount;
+	info.mounts = &mount_http;
 	info.protocols = protocols;
+
+	if (0 == CFG_WebDirectory())
+	{
+		ERROR("No web origin specified in configuration; cannot start web service");
+		trigger_application_termination();
+		returnCode = -1;
+	}
+	else
+	{
+		DEBUG("Setting the web origin to %s", CFG_WebDirectory());
+		mount_http.origin = CFG_WebDirectory();
+	}
 
 	if (!CFG_Insecure())
 	{
