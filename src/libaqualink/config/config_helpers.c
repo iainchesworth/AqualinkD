@@ -333,6 +333,11 @@ void CFG_Set_Insecure(bool insecure)
 	cfg_setbool(_config_parameters, CONFIG_BOOL_INSECURE, (insecure) ? cfg_true : cfg_false);
 }
 
+void CFG_Set_WebDirectory(const char* webRoot)
+{
+	cfg_setstr(_config_parameters, CONFIG_STR_WEB_DIRECTORY, webRoot);
+}
+
 void CFG_Set_DeviceId(HardwareDeviceId deviceId)
 {
 	unsigned char calculated_id = ((deviceId.Type & deviceId.Instance) & 0xFF);

@@ -32,6 +32,7 @@ void printHelp()
 	printf("\t    --record-mode <file>            Record raw serial data direct to file (default: %s)\n", CFG_RawSerial_LogFile());
 	printf("\t-s, --serial-port <file>            Serial port/device to connect with (default: %s)\n", CFG_SerialPort());
 	printf("\t    --trace                         Enable trace level logging\n");
+	printf("\t-w, --web-root <dir>                Sets the location of the web asserts (default: %s)\n", CFG_WebDirectory());
 	printf("\t-v, --version                       Print version information and quit\n");
 	printf("\n");
 }
@@ -64,6 +65,7 @@ enum aqualink_option_flags
 	OPTION_FLAG_PID_FILE = 'p',
 	OPTION_FLAG_SERIAL_DEVICE = 's',
 	OPTION_FLAG_VERSION = 'v',
+	OPTION_FLAG_WEBROOT = 'w',
 	
 	// Long options without a corresponding short option.
 	OPTION_FLAG_INSECURE = 0x100,
@@ -90,11 +92,12 @@ void handleOptions(int argc, char* argv[])
 		{ "serial-port",			required_argument,	0, OPTION_FLAG_SERIAL_DEVICE },
 		{ "trace",					no_argument,		0, OPTION_FLAG_TRACE },
 		{ "version",				no_argument,		0, OPTION_FLAG_VERSION },
+		{ "web-root",				required_argument,  0, OPTION_FLAG_WEBROOT },
 
 		{0, 0, 0, 0}
 	};
 
-	static char* aqualink_short_options = "c:Dhi:np:s:v";
+	static char* aqualink_short_options = "c:Dhi:np:s:vw:";
 
 	int ch = 0;
 
@@ -175,6 +178,10 @@ void handleOptions(int argc, char* argv[])
 		case OPTION_FLAG_VERSION: // short option 'v' / long option "version"
 			printVersion();
 			exit(EXIT_SUCCESS);
+
+		case OPTION_FLAG_WEBROOT: // short option 'w' / long option "web-root"
+			CFG_Set_WebDirectory(optarg);
+			break;
 
 		case OPTION_FLAG_HELP: // short option 'h' / long option "help"
 		default:  // any unknown options

@@ -78,6 +78,7 @@ void CFG_Set_ConfigFile(const char* configFile);
 void CFG_Set_PidFile(const char* pidFile);
 void CFG_Set_SerialPort(const char* serialPort);
 void CFG_Set_LogLevel(LoggingLevels logLevel);
+void CFG_Set_WebDirectory(const char* webRoot);
 void CFG_Set_Insecure(bool insecure);
 void CFG_Set_DeviceId(HardwareDeviceId deviceId);
 void CFG_Set_NoDaemonize(bool daemonize);

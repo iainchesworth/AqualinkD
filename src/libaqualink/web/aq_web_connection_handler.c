@@ -7,10 +7,8 @@
 #include "logging/logging.h"
 #include "utility/utils.h"
 
-#include "aq_web_error_methodnotallowed.h"
-#include "aq_web_error_notfound.h"
-#include "aq_web_page_controller.h"
-#include "aq_web_page_simple.h"
+#include "aq_web_authentication.h"
+#include "aq_web_http_api.h"
 #include "aq_web_websockets.h"
 
 #include "aqualink.h"
@@ -44,15 +42,17 @@ static int connect_client(struct per_vhost_data__minimal* vhd)
 int aq_web_connection_handler(struct lws* wsi, enum lws_callback_reasons reason, void* user, void* in, size_t len)
 {
 	UNREFERENCED_PARAMETER(len);
+	UNREFERENCED_PARAMETER(in);
 
 	assert(0 != wsi);
-	assert(0 != user);
-	assert(0 != in);
 	
 	struct per_session_data* pss = (struct per_session_data*)user;
 	struct per_vhost_data__minimal* vhd = (struct per_vhost_data__minimal*) lws_protocol_vh_priv_get(lws_get_vhost(wsi), lws_get_protocol(wsi));
 	
-	int return_code = -1;
+	const int AQ_WEB_ERROR_SUCCESS = 0;
+	const int AQ_WEB_ERROR_FAILURE = 1;
+	const int AQ_WEB_ERROR_INVALID = -999;
+	int return_code = AQ_WEB_ERROR_INVALID;
 
 	switch (reason)
 	{
@@ -69,15 +69,17 @@ int aq_web_connection_handler(struct lws* wsi, enum lws_callback_reasons reason,
 			if (!vhd->ring)
 			{
 				WARN("Failed to create ring buffer to handle web socket connections");
-				return_code = 1;
+				return_code = AQ_WEB_ERROR_FAILURE;
 			} 
-			else  if (connect_client(vhd))
+			else if (connect_client(vhd))
 			{
 				lws_timed_callback_vh_protocol(vhd->vhost, vhd->protocol, LWS_CALLBACK_USER, 1);
+				return_code = AQ_WEB_ERROR_SUCCESS;
 			}
 			else
 			{
 				TRACE("Websocket client successfully connected");
+				return_code = AQ_WEB_ERROR_SUCCESS;
 			}
 		}
 		break;
@@ -86,6 +88,7 @@ int aq_web_connection_handler(struct lws* wsi, enum lws_callback_reasons reason,
 		TRACE("LWS_CALLBACK_PROTOCOL_DESTROY");
 		{
 			lws_ring_destroy(vhd->ring);
+			return_code = AQ_WEB_ERROR_SUCCESS;
 		}
 		break;
 
@@ -93,8 +96,18 @@ int aq_web_connection_handler(struct lws* wsi, enum lws_callback_reasons reason,
 		TRACE("LWS_CALLBACK_ESTABLISHED");
 		{
 			lws_ll_fwd_insert(pss, pss_list, vhd->pss_list);
-			pss->tail = lws_ring_get_oldest_tail(vhd->ring);
-			pss->wsi = wsi;
+			if (0 == pss)
+			{
+				WARN("Attempted to dereference pss within LWS_CALLBACK_ESTABLISHED but it was NULL");
+				return_code = AQ_WEB_ERROR_FAILURE;
+			}
+			else
+			{
+				pss->tail = lws_ring_get_oldest_tail(vhd->ring);
+				pss->wsi = wsi;
+
+				return_code = AQ_WEB_ERROR_SUCCESS;
+			}
 		}
 		break;
 
@@ -102,6 +115,7 @@ int aq_web_connection_handler(struct lws* wsi, enum lws_callback_reasons reason,
 		TRACE("LWS_CALLBACK_CLOSED");
 		{
 			lws_ll_fwd_remove(struct per_session_data, pss_list, pss, vhd->pss_list);
+			return_code = AQ_WEB_ERROR_SUCCESS;
 		}
 		break;
 
@@ -109,7 +123,7 @@ int aq_web_connection_handler(struct lws* wsi, enum lws_callback_reasons reason,
 		TRACE("LWS_CALLBACK_SERVER_WRITEABLE");
 		{
 			// Handle websocket connections
-			return_code = 0;
+			return_code = AQ_WEB_ERROR_SUCCESS;
 		}
 		break;
 
@@ -135,7 +149,8 @@ int aq_web_connection_handler(struct lws* wsi, enum lws_callback_reasons reason,
 		TRACE("LWS_CALLBACK_HTTP");
 		{
 			// Handle HTTP API connections
-			return_code = 0;
+			lws_callback_on_writable(wsi);
+			return_code = AQ_WEB_ERROR_SUCCESS;
 		}
 		break;
 
@@ -161,7 +176,7 @@ int aq_web_connection_handler(struct lws* wsi, enum lws_callback_reasons reason,
 		TRACE("LWS_CALLBACK_HTTP_WRITEABLE");
 		{
 			// Handle HTTP API connections
-			return_code = 0;
+			return_code = AQ_WEB_ERROR_SUCCESS;
 		}
 		break;
 
@@ -171,5 +186,5 @@ int aq_web_connection_handler(struct lws* wsi, enum lws_callback_reasons reason,
 
 	}
 
-	return return_code;
+	return (AQ_WEB_ERROR_INVALID == return_code) ? lws_callback_http_dummy(wsi, reason, user, in, len) : return_code;
 }

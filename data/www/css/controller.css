@@ -1,0 +1,450 @@
+:root {
+    --fonts: 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
+    --tile-width: 100px;
+    --tile_icon-height: 35px;
+    --tile_name-height: 32px;
+    --tile_status-height: 15px;
+    --tile_grid-gap: 10px;
+    --tile_name-lineheight: 1.2;
+    /*
+      // Large display will use the below values, just here for testing.
+      --tile-width: 125px;
+      --tile_icon-height: 45px;
+      --tile_name-height: 42px;
+      --tile_status-height: 15px;
+      --tile_grid-gap: 20px;
+      --tile_name-lineheight: 1.4;
+      */
+    /* These get overiden from config.js, don't edit */
+    --body_background: rgb(235, 235, 235);
+    --body_text: black;
+    --options_pane_background: rgb(245, 245, 245);
+    --options_pane_bordercolor: rgb(124, 124, 124);
+    --options_slider_ball: 30;
+    --options_slider_highlight: #2196F3;
+    --options_slider_lowlight: #d3d3d3;
+    --options_slider_height: 20px;
+    --head_background: rgb(43, 106, 143);
+    --head_text: #fff;
+    --error_background: rgb(143, 43, 43);
+    --tile_background: rgb(220, 220, 220);
+    --tile_text: rgb(110, 110, 110);
+    --tile_on_background: #fff;
+    --tile_on_text: #000;
+    --tile_status_text: rgb(87, 87, 87);
+    --options_radio_ball: 20px;
+    --options_radio_highlight: #2196F3;
+    --options_radio_lowlight: #d3d3d3;
+}
+
+div {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+    div::-moz-selection {
+        background: transparent;
+    }
+
+    div::selection {
+        background: transparent;
+    }
+
+html {
+}
+
+body {
+    background-color: var(--body_background);
+    font-family: var(--fonts);
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--body_text);
+    /*margin: 0 !important;*/
+    /*padding: 0 !important;*/
+    /*margin: 10px !important;*/
+    /* Font rendering (mainly for firefox) */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.body_wrap {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0px;
+    left: 0px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    height: 100%;
+}
+
+.opaque {
+    top: 0px;
+    left: 0px;
+    filter: alpha(opacity=60);
+    opacity: 0.6;
+}
+
+.vopaque {
+    top: 0px;
+    left: 0px;
+    filter: alpha(opacity=40);
+    opacity: 0.4;
+}
+
+.options_pane {
+    background-color: var(--options_pane_background);
+    border: 2px solid var(--options_pane_bordercolor);
+    border-radius: 20px;
+    justify-content: center;
+    align-items: center;
+    width: 345px;
+    /*height:245px;*/
+}
+
+.options {
+    top: 10px;
+    /*left: 10px;*/
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    /*
+      height: 100%;
+      */
+}
+
+/*
+    .show {
+      top: 0px;
+      left: 0px;
+    }
+*/
+
+.wrapper {
+    display: grid;
+    /*grid-template-columns: repeat(auto-fill, minmax(var(--tile-width), var(--tile-width)));
+      grid-auto-rows: 1fr, repeat(auto-fill, minmax(var(--tile-width), var(--tile-width)));*/
+    grid-template-columns: repeat(auto-fit, minmax(var(--tile-width), auto));
+    grid-auto-rows: 1fr, repeat(auto-fit, minmax(var(--tile-width), auto));
+    grid-gap: var(--tile_grid-gap);
+    padding: 0 !important;
+    margin: 10px !important;
+}
+
+.head {
+    /*background-color: rgb(124, 124, 124);*/
+    background-color: var(--head_background);
+    color: var(--head_text);
+    border-radius: 5px;
+    padding: 5px;
+    grid-column: 1 / -1;
+}
+
+.error {
+    background-color: var(--error_background) !important;
+}
+
+.hide {
+    display: none;
+    filter: alpha(opacity=0);
+    opacity: 0.0;
+}
+
+.tile {
+    background-color: var(--tile_background);
+    color: var(--tile_text);
+    border-radius: 10px;
+    padding: 0px;
+    /*font-size: 100%;*/
+    box-sizing: border-box;
+    padding: 5px;
+    height: var(--tile-width);
+    width: var(--tile-width);
+    filter: alpha(opacity=90);
+    opacity: 0.9;
+}
+
+.on {
+    background-color: var(--tile_on_background);
+    color: var(--tile_on_text);
+    filter: alpha(opacity=100);
+    opacity: 1.0;
+}
+
+.flash {
+    color: var(--tile_on_text);
+    filter: alpha(opacity=100);
+    opacity: 0.9;
+    -webkit-animation-name: tile-flash;
+    /* Safari 4.0 - 8.0 */
+    -webkit-animation-duration: 2s;
+    /* Safari 4.0 - 8.0 */
+    animation-name: tile-flash;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+}
+
+/* Safari 4.0 - 8.0 */
+
+@-webkit-keyframes tile-flash {
+    0% {
+        background-color: var(--tile_on_background);
+        opacity: 1.0;
+    }
+
+    50% {
+        background-color: var(--tile_background);
+        opacity: 0.9;
+    }
+
+    100% {
+        background-color: var(--tile_on_background);
+        opacity: 1.0;
+    }
+}
+
+/* Standard syntax */
+
+@keyframes tile-flash {
+    0% {
+        background-color: var(--tile_on_background);
+        opacity: 1.0;
+    }
+
+    50% {
+        background-color: var(--tile_background);
+        opacity: 0.9;
+    }
+
+    100% {
+        background-color: var(--tile_on_background);
+        opacity: 1.0;
+    }
+}
+
+/*
+    .off {
+      background-color: #ccc;
+      color: rgb(133, 133, 133);
+    }
+*/
+
+.tile_icon {
+    height: var(--tile_icon-height);
+    display: table;
+    margin: 0 auto;
+    /*background-color: red;*/
+}
+
+.tile_name {
+    height: var(--tile_name-height);
+    /*background-color: green;*/
+    line-height: var(--tile_name-lineheight);
+}
+
+.tile_status {
+    color: var(--tile_status_text);
+    height: var(--tile_status-height);
+    /*background-color: blue;*/
+}
+
+.tile_icon_value {
+    border-radius: calc(var(--tile_icon-height) / 2);
+    font-weight: 600;
+    /*border-radius: 27px;*/
+    height: var(--tile_icon-height);
+    min-width: var(--tile_icon-height);
+    text-align: center;
+    vertical-align: middle;
+    line-height: var(--tile_icon-height);
+    filter: alpha(opacity=100);
+    opacity: 1.0;
+}
+
+.heat {
+    background-color: rgb(255, 123, 0);
+    color: rgb(255, 255, 255);
+}
+
+.cool {
+    background-color: rgb(4, 159, 248);
+    color: rgb(255, 255, 255);
+}
+
+.enabled {
+    background-color: rgb(78, 196, 0);
+    color: rgb(255, 255, 255);
+}
+
+.disabled {
+    background-color: rgb(110, 110, 110);
+    color: rgb(220, 220, 220);
+}
+
+/* All for options panel */
+
+.option_switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px
+}
+
+    .option_switch input {
+        display: none;
+    }
+
+.option_switch_slide {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--options_slider_lowlight);
+    -webkit-transition: .4s;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+    .option_switch_slide:before {
+        position: absolute;
+        content: "";
+        height: calc(var(--options_slider_ball)*1px);
+        width: calc(var(--options_slider_ball)*1px);
+        left: 2px;
+        bottom: 2px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+input:checked + .option_switch_slide {
+    background-color: var(--options_slider_highlight);
+}
+
+input:focus + .option_switch_slide {
+    box-shadow: 0 0 1px var(--options_slider_highlight);
+}
+
+input:checked + .option_switch_slide:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+}
+
+.option_slider {
+    -webkit-appearance: none;
+    width: 300px;
+    height: var(--options_slider_height);
+    background: var(--options_slider_lowlight);
+    outline: none;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    border-radius: var(--options_slider_height);
+}
+
+    .option_slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: calc(var(--options_slider_ball)*1px);
+        height: calc(var(--options_slider_ball)*1px);
+        background: var(--options_slider_highlight);
+        cursor: pointer;
+        border-radius: calc(var(--options_slider_ball)*1px);
+    }
+
+    .option_slider::-moz-range-thumb {
+        width: calc(var(--options_slider_ball)*1px);
+        height: calc(var(--options_slider_ball)*1px);
+        background: var(--options_slider_highlight);
+        cursor: pointer;
+        border-radius: var(--options_slider_height);
+    }
+
+.options_title {
+    /*background-color: rgb(124, 124, 124);
+      color: #fff;
+      font-weight: 200;*/
+    font-size: 18px;
+    overflow: hidden;
+}
+
+.options_selector {
+    font-family: var(--fonts);
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.options_button {
+    font-family: var(--fonts);
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.option_text {
+    font-family: var(--fonts);
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.option_radiocontainer {
+    padding: 0.2em 0;
+    /*font-family: 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;*/
+    font-weight: 500;
+    font-size: 14px;
+}
+
+/* hide the "real" radios visually */
+
+.radio input {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+}
+
+/* style the "fake" radios */
+
+.option_radio-value {
+    background-color: var(--options_radio_lowlight);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 95% auto;
+    border-radius: 50%;
+    display: inline-block;
+    height: var(--options_radio_ball);
+    width: var(--options_radio_ball);
+    margin-right: 0.2em;
+    margin-left: 0.5em;
+    position: relative;
+    vertical-align: -0.3em;
+    /*  Beautify
+  border: 0.0625em solid #bbb;
+  box-shadow: inset 0 0.0625em 0 0.0625em rgba(0,0,0,0.075);*/
+}
+
+input:checked + .option_radio-value {
+    background-color: var(--options_radio_highlight);
+    /* Beautify
+  border-color: #169a9a;
+  box-shadow: 0 0.0625em 0 0.0625em rgba(0,0,0,0.075);*/
+}
+
+/*
+    .timedate {
+      font-size: 10px;
+    }*/
