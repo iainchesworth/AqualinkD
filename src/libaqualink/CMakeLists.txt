@@ -50,8 +50,11 @@ set(SOURCE_FILES
   hardware/simulators/pda/pda_simulator_thread.c
   hardware/simulators/pda/pda_simulator_types.c
   hardware/simulators/pda_simulator.c
-  hardware/simulators/rs_keypadsimulator.c
-  hardware/simulators/simulator_private.c
+  hardware/simulators/rs_keypad/rs_keypad_simulator_probe_handler.c
+  hardware/simulators/rs_keypad/rs_keypad_simulator_private.c
+  hardware/simulators/rs_keypad/rs_keypad_simulator_thread.c
+  hardware/simulators/rs_keypad/rs_keypad_simulator_types.c
+  hardware/simulators/rs_keypad_simulator.c
   hardware/simulators/simulator_types.c
   profiling/profiling.c
   json/json_messages.c

@@ -29,8 +29,6 @@
 #include "logging/logging_sink_basic_file.h"
 #include "logging/logging_utils.h"
 #include "hardware/controllers/rs_controller.h"
-#include "hardware/simulators/pda_simulator.h"
-#include "hardware/simulators/rs_keypadsimulator.h"
 #include "serial/aq_serial_threaded.h"
 #include "string/string_utils.h"
 #include "threads/thread_utils.h"
@@ -130,7 +128,7 @@ int main(int argc, char* argv[])
 
 	// Initialise the master controller (and turn on the simulator).
 	rs_controller_initialise(RS8);
-	rs_controller_enable_rs6_simulator();
+	rs_controller_enable_rs_keypad_simulator();
 	rs_controller_enable_pda_simulator();
 	rs_controller_enable_onetouch_simulator();
 
@@ -228,8 +226,9 @@ int main(int argc, char* argv[])
 	}
 
 	// Shutdown and destroy the simulators and RS controller
+	rs_controller_disable_onetouch_simulator();
 	rs_controller_disable_pda_simulator();
-	rs_controller_disable_rs6_simulator();
+	rs_controller_disable_rs_keypad_simulator();
 	rs_controller_destroy();
 
 	shutdown_logging(&aqualink_default_logger);

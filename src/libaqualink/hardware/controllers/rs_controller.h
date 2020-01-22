@@ -10,7 +10,8 @@
 #include "hardware/simulators/onetouch_simulator.h"
 #include "hardware/simulators/pda/pda_simulator_types.h"
 #include "hardware/simulators/pda_simulator.h"
-#include "hardware/simulators/rs_keypadsimulator.h"
+#include "hardware/simulators/rs_keypad/rs_keypad_simulator_types.h"
+#include "hardware/simulators/rs_keypad_simulator.h"
 #include "messages/message-bus/aq_serial_message_bus.h"
 #include "messages/message-serializers/aq_serial_message_ack_serializer.h"
 #include "messages/message-serializers/aq_serial_message_msg_long_serializer.h"
@@ -63,7 +64,7 @@ typedef struct tagAqualinkRS
 	Heater SolarHeater;
 
 	// Simulators
-	Aqualink_RS6KeypadSimulator* RS6_KeypadSimulator;
+	Aqualink_RS_Keypad_Simulator* RS_Keypad_Simulator;
 	Aqualink_PDASimulator* PDA_Simulator;
 	Aqualink_OneTouchSimulator* OneTouch_Simulator;
 
@@ -107,8 +108,8 @@ MessageBus* rs_controller_get_simulator_message_bus(void);
 void rs_controller_print_detected_devices(void);
 
 // RS6 Keypad Simulator
-bool rs_controller_enable_rs6_simulator(void);
-bool rs_controller_disable_rs6_simulator(void);
+bool rs_controller_enable_rs_keypad_simulator(void);
+bool rs_controller_disable_rs_keypad_simulator(void);
 
 // PDA Simulator
 bool rs_controller_enable_pda_simulator(void); 

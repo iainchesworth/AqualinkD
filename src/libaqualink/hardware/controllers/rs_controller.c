@@ -10,8 +10,8 @@
 #include "hardware/simulators/onetouch_simulator.h"
 #include "hardware/simulators/pda/pda_simulator_private.h"
 #include "hardware/simulators/pda_simulator.h"
-#include "hardware/simulators/rs_keypadsimulator.h"
-#include "hardware/simulators/simulator_private.h"
+#include "hardware/simulators/rs_keypad/rs_keypad_simulator_private.h"
+#include "hardware/simulators/rs_keypad_simulator.h"
 #include "logging/logging.h"
 #include "messages/message-serializers/aq_serial_message_probe_serializer.h"
 #include "serial/aq_serial_types.h"
@@ -42,7 +42,7 @@ AqualinkRS aqualink_master_controller =
 	.SpaHeater = {.Mode = HeaterIsOff },
 	.SolarHeater = {.Mode = HeaterIsOff },
 
-	.RS6_KeypadSimulator = &aqualink_keypad_simulator,
+	.RS_Keypad_Simulator = &aqualink_rs_keypad_simulator,
 
 	.PDA_Simulator = &aqualink_pda_simulator,
 
@@ -126,7 +126,7 @@ static void rs_controller_configure_buttons()
 
 void rs_controller_initialise(AqualinkRS_Variants variant)
 {
-	assert(0 != aqualink_master_controller.RS6_KeypadSimulator);
+	assert(0 != aqualink_master_controller.RS_Keypad_Simulator);
 
 	TRACE("Initialising Aqualink RS Controller...");
 
@@ -134,8 +134,8 @@ void rs_controller_initialise(AqualinkRS_Variants variant)
 	aqualink_master_controller.State = Auto;
 	aqualink_master_controller.Mode = Pool;
 
-	aqualink_master_controller.RS6_KeypadSimulator->Id.Type		= Keypad;		///FIXME
-	aqualink_master_controller.RS6_KeypadSimulator->Id.Instance = Instance_0;	///FIXME
+	aqualink_master_controller.RS_Keypad_Simulator->Id.Type		= Keypad;		///FIXME
+	aqualink_master_controller.RS_Keypad_Simulator->Id.Instance = Instance_0;	///FIXME
 	
 	aqualink_master_controller.PDA_Simulator->Id.Type			= PDA_Remote;	///FIXME
 	aqualink_master_controller.PDA_Simulator->Id.Instance		= Instance_0;	///FIXME
@@ -147,9 +147,9 @@ void rs_controller_initialise(AqualinkRS_Variants variant)
 
 	rs_controller_configure_buttons();
 
-	if (0 != aqualink_master_controller.RS6_KeypadSimulator->Initialise)
+	if (0 != aqualink_master_controller.RS_Keypad_Simulator->Initialise)
 	{
-		aqualink_master_controller.RS6_KeypadSimulator->Initialise(&(aqualink_master_controller.Simulator_MessageBus));
+		aqualink_master_controller.RS_Keypad_Simulator->Initialise(&(aqualink_master_controller.Simulator_MessageBus));
 	}
 
 	if (0 != aqualink_master_controller.PDA_Simulator->Initialise)
@@ -169,7 +169,7 @@ void rs_controller_destroy()
 
 	rs_controller_disable_onetouch_simulator();
 	rs_controller_disable_pda_simulator();
-	rs_controller_disable_rs6_simulator();
+	rs_controller_disable_rs_keypad_simulator();
 
 	hardware_registry_destroy();
 }
@@ -244,24 +244,24 @@ void rs_controller_print_detected_devices()
 //
 //=============================================================================
 
-bool rs_controller_enable_rs6_simulator()
+bool rs_controller_enable_rs_keypad_simulator()
 {
-	if (0 == aqualink_master_controller.RS6_KeypadSimulator)
+	if (0 == aqualink_master_controller.RS_Keypad_Simulator)
 	{
 		return false;
 	}
 
-	return rs_keypadsimulator_enable();
+	return rs_keypad_simulator_enable();
 }
 
-bool rs_controller_disable_rs6_simulator()
+bool rs_controller_disable_rs_keypad_simulator()
 {
-	if (0 == aqualink_master_controller.RS6_KeypadSimulator)
+	if (0 == aqualink_master_controller.RS_Keypad_Simulator)
 	{
 		return false;
 	}
 
-	return rs_keypadsimulator_disable();
+	return rs_keypad_simulator_disable();
 }
 
 //=============================================================================

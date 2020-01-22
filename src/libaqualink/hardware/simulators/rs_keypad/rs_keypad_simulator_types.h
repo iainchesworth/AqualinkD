@@ -1,17 +1,14 @@
-#ifndef AQ_RS_KEYPADSIMULATOR_H_
-#define AQ_RS_KEYPADSIMULATOR_H_
+#ifndef AQ_RS_KEYPAD_SIMULATOR_TYPES_H_
+#define AQ_RS_KEYPAD_SIMULATOR_TYPES_H_
 
 #include <stdbool.h>
 
 #include "cross-platform/threads.h"
 #include "hardware/buttons/rs_buttons.h"
 #include "hardware/devices/hardware_device_types.h"
-#include "messages/message-bus/aq_serial_message_bus.h"
-#include "messages/message-serializers/aq_serial_message_probe_serializer.h"
+#include "hardware/simulators/simulator_types.h"
 
-#include "simulator_types.h"
-
-typedef struct tagAqualinkRS_KeypadSimulator
+typedef struct tagAqualink_RS_Keypad_Simulator
 {
 	struct
 	{
@@ -34,20 +31,6 @@ typedef struct tagAqualinkRS_KeypadSimulator
 	Simulator_StatusMessageHandler StatusMessageHandler;
 	Simulator_UnknownMessageHandler UnknownMessageHandler;
 }
-Aqualink_RS6KeypadSimulator;
+Aqualink_RS_Keypad_Simulator;
 
-// Simulator functions
-
-bool rs_keypadsimulator_enable(void);
-bool rs_keypadsimulator_disable(void);
-
-// Simulator message handlers
-
-bool rs_keypadsimulator_initialise(MessageBus* simulator_message_bus);
-bool rs_keypadsimulator_probemessagehandler(AQ_Probe_Packet* packet);
-
-// Simulator message builders
-
-///FIXME - add message builders.
-
-#endif // AQ_RS_KEYPADSIMULATOR_H_
+#endif // AQ_RS6_KEYPAD_SIMULATOR_TYPES_H_

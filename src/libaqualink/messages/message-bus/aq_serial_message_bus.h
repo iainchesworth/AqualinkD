@@ -69,17 +69,6 @@ typedef struct messagebus_new_topic_cb_s
 } 
 MessageBus_NewTopicCB;
 
-#define MESSAGEBUS_TOPIC_FOREACH(_bus, _topic_var_name) \
-    for (int __control = -1; __control < 2; __control++) \
-        if (__control < 0) { \
-            messagebus_lock_acquire((_bus)->lock); \
-        } else if (__control > 0) { \
-            messagebus_lock_release((_bus)->lock); \
-        } else  \
-            for (MessageBus_Topic *(_topic_var_name) = (_bus)->topics.head; \
-                 topic != NULL; \
-                 (_topic_var_name) = (_topic_var_name)->next)
-
 void messagebus_init(MessageBus* bus);
 void messagebus_topic_init(MessageBus_Topic* topic, void* buffer, size_t buffer_len);
 void messagebus_advertise_topic_by_name(MessageBus* bus, MessageBus_Topic* topic, const char* name);
