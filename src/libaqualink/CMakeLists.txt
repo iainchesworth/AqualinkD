@@ -35,6 +35,7 @@ set(SOURCE_FILES
   hardware/devices/hardware_device_types.c
   hardware/devices/hardware_device_utils.c
   hardware/heaters/heaters.c
+  hardware/simulators/onetouch/onetouch_simulator_logger.c
   hardware/simulators/onetouch/onetouch_simulator_msg_long_handler.c
   hardware/simulators/onetouch/onetouch_simulator_private.c
   hardware/simulators/onetouch/onetouch_simulator_probe_handler.c

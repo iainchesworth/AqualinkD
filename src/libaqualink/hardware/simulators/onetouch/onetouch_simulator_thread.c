@@ -1,4 +1,5 @@
 #include "onetouch_simulator_thread.h"
+#include "onetouch_simulator_logger.h"
 #include "onetouch_simulator_private.h"
 #include "onetouch_simulator_screen.h"
 
@@ -15,6 +16,8 @@ int onetouch_simulator_processing_thread(void* argument)
 	DEBUG("Starting OneTouch Simulator Thread");
 
 	UNREFERENCED_PARAMETER(argument);
+
+	onetouch_simulator_logger_initialise();
 
 	const unsigned int COMMAND_ID_BYTE_LOCATION = 3;
 	unsigned char rawPacket[AQ_MAXPKTLEN];
@@ -34,6 +37,8 @@ int onetouch_simulator_processing_thread(void* argument)
 		}
 		else
 		{
+			INFO_TO(&onetouch_simulator_logger, "%s", rawPacket);
+
 			TRACE("Received message for OneTouch Simulator...processing it");
 			switch (rawPacket[COMMAND_ID_BYTE_LOCATION])
 			{
