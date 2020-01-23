@@ -36,4 +36,9 @@ void cleanInlineDebug(void);
 char* getInlineLogFName(void);
 bool islogFileReady(void);
 
+// Define custom MIN/MAX functions to prevent the #define MAX(var++...) issue.
+size_t aq_min(size_t x, size_t y);
+size_t aq_max(size_t x, size_t y);
+
+
 #endif /* UTILS_H_ */

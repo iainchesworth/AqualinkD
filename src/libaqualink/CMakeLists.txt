@@ -35,28 +35,6 @@ set(SOURCE_FILES
   hardware/devices/hardware_device_types.c
   hardware/devices/hardware_device_utils.c
   hardware/heaters/heaters.c
-  hardware/simulators/onetouch/onetouch_simulator_logger.c
-  hardware/simulators/onetouch/onetouch_simulator_msg_long_handler.c
-  hardware/simulators/onetouch/onetouch_simulator_private.c
-  hardware/simulators/onetouch/onetouch_simulator_probe_handler.c
-  hardware/simulators/onetouch/onetouch_simulator_status_handler.c
-  hardware/simulators/onetouch/onetouch_simulator_screen.c
-  hardware/simulators/onetouch/onetouch_simulator_thread.c
-  hardware/simulators/onetouch/onetouch_simulator_types.c
-  hardware/simulators/onetouch_simulator.c
-  hardware/simulators/pda/pda_simulator_msg_long_handler.c
-  hardware/simulators/pda/pda_simulator_private.c
-  hardware/simulators/pda/pda_simulator_probe_handler.c
-  hardware/simulators/pda/pda_simulator_status_handler.c
-  hardware/simulators/pda/pda_simulator_thread.c
-  hardware/simulators/pda/pda_simulator_types.c
-  hardware/simulators/pda_simulator.c
-  hardware/simulators/rs_keypad/rs_keypad_simulator_probe_handler.c
-  hardware/simulators/rs_keypad/rs_keypad_simulator_private.c
-  hardware/simulators/rs_keypad/rs_keypad_simulator_thread.c
-  hardware/simulators/rs_keypad/rs_keypad_simulator_types.c
-  hardware/simulators/rs_keypad_simulator.c
-  hardware/simulators/simulator_types.c
   profiling/profiling.c
   json/json_messages.c
   json/json_serializer.c
@@ -98,6 +76,28 @@ set(SOURCE_FILES
   serial/aq_serial_threaded.c
   serial/aq_serial_writer.c
   serial/aq_serial_writer_queue.c
+  simulators/onetouch/onetouch_simulator_logger.c
+  simulators/onetouch/onetouch_simulator_msg_long_handler.c
+  simulators/onetouch/onetouch_simulator_private.c
+  simulators/onetouch/onetouch_simulator_probe_handler.c
+  simulators/onetouch/onetouch_simulator_status_handler.c
+  simulators/onetouch/onetouch_simulator_screen.c
+  simulators/onetouch/onetouch_simulator_thread.c
+  simulators/onetouch/onetouch_simulator_types.c
+  simulators/onetouch_simulator.c
+  simulators/pda/pda_simulator_msg_long_handler.c
+  simulators/pda/pda_simulator_private.c
+  simulators/pda/pda_simulator_probe_handler.c
+  simulators/pda/pda_simulator_status_handler.c
+  simulators/pda/pda_simulator_thread.c
+  simulators/pda/pda_simulator_types.c
+  simulators/pda_simulator.c
+  simulators/rs_keypad/rs_keypad_simulator_probe_handler.c
+  simulators/rs_keypad/rs_keypad_simulator_private.c
+  simulators/rs_keypad/rs_keypad_simulator_thread.c
+  simulators/rs_keypad/rs_keypad_simulator_types.c
+  simulators/rs_keypad_simulator.c
+  simulators/simulator_types.c
   string/string_utils.c
   threads/thread_utils.c
   utility/utils.c 

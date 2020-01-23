@@ -1,13 +1,14 @@
-#ifndef PDA_SIMULATOR_H_
-#define PDA_SIMULATOR_H_
+#ifndef AQ_ONETOUCH_SIMULATOR_TYPES_H_
+#define AQ_ONETOUCH_SIMULATOR_TYPES_H_
 
 #include <stdbool.h>
 
 #include "cross-platform/threads.h"
 #include "hardware/devices/hardware_device_types.h"
-#include "hardware/simulators/simulator_types.h"
+#include "messages/message-bus/aq_serial_message_bus.h"
+#include "simulators/simulator_types.h"
 
-typedef struct tagAqualink_PDASimulator
+typedef struct tagAqualink_OneTouchSimulator
 {
 	struct
 	{
@@ -27,6 +28,6 @@ typedef struct tagAqualink_PDASimulator
 	Simulator_StatusMessageHandler StatusMessageHandler;
 	Simulator_UnknownMessageHandler UnknownMessageHandler;
 }
-Aqualink_PDASimulator;
+Aqualink_OneTouchSimulator;
 
-#endif // PDA_SIMULATOR_H_
+#endif // AQ_ONETOUCH_SIMULATOR_TYPES_H_

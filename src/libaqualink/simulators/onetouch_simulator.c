@@ -4,11 +4,11 @@
 #include <stdbool.h>
 
 #include "cross-platform/threads.h"
-#include "hardware/simulators/onetouch/onetouch_simulator_private.h"
-#include "hardware/simulators/onetouch/onetouch_simulator_screen.h"
-#include "hardware/simulators/onetouch/onetouch_simulator_thread.h"
-#include "hardware/simulators/onetouch/onetouch_simulator_types.h"
 #include "logging/logging.h"
+#include "simulators/onetouch/onetouch_simulator_private.h"
+#include "simulators/onetouch/onetouch_simulator_screen.h"
+#include "simulators/onetouch/onetouch_simulator_thread.h"
+#include "simulators/onetouch/onetouch_simulator_types.h"
 
 bool onetouch_simulator_enable()
 {

@@ -323,3 +323,13 @@ char* prettyString(char* str)
 
 	return str;
 }
+
+size_t aq_min(size_t x, size_t y)
+{
+	return (y ^ ((x ^ y) & -(x < y))); // min(x, y)
+}
+
+size_t aq_max(size_t x, size_t y)
+{
+	return (x ^ ((x ^ y) & -(x < y))); // max(x, y)
+}

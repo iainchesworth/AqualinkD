@@ -6,7 +6,7 @@
 #include "cross-platform/threads.h"
 #include "hardware/buttons/rs_buttons.h"
 #include "hardware/devices/hardware_device_types.h"
-#include "hardware/simulators/simulator_types.h"
+#include "simulators/simulator_types.h"
 
 typedef struct tagAqualink_RS_Keypad_Simulator
 {

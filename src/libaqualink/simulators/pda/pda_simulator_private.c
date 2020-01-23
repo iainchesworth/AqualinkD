@@ -8,8 +8,8 @@
 
 #include "cross-platform/threads.h"
 #include "hardware/devices/hardware_device_types.h"
-#include "hardware/simulators/pda_simulator.h"
 #include "logging/logging.h"
+#include "simulators/pda_simulator.h"
 
 Aqualink_PDASimulator aqualink_pda_simulator =
 {

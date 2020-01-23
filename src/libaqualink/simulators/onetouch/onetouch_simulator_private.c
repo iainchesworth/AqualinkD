@@ -8,9 +8,9 @@
 
 #include "cross-platform/threads.h"
 #include "hardware/devices/hardware_device_types.h"
-#include "hardware/simulators/onetouch_simulator.h"
 #include "logging/logging.h"
 #include "messages/message-bus/aq_serial_message_bus.h"
+#include "simulators/onetouch_simulator.h"
 
 Aqualink_OneTouchSimulator aqualink_onetouch_simulator =
 {

@@ -5,6 +5,8 @@
 
 #include "cross-platform/threads.h"
 #include "hardware/devices/hardware_device_types.h"
+#include "logging/logging.h"
+#include "utility/utils.h"
 
 static MessageBus_Topic* topic_by_name(MessageBus* bus, const char* name)
 {
@@ -67,7 +69,7 @@ void messagebus_init(MessageBus* bus)
     cnd_init(&(bus->bus_cv));
 }
 
-void messagebus_topic_init(MessageBus_Topic* topic, void* buffer, size_t buffer_len)
+void messagebus_topic_init(MessageBus_Topic* topic, unsigned char* buffer, size_t buffer_len)
 {
     assert(0 != topic);
     assert(0 != buffer);
@@ -179,20 +181,27 @@ MessageBus_Topic* messagebus_find_topic_blocking(MessageBus* bus, const char* na
     return res;
 }
 
-bool messagebus_topic_publish(MessageBus_Topic* topic, const void* buf, size_t buf_len)
+bool messagebus_topic_publish(MessageBus_Topic* topic, const unsigned char* buf, size_t buf_len)
 {
     assert(0 != topic);
     assert(0 != buf);
-    assert(0 < buf_len);
 
-    if (topic->buffer_len < buf_len) 
+    if ((topic->buffer_len - sizeof(MessageBus_Message)) < buf_len)
     {
+        WARN("The message cannot be published as is longer than is supported by this message queue (actual: %d, supported %d)", buf_len, topic->buffer_len);
         return false;
     }
 
+    MessageBus_Message message_to_publish;
+    message_to_publish.message_id = 0;
+    message_to_publish.payload_length = buf_len;
+    message_to_publish.payload = &(topic->buffer[sizeof(MessageBus_Message)]);
+
     mtx_lock(&(topic->topic_mtx));
 
-    memcpy(topic->buffer, buf, buf_len);
+    memcpy(&(topic->buffer[0]), &message_to_publish, sizeof(MessageBus_Message));   // Copy the message header
+    memcpy(&(topic->buffer[sizeof(MessageBus_Message)]), buf, buf_len);             // Copy the payload
+
     topic->published = true;
     cnd_broadcast(&(topic->topic_cv));
 
@@ -211,19 +220,30 @@ bool messagebus_topic_publish(MessageBus_Topic* topic, const void* buf, size_t b
     return true;
 }
 
-bool messagebus_topic_read(MessageBus_Topic* topic, void* buf, size_t buf_len)
+bool messagebus_topic_read(MessageBus_Topic* topic, unsigned char* buf, size_t buf_len)
 {
     assert(0 != topic);
     assert(0 != buf);
     assert(0 < buf_len);
+
+    MessageBus_Message message_to_read;
 
     bool success = false;
     mtx_lock(&(topic->topic_mtx));
 
     if (topic->published) 
     {
-        success = true;
-        memcpy(buf, topic->buffer, buf_len);
+        memcpy(&message_to_read, topic->buffer, sizeof(MessageBus_Message));    // Copy the header
+
+        if (message_to_read.payload_length > buf_len)
+        {
+            WARN("The message cannot be recieved as is longer than the provided buffer (actual: %d, supported %d)", message_to_read.payload_length, buf_len);
+        }
+        else
+        {
+            memcpy(buf, &(topic->buffer[sizeof(MessageBus_Message)]), aq_min(buf_len, message_to_read.payload_length)); // Copy the payload
+            success = true;
+        }
     }
 
     mtx_unlock(&(topic->topic_mtx));
@@ -231,7 +251,7 @@ bool messagebus_topic_read(MessageBus_Topic* topic, void* buf, size_t buf_len)
     return success;
 }
 
-void messagebus_topic_wait(MessageBus_Topic* topic, void* buf, size_t buf_len)
+void messagebus_topic_wait(MessageBus_Topic* topic, unsigned char* buf, size_t buf_len)
 {
     assert(0 != topic);
     assert(0 != buf);
@@ -287,7 +307,7 @@ MessageBus_Topic* messagebus_watchgroup_wait(MessageBus_WatchGroup* group)
     return res;
 }
 
-void messagebus_new_topic_callback_register(MessageBus* bus, MessageBus_NewTopicCB* cb, MessageBus_NewTopicCB_Func cb_func, void* arg)
+void messagebus_new_topic_callback_register(MessageBus* bus, MessageBus_NewTopicCB* cb, MessageBus_NewTopicCB_Func cb_func, unsigned char* arg)
 {
     assert(0 != bus);
     assert(0 != cb);

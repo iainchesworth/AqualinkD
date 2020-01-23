@@ -4,10 +4,10 @@
 #include <stdbool.h>
 
 #include "cross-platform/threads.h"
-#include "hardware/simulators/pda/pda_simulator_private.h"
-#include "hardware/simulators/pda/pda_simulator_thread.h"
-#include "hardware/simulators/pda/pda_simulator_types.h"
 #include "logging/logging.h"
+#include "simulators/pda/pda_simulator_private.h"
+#include "simulators/pda/pda_simulator_thread.h"
+#include "simulators/pda/pda_simulator_types.h"
 
 bool pda_simulator_enable()
 {

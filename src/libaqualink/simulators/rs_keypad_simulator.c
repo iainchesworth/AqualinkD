@@ -4,10 +4,10 @@
 #include <stdbool.h>
 
 #include "cross-platform/threads.h"
-#include "hardware/simulators/rs_keypad/rs_keypad_simulator_private.h"
-#include "hardware/simulators/rs_keypad/rs_keypad_simulator_thread.h"
-#include "hardware/simulators/rs_keypad/rs_keypad_simulator_types.h"
 #include "logging/logging.h"
+#include "simulators/rs_keypad/rs_keypad_simulator_private.h"
+#include "simulators/rs_keypad/rs_keypad_simulator_thread.h"
+#include "simulators/rs_keypad/rs_keypad_simulator_types.h"
 
 bool rs_keypad_simulator_initialise(MessageBus* simulator_message_bus)
 {

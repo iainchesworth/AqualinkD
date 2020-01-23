@@ -2,12 +2,21 @@
 #define AQ_SERIAL_MESSAGE_BUS_H_
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "cross-platform/threads.h"
 #include "hardware/devices/hardware_device_types.h"
 
 #define TOPIC_NAME_MAX_LENGTH 64
 #define TOPIC_MAX_MSG_LENGTH 64
+
+typedef struct
+{
+    size_t message_id;
+    size_t payload_length;
+    uint8_t* payload;
+}
+MessageBus_Message;
 
 typedef struct topic_s 
 {
@@ -17,7 +26,7 @@ typedef struct topic_s
     char name[TOPIC_NAME_MAX_LENGTH + 1];
     HardwareDeviceTypes hardware_device_type;
 
-    void* buffer;
+    unsigned char* buffer;
     size_t buffer_len;
 
     bool published;
@@ -70,15 +79,15 @@ typedef struct messagebus_new_topic_cb_s
 MessageBus_NewTopicCB;
 
 void messagebus_init(MessageBus* bus);
-void messagebus_topic_init(MessageBus_Topic* topic, void* buffer, size_t buffer_len);
+void messagebus_topic_init(MessageBus_Topic* topic, unsigned char* buffer, size_t buffer_len);
 void messagebus_advertise_topic_by_name(MessageBus* bus, MessageBus_Topic* topic, const char* name);
 void messagebus_advertise_topic_by_type(MessageBus* bus, MessageBus_Topic* topic, HardwareDeviceTypes device_type);
 MessageBus_Topic* messagebus_find_topic_by_name(MessageBus* bus, const char* name);
 MessageBus_Topic* messagebus_find_topic_by_type(MessageBus* bus, HardwareDeviceTypes device_type);
 MessageBus_Topic* messagebus_find_topic_blocking(MessageBus* bus, const char* name);
-bool messagebus_topic_publish(MessageBus_Topic* topic, const void* buf, size_t buf_len);
-bool messagebus_topic_read(MessageBus_Topic* topic, void* buf, size_t buf_len);
-void messagebus_topic_wait(MessageBus_Topic* topic, void* buf, size_t buf_len);
+bool messagebus_topic_publish(MessageBus_Topic* topic, const unsigned char* buf, size_t buf_len);
+bool messagebus_topic_read(MessageBus_Topic* topic, unsigned char* buf, size_t buf_len);
+void messagebus_topic_wait(MessageBus_Topic* topic, unsigned char* buf, size_t buf_len);
 void messagebus_watchgroup_init(MessageBus_WatchGroup* group);
 void messagebus_watchgroup_watch(MessageBox_Watcher* watcher, MessageBus_WatchGroup* group, MessageBus_Topic* topic);
 MessageBus_Topic* messagebus_watchgroup_wait(MessageBus_WatchGroup* group);

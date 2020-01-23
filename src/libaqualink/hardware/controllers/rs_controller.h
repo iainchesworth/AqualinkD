@@ -6,12 +6,6 @@
 #include "hardware/devices/hardware_device_registry.h"
 #include "hardware/devices/hardware_device_types.h"
 #include "hardware/heaters/heaters.h"
-#include "hardware/simulators/onetouch/onetouch_simulator_types.h"
-#include "hardware/simulators/onetouch_simulator.h"
-#include "hardware/simulators/pda/pda_simulator_types.h"
-#include "hardware/simulators/pda_simulator.h"
-#include "hardware/simulators/rs_keypad/rs_keypad_simulator_types.h"
-#include "hardware/simulators/rs_keypad_simulator.h"
 #include "messages/message-bus/aq_serial_message_bus.h"
 #include "messages/message-serializers/aq_serial_message_ack_serializer.h"
 #include "messages/message-serializers/aq_serial_message_msg_long_serializer.h"
@@ -19,6 +13,12 @@
 #include "messages/message-serializers/aq_serial_message_status_serializer.h"
 #include "messages/message-serializers/aq_serial_message_unknown_serializer.h"
 #include "serial/aq_serial_types.h"
+#include "simulators/onetouch/onetouch_simulator_types.h"
+#include "simulators/onetouch_simulator.h"
+#include "simulators/pda/pda_simulator_types.h"
+#include "simulators/pda_simulator.h"
+#include "simulators/rs_keypad/rs_keypad_simulator_types.h"
+#include "simulators/rs_keypad_simulator.h"
 
 typedef enum tagAqualinkRS_Variants
 {

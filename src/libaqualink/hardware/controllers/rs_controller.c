@@ -6,15 +6,15 @@
 #include "hardware/buttons/rs_buttons.h"
 #include "hardware/devices/hardware_device_registry.h"
 #include "hardware/devices/hardware_device_registry_private.h"
-#include "hardware/simulators/onetouch/onetouch_simulator_private.h"
-#include "hardware/simulators/onetouch_simulator.h"
-#include "hardware/simulators/pda/pda_simulator_private.h"
-#include "hardware/simulators/pda_simulator.h"
-#include "hardware/simulators/rs_keypad/rs_keypad_simulator_private.h"
-#include "hardware/simulators/rs_keypad_simulator.h"
 #include "logging/logging.h"
 #include "messages/message-serializers/aq_serial_message_probe_serializer.h"
 #include "serial/aq_serial_types.h"
+#include "simulators/onetouch/onetouch_simulator_private.h"
+#include "simulators/onetouch_simulator.h"
+#include "simulators/pda/pda_simulator_private.h"
+#include "simulators/pda_simulator.h"
+#include "simulators/rs_keypad/rs_keypad_simulator_private.h"
+#include "simulators/rs_keypad_simulator.h"
 
 AqualinkRS aqualink_master_controller =
 {
