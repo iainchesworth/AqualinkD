@@ -26,7 +26,6 @@ typedef enum tagSerialData_Commands
 	CMD_PPM = 0x16, // Received PPM
 
 	/* PDA commands */
-	CMD_PDA_0x04 = 0x04, // No idea, might be building menu
 	CMD_PDA_0x05 = 0x05, // No idea
 	CMD_PDA_0x1B = 0x1b,
 	CMD_PDA_HIGHLIGHT = 0x08,

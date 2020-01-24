@@ -8,6 +8,7 @@
 #include "hardware/devices/hardware_device_registry_private.h"
 #include "logging/logging.h"
 #include "messages/message-serializers/aq_serial_message_probe_serializer.h"
+#include "monitor/monitor.h"
 #include "serial/aq_serial_types.h"
 #include "simulators/onetouch/onetouch_simulator_private.h"
 #include "simulators/onetouch_simulator.h"
@@ -129,6 +130,8 @@ void rs_controller_initialise(AqualinkRS_Variants variant)
 	assert(0 != aqualink_master_controller.RS_Keypad_Simulator);
 
 	TRACE("Initialising Aqualink RS Controller...");
+
+	monitor_initialise();
 
 	aqualink_master_controller.Variant = variant;
 	aqualink_master_controller.State = Auto;

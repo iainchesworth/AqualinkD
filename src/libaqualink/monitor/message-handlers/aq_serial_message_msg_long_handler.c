@@ -11,7 +11,7 @@
 #include "messages/message-serializers/aq_serial_message_msg_long_serializer.h"
 #include "utility/utils.h"
 
-bool handle_msg_long_packet(AQ_Msg_Long_Packet processedPacket)
+bool monitor_msglongmessagehandler(AQ_Msg_Long_Packet processedPacket)
 {
 	bool handled_msg_long_packet = false;
 
@@ -23,7 +23,7 @@ bool handle_msg_long_packet(AQ_Msg_Long_Packet processedPacket)
 	return handled_msg_long_packet;
 }
 
-bool process_msg_long_packet(unsigned char* rawPacket, unsigned int length)
+bool monitor_msglongmessageprocessor(unsigned char* rawPacket, unsigned int length)
 {
 	assert(0 != rawPacket);
 	assert(AQ_MSG_LONG_PACKET_LENGTH <= length);
@@ -38,5 +38,5 @@ bool process_msg_long_packet(unsigned char* rawPacket, unsigned int length)
 
 	INFO("Line Number: 0x%02x - %.16s", processedPacket.LineNumber, processedPacket.Message);
 
-	return handle_msg_long_packet(processedPacket);
+	return monitor_msglongmessagehandler(processedPacket);
 }

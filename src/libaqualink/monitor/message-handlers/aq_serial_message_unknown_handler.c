@@ -11,7 +11,7 @@
 #include "messages/message-serializers/aq_serial_message_unknown_serializer.h"
 #include "utility/utils.h"
 
-bool handle_unknown_packet(AQ_Unknown_Packet processedPacket)
+bool monitor_unknownmessagehandler(AQ_Unknown_Packet processedPacket)
 {
 	bool handled_unknown_packet = false;
 
@@ -111,7 +111,7 @@ bool handle_unknown_packet(AQ_Unknown_Packet processedPacket)
 	return handled_unknown_packet;
 }
 
-bool process_unknown_packet(unsigned char* rawPacket, unsigned int length)
+bool monitor_unknownmessageprocessor(unsigned char* rawPacket, unsigned int length)
 {
 	assert(0 != rawPacket);
 	assert(AQ_UNKNOWN_PACKET_LENGTH <= length);
@@ -124,5 +124,5 @@ bool process_unknown_packet(unsigned char* rawPacket, unsigned int length)
 
 	deserialize_unknown_packet(&processedPacket, rawPacket, length);
 
-	return handle_unknown_packet(processedPacket);
+	return monitor_unknownmessagehandler(processedPacket);
 }

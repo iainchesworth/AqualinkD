@@ -14,7 +14,7 @@
 #include "serial/aq_serial_writer_queue.h"
 #include "utility/utils.h"
 
-bool handle_ack_packet(AQ_Ack_Packet processedPacket)
+bool monitor_ackmessagehandler(AQ_Ack_Packet processedPacket)
 {
 	//
 	// ACKs are in response to a message which means that we are only able to know more
@@ -166,7 +166,7 @@ bool handle_ack_packet(AQ_Ack_Packet processedPacket)
 	return true;
 }
 
-bool process_ack_packet(unsigned char* rawPacket, unsigned int length)
+bool monitor_ackmessageprocessor(unsigned char* rawPacket, unsigned int length)
 {
 	assert(0 != rawPacket);
 	assert(AQ_ACK_PACKET_LENGTH == length);
@@ -179,32 +179,5 @@ bool process_ack_packet(unsigned char* rawPacket, unsigned int length)
 	
 	deserialize_ack_packet(&processedPacket, rawPacket, length);
 
-	return handle_ack_packet(processedPacket);
-}
-
-bool send_ack_packet(SerialData_AckTypes ackType, unsigned char commandBeingAcked)
-{
-	bool packet_can_be_sent_successfully = false;
-	AQ_Ack_Packet ackPacket;
-
-	ackPacket.Header.DLE = DLE;
-	ackPacket.Header.STX = STX;
-
-	ackPacket.Destination.Type = Master;
-	ackPacket.Destination.Instance = Instance_0;
-	ackPacket.Command = CMD_ACK;
-	ackPacket.AckType = ackType;
-	ackPacket.CommandBeingAcked = commandBeingAcked;
-
-	// Ignore the checksum...that'll be added when the packet is serialized.
-
-	ackPacket.Terminator.DLE = DLE;
-	ackPacket.Terminator.ETX = ETX;
-
-	if(!serial_writer_enqueue_ack_message(&ackPacket))
-	{
-		packet_can_be_sent_successfully = true;
-	}
-
-	return packet_can_be_sent_successfully;
+	return monitor_ackmessagehandler(processedPacket);
 }

@@ -257,10 +257,21 @@ void messagebus_topic_wait(MessageBus_Topic* topic, unsigned char* buf, size_t b
     assert(0 != buf);
     assert(0 < buf_len);
 
+    MessageBus_Message message_to_read;
+
     mtx_lock(&(topic->topic_mtx));
     cnd_wait(&(topic->topic_cv), &(topic->topic_mtx));
 
-    memcpy(buf, topic->buffer, buf_len);
+    memcpy(&message_to_read, topic->buffer, sizeof(MessageBus_Message));    // Copy the header
+
+    if (message_to_read.payload_length > buf_len)
+    {
+        WARN("The message cannot be recieved as is longer than the provided buffer (actual: %d, supported %d)", message_to_read.payload_length, buf_len);
+    }
+    else
+    {
+        memcpy(buf, &(topic->buffer[sizeof(MessageBus_Message)]), aq_min(buf_len, message_to_read.payload_length)); // Copy the payload
+    }
 
     mtx_unlock(&(topic->topic_mtx));
 }

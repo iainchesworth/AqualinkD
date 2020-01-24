@@ -1,10 +1,10 @@
 #include "rs_keypad_simulator_probe_handler.h"
-#include "rs_keypad_simulator_private.h"
 
 #include <stdbool.h>
 
 #include "logging/logging.h"
 #include "messages/aq_serial_message_probe.h"
+#include "simulators/rs_keypad/rs_keypad_simulator_private.h"
 
 bool rs_keypad_simulator_probemessagehandler(AQ_Probe_Packet* packet)
 {

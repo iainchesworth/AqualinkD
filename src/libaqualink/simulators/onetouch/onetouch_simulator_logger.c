@@ -57,6 +57,8 @@ void onetouch_simulator_logger_error_handler(const char error_message[])
 
 void onetouch_simulator_logger_formatter(char buffer[], unsigned int buffer_length, LoggingMessage logMessage)
 {
+	UNREFERENCED_PARAMETER(buffer_length);
+
 	assert(0 != buffer);
 
 	switch (logMessage.Level)

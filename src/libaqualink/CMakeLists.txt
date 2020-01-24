@@ -35,6 +35,7 @@ set(SOURCE_FILES
   hardware/devices/hardware_device_types.c
   hardware/devices/hardware_device_utils.c
   hardware/heaters/heaters.c
+  monitor/monitor.c
   profiling/profiling.c
   json/json_messages.c
   json/json_serializer.c
@@ -52,11 +53,7 @@ set(SOURCE_FILES
   logging/logging_sink_registry.c
   logging/logging_utils.c
   messages/message-bus/aq_serial_message_bus.c
-  messages/message-processors/aq_serial_message_ack_handler.c
-  messages/message-processors/aq_serial_message_msg_long_handler.c
-  messages/message-processors/aq_serial_message_probe_handler.c
-  messages/message-processors/aq_serial_message_status_handler.c
-  messages/message-processors/aq_serial_message_unknown_handler.c
+  messages/message-processors/aq_serial_message_senders.c
   messages/message-serializers/aq_serial_message_ack_serializer.c
   messages/message-serializers/aq_serial_message_msg_long_serializer.c
   messages/message-serializers/aq_serial_message_probe_serializer.c
@@ -66,7 +63,13 @@ set(SOURCE_FILES
   messages/aq_serial_message_msg_long.c
   messages/aq_serial_message_probe.c
   messages/aq_serial_message_status.c
-  messages/aq_serial_message_unknown.c
+  messages/aq_serial_message_unknown.c  
+  monitor/message-handlers/aq_serial_message_ack_handler.c
+  monitor/message-handlers/aq_serial_message_msg_long_handler.c
+  monitor/message-handlers/aq_serial_message_probe_handler.c
+  monitor/message-handlers/aq_serial_message_status_handler.c
+  monitor/message-handlers/aq_serial_message_unknown_handler.c
+  monitor/monitor.c
   mqtt/mqtt_utils.c
   serial/aq_serial.c 
   serial/aq_serial_checksums.c 
@@ -76,23 +79,23 @@ set(SOURCE_FILES
   serial/aq_serial_threaded.c
   serial/aq_serial_writer.c
   serial/aq_serial_writer_queue.c
+  simulators/onetouch/message-handlers/onetouch_simulator_msg_long_handler.c
+  simulators/onetouch/message-handlers/onetouch_simulator_probe_handler.c
+  simulators/onetouch/message-handlers/onetouch_simulator_status_handler.c
   simulators/onetouch/onetouch_simulator_logger.c
-  simulators/onetouch/onetouch_simulator_msg_long_handler.c
   simulators/onetouch/onetouch_simulator_private.c
-  simulators/onetouch/onetouch_simulator_probe_handler.c
-  simulators/onetouch/onetouch_simulator_status_handler.c
   simulators/onetouch/onetouch_simulator_screen.c
   simulators/onetouch/onetouch_simulator_thread.c
   simulators/onetouch/onetouch_simulator_types.c
   simulators/onetouch_simulator.c
-  simulators/pda/pda_simulator_msg_long_handler.c
+  simulators/pda/message-handlers/pda_simulator_msg_long_handler.c
+  simulators/pda/message-handlers/pda_simulator_probe_handler.c
+  simulators/pda/message-handlers/pda_simulator_status_handler.c
   simulators/pda/pda_simulator_private.c
-  simulators/pda/pda_simulator_probe_handler.c
-  simulators/pda/pda_simulator_status_handler.c
   simulators/pda/pda_simulator_thread.c
   simulators/pda/pda_simulator_types.c
   simulators/pda_simulator.c
-  simulators/rs_keypad/rs_keypad_simulator_probe_handler.c
+  simulators/rs_keypad/message-handlers/rs_keypad_simulator_probe_handler.c
   simulators/rs_keypad/rs_keypad_simulator_private.c
   simulators/rs_keypad/rs_keypad_simulator_thread.c
   simulators/rs_keypad/rs_keypad_simulator_types.c

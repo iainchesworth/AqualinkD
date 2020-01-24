@@ -11,7 +11,7 @@
 #include "messages/message-serializers/aq_serial_message_status_serializer.h"
 #include "utility/utils.h"
 
-bool handle_status_packet(AQ_Status_Packet processedPacket)
+bool monitor_statusmessagehandler(AQ_Status_Packet processedPacket)
 {
 	bool handled_status_packet = false;
 
@@ -106,7 +106,7 @@ bool handle_status_packet(AQ_Status_Packet processedPacket)
 	return handled_status_packet;
 }
 
-bool process_status_packet(unsigned char* rawPacket, unsigned int length)
+bool monitor_statusmessageprocessor(unsigned char* rawPacket, unsigned int length)
 {
 	assert(0 != rawPacket);
 	assert(AQ_STATUS_PACKET_LENGTH <= length);
@@ -119,5 +119,5 @@ bool process_status_packet(unsigned char* rawPacket, unsigned int length)
 
 	deserialize_status_packet(&processedPacket, rawPacket, length);
 
-	return handle_status_packet(processedPacket);
+	return monitor_statusmessagehandler(processedPacket);
 }

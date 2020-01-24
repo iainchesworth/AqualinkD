@@ -11,7 +11,7 @@
 #include "messages/message-serializers/aq_serial_message_probe_serializer.h"
 #include "utility/utils.h"
 
-bool handle_probe_packet(AQ_Probe_Packet processedPacket)
+bool monitor_probemessagehandler(AQ_Probe_Packet processedPacket)
 {
 	bool handled_probe_packet = false;
 
@@ -111,7 +111,7 @@ bool handle_probe_packet(AQ_Probe_Packet processedPacket)
 	return handled_probe_packet;
 }
 
-bool process_probe_packet(unsigned char* rawPacket, unsigned int length)
+bool monitor_probemessageprocessor(unsigned char* rawPacket, unsigned int length)
 {
 	assert(0 != rawPacket);
 	assert(AQ_PROBE_PACKET_LENGTH <= length);
@@ -124,5 +124,5 @@ bool process_probe_packet(unsigned char* rawPacket, unsigned int length)
 
 	deserialize_probe_packet(&processedPacket, rawPacket, length);
 
-	return handle_probe_packet(processedPacket);
+	return monitor_probemessagehandler(processedPacket);
 }

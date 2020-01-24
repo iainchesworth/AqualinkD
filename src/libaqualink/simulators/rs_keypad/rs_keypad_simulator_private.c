@@ -7,7 +7,7 @@
 #include "hardware/buttons/rs_buttons.h"
 #include "hardware/devices/hardware_device_types.h"
 #include "logging/logging.h"
-#include "simulators/rs_keypad/rs_keypad_simulator_probe_handler.h"
+#include "simulators/rs_keypad/message-handlers/rs_keypad_simulator_probe_handler.h"
 #include "simulators/rs_keypad_simulator.h"
 
 Aqualink_RS_Keypad_Simulator aqualink_rs_keypad_simulator =

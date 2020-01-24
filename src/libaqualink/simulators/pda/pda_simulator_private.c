@@ -1,7 +1,4 @@
 #include "pda_simulator_private.h"
-#include "pda_simulator_msg_long_handler.h"
-#include "pda_simulator_probe_handler.h"
-#include "pda_simulator_status_handler.h"
 #include "pda_simulator_types.h"
 
 #include <stdbool.h>
@@ -10,6 +7,9 @@
 #include "hardware/devices/hardware_device_types.h"
 #include "logging/logging.h"
 #include "simulators/pda_simulator.h"
+#include "simulators/pda/message-handlers/pda_simulator_msg_long_handler.h"
+#include "simulators/pda/message-handlers/pda_simulator_probe_handler.h"
+#include "simulators/pda/message-handlers/pda_simulator_status_handler.h"
 
 Aqualink_PDASimulator aqualink_pda_simulator =
 {

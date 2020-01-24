@@ -1,7 +1,4 @@
 #include "onetouch_simulator_private.h"
-#include "onetouch_simulator_msg_long_handler.h"
-#include "onetouch_simulator_probe_handler.h"
-#include "onetouch_simulator_status_handler.h"
 #include "onetouch_simulator_types.h"
 
 #include <stdbool.h>
@@ -10,6 +7,9 @@
 #include "hardware/devices/hardware_device_types.h"
 #include "logging/logging.h"
 #include "messages/message-bus/aq_serial_message_bus.h"
+#include "simulators/onetouch/message-handlers/onetouch_simulator_msg_long_handler.h"
+#include "simulators/onetouch/message-handlers/onetouch_simulator_probe_handler.h"
+#include "simulators/onetouch/message-handlers/onetouch_simulator_status_handler.h"
 #include "simulators/onetouch_simulator.h"
 
 Aqualink_OneTouchSimulator aqualink_onetouch_simulator =
